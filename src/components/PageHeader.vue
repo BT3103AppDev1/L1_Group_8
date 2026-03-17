@@ -23,10 +23,9 @@ export default {
 
     .page-header h1 {
         margin: 0;
-        font-size: 30px;
+        font-size: 40px;
         color: #003D7C;
-        font-family: 'Franklin Gothic Medium', Arial;
-}
+    }
 
 </style>
 
