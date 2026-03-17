@@ -1,11 +1,16 @@
-<script setup></script>
-
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+<div id="app-root">
+  <CreateListing/>
+</div>
 </template>
 
-<style scoped></style>
+<script>
+import CreateListing from '@/components/CreateListing.vue';
+
+export default {
+  name: 'App',
+  components:{
+    CreateListing,
+  },
+}
+</script>
