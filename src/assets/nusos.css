@@ -1,0 +1,109 @@
+/* ── NUSOS Global Design System ── */
+:root {
+  --primary:          #003D7C;
+  --primary-hover:    #002f60;
+  --secondary:        #EF7C00;
+  --secondary-hover:  #d46e00;
+  --success:          #28A745;
+  --info:             #2F80ED;
+  --error:            #DC3545;
+  --warning:          #F1C100;
+  --bg:               #F4F6F9;
+  --white:            #ffffff;
+  --gray2:            #4F4F4F;
+  --gray3:            #6E6E6E;
+  --gray4:            #8C8C8C;
+  --gray5:            #B5B5B5;
+  --card-shadow:      0 2px 12px rgba(0, 0, 0, 0.08);
+  --radius:           8px;
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: #1D1D1D;
+  line-height: 1.5;
+  letter-spacing: 0.012em;
+}
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 9px 20px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.12s;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.btn:active { opacity: 0.82; }
+.btn-sm { font-size: 13px; padding: 6px 14px; }
+
+.btn-primary        { background: var(--primary);  color: var(--white); }
+.btn-primary:hover  { background: var(--primary-hover); }
+
+.btn-secondary        { background: var(--secondary); color: var(--white); }
+.btn-secondary:hover  { background: var(--secondary-hover); }
+
+.btn-outline        { background: transparent; color: var(--primary); border: 1.5px solid var(--primary); }
+.btn-outline:hover  { background: rgba(0, 61, 124, 0.06); }
+
+.btn-danger         { background: var(--error); color: var(--white); }
+.btn-danger:hover   { background: #c82333; }
+
+.btn-danger-outline         { background: transparent; color: var(--error); border: 1.5px solid var(--error); }
+.btn-danger-outline:hover   { background: rgba(220, 53, 69, 0.06); }
+
+/* ── Status Badges ── */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+.badge-awaiting  { background: rgba(241, 193,  0, 0.15); color: #9a7700; }
+.badge-ongoing   { background: rgba( 47, 128, 237, 0.12); color: var(--info); }
+.badge-completed { background: rgba( 40, 167,  69, 0.12); color: var(--success); }
+.badge-rejected  { background: rgba(220,  53,  69, 0.12); color: var(--error); }
+
+/* ── Category Tags ── */
+.cat-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.tag-education { background: rgba(  0,  61, 124, 0.10); color: var(--primary); }
+.tag-buddy     { background: rgba(239, 124,   0, 0.12); color: var(--secondary); }
+.tag-survival  { background: rgba( 40, 167,  69, 0.12); color: var(--success); }
+.tag-gray      { background: rgba(181, 181, 181, 0.25); color: var(--gray3); }
+
+/* ── Stars ── */
+.stars { color: var(--warning); font-size: 12px; letter-spacing: 1px; }
+
+/* ── Info note ── */
+.info-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--gray3);
+  background: rgba(47, 128, 237, 0.07);
+  padding: 5px 12px;
+  border-radius: 6px;
+}
