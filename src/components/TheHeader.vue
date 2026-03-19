@@ -144,7 +144,7 @@ export default {
     text-decoration: none;
 }
 
-.menu-item.active, .nav-item.active, .menu-button.open {
+.nav-item.active, .menu-button.open {
     font-weight: bold;
     background-color: #CCD8E5;
 }
@@ -187,30 +187,6 @@ export default {
     vertical-align: middle;
 }
 
-.menu-content {
-    position: absolute;
-    right: 0;
-    top: 2.5rem;
-    background-color: #fff;
-    border: 1px solid #8C8C8C;
-    border-radius: 0.5rem;
-    box-shadow: 0 8px 24px rgba(0, 60, 130, 0.12), 0 2px 6px rgba(0, 60, 130, 0.06);
-    display: flex;
-    flex-direction: column;
-    padding: 0.5rem 0;
-    overflow: hidden;
-    z-index: 100;
-    outline: none;
-}
-
-.menu-item {
-    display: block;
-    padding: 0.5rem 1rem;
-    font-size: 1rem;
-    color: #000;
-    text-decoration: none;
-}
-
 @media (min-width: 860px) {
     .menu-container {
         display: none;
@@ -221,5 +197,40 @@ export default {
     .header-nav-and-profile {
         display: none;
     }
+}
+</style>
+
+<style>
+.menu-content {
+    margin-top: 0.25rem;
+    margin-right: max(2rem, 7vw);
+    background-color: #fff;
+    border: 1px solid #8C8C8C;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 100;
+    outline: none;
+}
+
+.menu-item {
+    display: block;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    color: #000;
+    text-decoration: none;
+    text-align: center;
+}
+
+.menu-item.active {
+    font-weight: bold;
+    background-color: #CCD8E5;
+}
+
+.menu-item[data-highlighted] {
+    font-weight: bold;
+    background-color: #99B1CB;
 }
 </style>
