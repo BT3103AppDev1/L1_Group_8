@@ -2,15 +2,17 @@
     <div class="leaderboard">
         <div class="headerRow">
             <PageHeader title="Leaderboard" />
-
             <button class="viewRewardButton" @click="viewReward=true">View Reward</button>
+        </div>
 
             <div v-if="viewReward" class="viewRewardModalOverlay" @click.self="viewReward = false">
                 <div class="viewRewardContent">
-                    <h2>Reward Details</h2>
-                    <p>Here are the details of the reward...</p>
-                    <p>More information about the reward can be displayed here.</p>
                     <button class="closeButton" @click="viewReward = false">X</button>
+
+                <h2 class="modalTitle">Current Month Reward</h2>
+                <div class="modalDetail">
+                    <p class="modalLabel">Reward Name</p>
+                    <p class="modalText">Reward examples....</p>    
                 </div>
             </div>
         </div>
@@ -54,6 +56,11 @@ export default {
         font-size: 16px;
     }
 
+    .viewRewardButton:hover {
+        opacity: 0.8;
+        cursor: pointer;
+    }
+
     .viewRewardModalOverlay {
         position: fixed;
         top: 0;
@@ -68,7 +75,7 @@ export default {
 
     .viewRewardContent {
         background-color: #F0F0F0;
-        padding: 30px;
+        padding: 20px;
         border-radius: 8px;
         position: relative;
         width: 400px;
