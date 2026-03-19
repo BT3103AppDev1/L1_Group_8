@@ -10,11 +10,11 @@
 
 <script>
 import TheFooter from '@/components/TheFooter.vue'
-import TheNavbar from '@/components/TheNavbar.vue'
+import TheNavbar from '@/components/TheNavbar.vue' 
+import CreateListing from './components/CreateListing.vue';
 
 export default {
-  name: 'App',
-  components: { TheFooter, TheNavbar },
+  name: 'App',  components: { TheFooter, TheNavbar, CreateListing },
 }
 </script>
 
