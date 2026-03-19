@@ -19,7 +19,6 @@
             <div class="button-design">
             <button @click="createlisting" class="upload-button">UPLOAD</button>
             </div>
-
         </div>
     </div>
 
@@ -37,20 +36,34 @@ export default {
         return {
             title:"",
             description: "",
+            successupload: false
         }
     },
 
     methods: {
         async createlisting() {
+            if (!this.title || !this.description) {
+                alert("Please fill in all mandatory fields!")
+                return 
+            } else {
+
+            try {
             await addDoc(collection(db, "listings"), {
                 title: this.title,
                 description: this.description,
                 createdon: new Date()
-
-
             })
-        }
 
+            alert("Successful Upload!")
+            this.title = ""
+            this.description = ""
+    
+            } catch(error) {
+        console.log("Error", error)
+        alert("Unsuccessful Upload...")
+            }
+    }
+    }
     }
 };
 </script>
