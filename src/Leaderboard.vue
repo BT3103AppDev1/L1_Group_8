@@ -4,10 +4,10 @@
             <PageHeader title="Leaderboard" />
             <button class="viewRewardButton" @click="viewReward=true">View Reward</button>
         </div>
-
-            <div v-if="viewReward" class="viewRewardModalOverlay" @click.self="viewReward = false">
-                <div class="viewRewardContent">
-                    <button class="closeButton" @click="viewReward = false">X</button>
+        
+        <div v-if="viewReward" class="viewRewardModalOverlay" @click.self="viewReward = false">
+            <div class="viewRewardContent">
+                <button class="closeButton" @click="viewReward = false">X</button>
 
                 <h2 class="modalTitle">Current Month Reward</h2>
                 <div class="modalDetail">
@@ -16,7 +16,32 @@
                 </div>
             </div>
         </div>
+
+        <div class="monthNavigation">
+            <button class="navigationArrow" @click="previousMonth"><</button>
+            <span class="currentMonth">{{ currentMonth }}</span>
+            <button class="navigationArrow" @click="nextMonth">></button>
+        </div>
+
+        <div class="leaderboardTable">
+            <div class="tableHeaders">
+                <span class="headerRank">Rank</span>
+                <span class="headerName">User</span>
+                <span class="headerPoints">Total Points</span>
+            </div>
+        </div>
+
+        <div v-if="rankedUsers.length === 0" class="noWinnerState">
+            No winners in current month....
+        </div>
+
+        <div class="currentUserBar">
+            <span class="myRank">{{ currentUserRank }}</span>
+            <span class="myName">{{ currentUsername }}</span>
+            <span class="myPoints">{{ currentUserPoints }}</span>
+        </div>
     </div>
+
 </template>
 
 <script>
@@ -30,7 +55,12 @@ export default {
 
     data() {
         return {
-            viewReward: false
+            viewReward: false,
+            currentMonth: "July",
+            currentUserRank: 10,
+            currentUsername: "John Doe",
+            currentUserPoints: 1500,
+            rankedUsers: []
         }
     },
 }
@@ -94,4 +124,93 @@ export default {
         color: white;
         cursor: pointer;
     }
+
+    .closeButton:hover {
+        opacity: 0.8;
+    }
+
+    .modalTitle {
+        color: #003D7C;
+        font-size: 24px;
+        text-align: center;
+    }
+
+    .modalDetail {
+        margin: 0 20px 10px 20px;
+        align-content: flex-start;
+    }
+
+    .modalLabel {
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .modalText {
+        font-size: 16px;
+    }
+
+    .monthNavigation {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #003D7C;
+        padding: 10px;
+        margin: 20px 0px 0px 0px;
+    }
+
+    .navigationArrow {
+        font-size: 24px;
+        font-weight: bold;
+        background-color: transparent;
+        border: none;
+        color: white;
+    }
+    
+    .navigationArrow:hover {
+        color: #EF7C00;
+        cursor: pointer;
+    }
+
+    .currentMonth {
+        font-size: 20px;
+        font-weight: bold;
+        margin: 0 10px 0 10px;
+        color: white;
+    }
+
+    .noWinnerState {
+        text-align: center;
+        font-size: 18px;
+        color: black;
+    }
+
+    .currentUserBar {
+        background-color: #EF7C00;
+        justify-content: space-between;
+        padding: 10px;
+    }
+
+    .myRank, .myName, .myPoints {
+        color: white;
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .leaderboardTable {
+        padding: 10px;
+        background-color: #003D7C;
+    }
+
+    .tableHeaders {
+        display: flex;
+        justify-content: space-between;
+        font-weight: bold;
+        border: none;
+    }
+
+    .headerRank, .headerName, .headerPoints {
+        color: white;
+        font-size: 18px;
+    }
+
 </style>
