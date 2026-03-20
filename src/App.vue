@@ -19,6 +19,7 @@ import TheHeader from './components/TheHeader.vue';
 import { onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from '@/firebase.js';
 import { doc } from 'firebase/firestore';
+import '@/assets/main.css';
 
 export default {
   name: 'App',
@@ -82,16 +83,6 @@ export default {
 </script>
 
 <style scoped>
-#app {
-  display: flex;
-  flex-direction: column;
-  min-height: 97vh;
-}
-.main-content {
-  margin-top: 4.5rem; /* height of header */
-  flex: 1;
-}
-
 /* Fade transition */
 .fade-enter-active, .fade-leave-active {
   transition: opacity 0.2s ease, transform 0.2s ease;
