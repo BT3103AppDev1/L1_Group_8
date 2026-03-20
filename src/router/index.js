@@ -9,8 +9,8 @@ import ConsentForm from '@/views/ConsentForm.vue'
 import Onboarding from '@/views/Onboarding.vue'
 import Explore from '@/views/Explore.vue'
 import AddListing from '@/views/AddListing.vue'
-import MyListings from '@/views/MyListings.vue'
-import MyGigs from '@/views/MyGigs.vue'
+import MyListingsView from '@/views/MyListingsView.vue'
+import MyGigsView from '@/views/MyGigsView.vue'
 import Leaderboard from '@/views/Leaderboard.vue'
 import Profile from '@/views/Profile.vue'
 
@@ -99,7 +99,7 @@ const routes = [
     {
         path: '/my-listings',
         name: 'MyListings',
-        component: MyListings,
+        component: MyListingsView,
         meta: {
             showHeader: true,
             requiresAuth: true
@@ -108,7 +108,7 @@ const routes = [
     {
         path: '/my-gigs',
         name: 'MyGigs',
-        component: MyGigs,
+        component: MyGigsView,
         meta: {
             showHeader: true,
             requiresAuth: true
