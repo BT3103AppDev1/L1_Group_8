@@ -187,13 +187,13 @@ export default {
     vertical-align: middle;
 }
 
-@media (min-width: 860px) {
+@media (min-width: 910px) {
     .menu-container {
         display: none;
     }
 }
 
-@media (max-width: 860px) {
+@media (max-width: 910px) {
     .header-nav-and-profile {
         display: none;
     }
