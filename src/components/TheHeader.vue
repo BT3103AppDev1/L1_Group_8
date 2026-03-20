@@ -158,7 +158,7 @@ export default {
     font-weight: bold;
     background-color: #99B1CB;
     border: 0.0625rem solid #4D77A3;
-    border-radius: 0.5rem;
+    border-radius: var(--radius);
 }
 
 .profile-pic {
@@ -187,13 +187,13 @@ export default {
     vertical-align: middle;
 }
 
-@media (min-width: 910px) {
+@media (min-width: 912px) {
     .menu-container {
         display: none;
     }
 }
 
-@media (max-width: 910px) {
+@media (max-width: 912px) {
     .header-nav-and-profile {
         display: none;
     }
@@ -206,8 +206,8 @@ export default {
     margin-right: max(2rem, 7vw);
     background-color: #fff;
     border: 1px solid #8C8C8C;
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: var(--radius);
+    box-shadow: var(--card-shadow);
     display: flex;
     flex-direction: column;
     overflow: hidden;
