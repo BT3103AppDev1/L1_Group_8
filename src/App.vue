@@ -9,7 +9,6 @@
         </transition>
       </RouterView>
     </main>
-
     <TheFooter />
   </div>
 </template>
@@ -84,16 +83,13 @@ export default {
 
 <style scoped>
 #app {
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; 
   display: flex;
   flex-direction: column;
   min-height: 97vh;
 }
-
 .main-content {
   margin-top: 4.5rem; /* height of header */
   flex: 1;
-  padding: 1rem max(2rem, 7vw);
 }
 
 /* Fade transition */
