@@ -6,60 +6,59 @@
     <input v-model="search" type="text" placeholder="Search Listings" class="search-bar"/>
 
     <!--Category Filter-->
-    <div class="category-filter">
+    <div class="category-filter"> 
       <button v-for="cat in categories" :key="cat" @click="toggleCategory(cat)":class="['filter-btn', selectedCategory === cat ? 'active' : '']">
         {{ cat }}
       </button>
     </div>
 
     <!--Listing Cards Imported from ListingCard component-->
-    <div class="listing-grid">
+    <div class="listing-grid"> 
       <ListingCard v-for="item in filteredListings" :key="item.id" :listing="item"/>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import ListingCard from '@/components/ListingCard.vue'
+
+//Firebase imports
+import { db } from '@/firebase'
+import { collection, getDocs } from 'firebase/firestore'
 
 //Intiialise reactive variables for search, category selection, and listings data
 const search = ref('')
 const selectedCategory = ref(null)
 const categories = ['Education', 'Buddy', 'Survival']
 
-//Tempory data for listings - to be replaced with API calls in future
-const listings = ref([
-  {
-    id: 1,
-    title: 'Get rid of Lizards!',
-    category: 'Survival',
-    listedBy: 'oheohe67',
-    postedOn: '29 February 2026',
-    location: 'Pioneer House',
-    status: 'Awaiting'
-  },
-  {
-    id: 2,
-    title: 'CareerFest Buddy',
-    category: 'Buddy',
-    listedBy: 'sher78',
-    postedOn: '29 February 2026',
-    location: 'UTown',
-    status: 'Awaiting'
-  },
-  {
-    id: 3,
-    title: 'CS2030 Project Help!!',
-    category: 'Education',
-    listedBy: 'AmyLee88',
-    postedOn: '29 February 2026',
-    location: 'Sheares Hall',
-    status: 'Awaiting'
-  }
-])
+//Listings data from Firestore instead of previously dummy data
+const listings = ref([])
 
-//Toggle category filter - if same category is clicked again, it will deselect the filter
+//Fetch listings from Firestore
+onMounted(async () => {
+  const snapshot = await getDocs(collection(db, 'listings'))
+
+  listings.value = snapshot.docs.map(doc => {
+    const data = doc.data()
+    return {
+      id: doc.id,
+      //Normalise title for the search 
+      title: data.title?.trim(),
+      //Normalie category to ensure it fit category button 
+      category: data.listing_category?.trim(),
+      //This one must change because I need the legitimate user with user id 1
+      listedBy: data.lister_id,
+      //Convert timestamp to readable date
+      postedOn: data.created_at?.toDate().toLocaleDateString(),
+      location: data.location_text,
+      status: data.status?.trim()
+    }
+  })
+})
+
+//Toggle category filter
+// If same category is clicked again, it will deselect the filter
 const toggleCategory = (cat) => {
   selectedCategory.value = selectedCategory.value === cat ? null : cat
 }
@@ -67,13 +66,19 @@ const toggleCategory = (cat) => {
 //Get the filtered listings based on search query and selected category
 const filteredListings = computed(() => {
   return listings.value.filter((item) => {
+    //Can only show listings that have status "awaiting"
+    const matchesStatus = item.status === "Awaiting"
+    //Can only show listing that have title that matches search query 
     const matchesSearch = item.title
       .toLowerCase()
       .includes(search.value.toLowerCase())
+    //Can only show listing that have category that matches selected category, or if no category is selected, show all
+    const matchesCategory =
+      selectedCategory.value === null ||
+      item.category === selectedCategory.value
 
-    const matchesCategory = selectedCategory.value === null || item.category === selectedCategory.value
-    return matchesSearch && matchesCategory
-  })
+    return matchesStatus && matchesSearch && matchesCategory
+  }) 
 })
 </script>
 
