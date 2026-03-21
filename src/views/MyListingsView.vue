@@ -19,6 +19,10 @@
     <!-- ── Content ── -->
     <div class="content">
 
+<<<<<<< HEAD
+      <!-- Page title -->
+      <h2 class="page-title">{{ tabTitle }}</h2>
+=======
       <!-- Top bar -->
       <div class="topbar">
         <h2 class="page-title">{{ tabTitle }}</h2>
@@ -29,6 +33,7 @@
           Post a Listing
         </button>
       </div>
+>>>>>>> 3f902e9c38079a41362c8059cee803da9cb1a857
 
       <!-- Empty state -->
       <div v-if="listings[activeTab].length === 0" class="empty-state">
@@ -49,10 +54,21 @@
               <span :class="['cat-tag', catClass(listing.category)]">{{ listing.category }}</span>
               <h3 class="card-title">{{ listing.title }}</h3>
               <div class="card-meta">
+<<<<<<< HEAD
+                <span class="meta-item">Posted On: {{ listing.createdAt }}</span>
+=======
+>>>>>>> 3f902e9c38079a41362c8059cee803da9cb1a857
                 <span class="meta-item">
                   <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1C5.24 1 3 3.24 3 6c0 3.75 5 9 5 9s5-5.25 5-9c0-2.76-2.24-5-5-5zm0 6.75A1.75 1.75 0 118 4.25a1.75 1.75 0 010 3.5z" fill="#6E6E6E"/></svg>
                   {{ listing.location }}
                 </span>
+<<<<<<< HEAD
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" @click="showToast('View Listing Details — coming soon!')">View Listing Details</button>
+          </div>
+
+=======
                 <span class="meta-item">
                   <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1a5 5 0 100 10A5 5 0 008 1zM1 8a7 7 0 1114 0A7 7 0 011 8z" fill="#6E6E6E"/><path d="M8 4v4l2.5 1.5" stroke="#6E6E6E" stroke-width="1.2" stroke-linecap="round"/></svg>
                   {{ listing.createdAt }}
@@ -69,6 +85,7 @@
           <hr class="divider">
           <p class="desc"><strong>Description:</strong> {{ listing.description }}</p>
 
+>>>>>>> 3f902e9c38079a41362c8059cee803da9cb1a857
           <!-- Applicants -->
           <div class="applicants">
             <div class="applicants-head">Applicants ({{ listing.applicants.length }})</div>
@@ -83,6 +100,13 @@
                 <div class="avatar" :style="{ background: a.color }">{{ a.initials }}</div>
                 <div class="applicant-info">
                   <span class="applicant-name" @click="showToast('View profile: ' + a.name)">{{ a.name }}</span>
+<<<<<<< HEAD
+                </div>
+                <button class="btn btn-primary btn-sm" @click="openChoose(listing, a)">Choose This Provider</button>
+              </div>
+            </div>
+          </div>
+=======
                   <span class="applicant-sub">
                     <span class="stars">{{ stars(a.rating) }}</span>
                     {{ a.rating.toFixed(1) }} &bull; {{ a.gigs }} gigs completed
@@ -99,6 +123,7 @@
           <div class="card-footer">
             <button class="btn btn-outline btn-sm" @click="showToast('View Listing Details')">View Listing Details</button>
           </div>
+>>>>>>> 3f902e9c38079a41362c8059cee803da9cb1a857
         </article>
       </template>
 
@@ -107,13 +132,21 @@
         <article v-for="listing in listings.ongoing" :key="listing.id" class="card">
           <div class="card-head">
             <div class="card-info">
+<<<<<<< HEAD
+=======
               <span :class="['cat-tag', catClass(listing.category)]">{{ listing.category }}</span>
+>>>>>>> 3f902e9c38079a41362c8059cee803da9cb1a857
               <h3 class="card-title">{{ listing.title }}</h3>
               <div class="card-meta">
                 <span class="meta-item">
                   <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1C5.24 1 3 3.24 3 6c0 3.75 5 9 5 9s5-5.25 5-9c0-2.76-2.24-5-5-5zm0 6.75A1.75 1.75 0 118 4.25a1.75 1.75 0 010 3.5z" fill="#6E6E6E"/></svg>
                   {{ listing.location }}
                 </span>
+<<<<<<< HEAD
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" @click="showToast('View Listing Details — coming soon!')">View Listing Details</button>
+=======
                 <span class="meta-item">
                   <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1a5 5 0 100 10A5 5 0 008 1zM1 8a7 7 0 1114 0A7 7 0 011 8z" fill="#6E6E6E"/><path d="M8 4v4l2.5 1.5" stroke="#6E6E6E" stroke-width="1.2" stroke-linecap="round"/></svg>
                   {{ listing.createdAt }}
@@ -121,6 +154,7 @@
                 <span class="status-badge badge-ongoing">● Ongoing</span>
               </div>
             </div>
+>>>>>>> 3f902e9c38079a41362c8059cee803da9cb1a857
           </div>
 
           <!-- Assigned provider -->
@@ -132,17 +166,28 @@
                 <span class="applicant-name" @click="showToast('View profile: ' + listing.provider.name)">
                   {{ listing.provider.name }}
                 </span>
+<<<<<<< HEAD
+              </div>
+              <span class="waiting-note">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="7" stroke="#9CA3AF" stroke-width="1.5"/><path d="M8 5v3.5l2 1" stroke="#9CA3AF" stroke-width="1.5" stroke-linecap="round"/></svg>
+                Waiting for provider to complete
+              </span>
+=======
                 <span class="applicant-sub">
                   <span class="stars">{{ stars(listing.provider.rating) }}</span>
                   {{ listing.provider.rating.toFixed(1) }}
                 </span>
               </div>
               <span class="info-note">ℹ Waiting for provider to complete</span>
+>>>>>>> 3f902e9c38079a41362c8059cee803da9cb1a857
             </div>
           </div>
 
           <div class="card-footer card-footer-right">
+<<<<<<< HEAD
+=======
             <button class="btn btn-outline btn-sm" @click="showToast('View Listing Details')">View Listing Details</button>
+>>>>>>> 3f902e9c38079a41362c8059cee803da9cb1a857
             <button class="btn btn-primary btn-sm" @click="openMarkComplete(listing)">Mark as Completed</button>
           </div>
         </article>
@@ -150,6 +195,32 @@
 
       <!-- ════ COMPLETED TAB ════ -->
       <template v-if="activeTab === 'completed'">
+<<<<<<< HEAD
+        <article v-for="listing in listings.completed" :key="listing.id" class="card">
+          <div class="card-head">
+            <div class="card-info">
+              <span :class="['cat-tag', catClass(listing.category)]">{{ listing.category }}</span>
+              <h3 class="card-title">{{ listing.title }}</h3>
+              <div class="card-meta">
+                <span class="meta-item">Posted On: {{ listing.createdAt }}</span>
+                <span class="meta-item">
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1C5.24 1 3 3.24 3 6c0 3.75 5 9 5 9s5-5.25 5-9c0-2.76-2.24-5-5-5zm0 6.75A1.75 1.75 0 118 4.25a1.75 1.75 0 010 3.5z" fill="#6E6E6E"/></svg>
+                  {{ listing.location }}
+                </span>
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" @click="showToast('View Listing Details — coming soon!')">View Listing Details</button>
+          </div>
+
+          <div class="applicants">
+            <div class="applicants-head">Your Provider</div>
+            <div class="applicant-row">
+              <div class="avatar" :style="{ background: listing.provider.color ?? '#9CA3AF' }">{{ listing.provider.initials ?? listing.provider.name.slice(0,2).toUpperCase() }}</div>
+              <div class="applicant-info">
+                <span class="applicant-name">{{ listing.provider.name }}</span>
+              </div>
+            </div>
+=======
         <article v-for="listing in listings.completed" :key="listing.id" class="card greyed">
           <div class="card-head">
             <div class="card-info">
@@ -172,6 +243,7 @@
           </p>
           <div class="card-footer">
             <button class="btn btn-outline btn-sm" @click="showToast('View Listing Details')">View Listing Details</button>
+>>>>>>> 3f902e9c38079a41362c8059cee803da9cb1a857
           </div>
         </article>
       </template>
@@ -213,11 +285,24 @@ export default {
       toast: { show: false, text: '' },
       modal: { show: false, icon: '', title: '', message: '', confirmLabel: '', confirmClass: '', _fn: null },
 
+<<<<<<< HEAD
+=======
       // ── Mock data (will be replaced with Firestore calls) ──
+>>>>>>> 3f902e9c38079a41362c8059cee803da9cb1a857
       listings: {
         awaiting: [
           {
             id: 'l1',
+<<<<<<< HEAD
+            title: 'Need someone to help carry heavy items to UTown',
+            category: 'Survival',
+            location: 'University Health Centre',
+            createdAt: '29 February 2026',
+            applicants: [
+              { id: 'u1', name: 'Minh Hoang',  initials: 'MH', color: '#3B82F6' },
+              { id: 'u2', name: 'Zhao En',     initials: 'ZE', color: '#6366F1' },
+              { id: 'u3', name: 'Ruoyi',       initials: 'RY', color: '#3B82F6' },
+=======
             title: 'Help carry heavy items to UTown',
             category: 'Survival',
             location: "Prince George's Park Residences",
@@ -227,6 +312,7 @@ export default {
               { id: 'u1', name: 'James Lim',      initials: 'JL', color: '#003D7C', rating: 4.9, gigs: 12 },
               { id: 'u2', name: 'Sarah Rajan',     initials: 'SR', color: '#EF7C00', rating: 4.5, gigs: 7  },
               { id: 'u3', name: 'Muhammad Haziq',  initials: 'MH', color: '#28A745', rating: 5.0, gigs: 3  },
+>>>>>>> 3f902e9c38079a41362c8059cee803da9cb1a857
             ],
           },
           {
@@ -234,29 +320,49 @@ export default {
             title: 'CS2040S Study Buddy Needed for Finals Week',
             category: 'Education',
             location: 'COM1 Level 2 Study Area',
+<<<<<<< HEAD
+            createdAt: '23 February 2026',
+=======
             createdAt: '23 Feb 2026, 2:00 PM',
             description: 'Looking for someone strong in graphs and DP. Willing to trade notes in return! Session is about 2 hours.',
+>>>>>>> 3f902e9c38079a41362c8059cee803da9cb1a857
             applicants: [],
           },
         ],
         ongoing: [
           {
             id: 'l3',
+<<<<<<< HEAD
+            title: 'Print and collect documents from UTown Starbucks',
+            category: 'Survival',
+            location: 'University Town',
+            createdAt: '29 February 2026',
+            provider: { name: 'Minh Hoang', initials: 'MH', color: '#3B82F6' },
+=======
             title: 'Print and collect documents from COM1 office',
             category: 'Survival',
             location: 'COM1, Level 1',
             createdAt: '24 Feb 2026, 11:00 AM',
             provider: { name: 'Sarah Rajan', initials: 'SR', color: '#EF7C00', rating: 4.5 },
+>>>>>>> 3f902e9c38079a41362c8059cee803da9cb1a857
           },
         ],
         completed: [
           {
             id: 'l4',
+<<<<<<< HEAD
+            title: 'Print and collect documents from UTown Starbucks',
+            category: 'Survival',
+            location: 'University Town',
+            createdAt: '29 February 2026',
+            provider: { name: 'Minh Hoang', initials: 'MH', color: '#3B82F6' },
+=======
             title: 'Tapao lunch from The Deck for me please',
             category: 'Survival',
             location: 'The Deck, University Cultural Centre',
             createdAt: '19 Feb 2026, 11:30 AM',
             provider: { name: 'James Lim' },
+>>>>>>> 3f902e9c38079a41362c8059cee803da9cb1a857
             ratingGiven: 5,
           },
         ],
@@ -266,7 +372,11 @@ export default {
 
   computed: {
     tabTitle() {
+<<<<<<< HEAD
+      return { awaiting: 'Awaiting Services', ongoing: 'Ongoing Services', completed: 'Completed Services' }[this.activeTab]
+=======
       return { awaiting: 'Awaiting Applications', ongoing: 'Ongoing Services', completed: 'Completed Services' }[this.activeTab]
+>>>>>>> 3f902e9c38079a41362c8059cee803da9cb1a857
     },
     emptyMsg() {
       return {
@@ -281,10 +391,13 @@ export default {
     catClass(category) {
       return { Education: 'tag-education', Buddy: 'tag-buddy', Survival: 'tag-survival' }[category] ?? 'tag-gray'
     },
+<<<<<<< HEAD
+=======
     stars(r) {
       const n = Math.round(r)
       return '★'.repeat(n) + '☆'.repeat(5 - n)
     },
+>>>>>>> 3f902e9c38079a41362c8059cee803da9cb1a857
     showToast(text) {
       this.toast = { show: true, text }
       clearTimeout(this._toastTimer)
@@ -295,6 +408,8 @@ export default {
       this.modal.show = false
     },
 
+<<<<<<< HEAD
+=======
     openDelete(listing) {
       this.modal = {
         show: true, icon: '🗑️',
@@ -308,6 +423,7 @@ export default {
       }
     },
 
+>>>>>>> 3f902e9c38079a41362c8059cee803da9cb1a857
     openChoose(listing, applicant) {
       this.modal = {
         show: true, icon: '✅',
@@ -351,7 +467,11 @@ export default {
 
 <style scoped>
 /* ── Layout ── */
+<<<<<<< HEAD
+.view { display: flex; flex-direction: column; min-height: calc(100vh - 64px); }
+=======
 .view { display: flex; flex-direction: column; min-height: calc(100vh - 60px); }
+>>>>>>> 3f902e9c38079a41362c8059cee803da9cb1a857
 
 /* ── Tab Header ── */
 .tab-header {
@@ -361,7 +481,10 @@ export default {
 .tab-header-inner {
   max-width: 1100px;
   margin: 0 auto;
+<<<<<<< HEAD
+=======
   padding: 0 max(2rem, 7vw);
+>>>>>>> 3f902e9c38079a41362c8059cee803da9cb1a857
   display: flex;
   gap: 4px;
 }
@@ -401,6 +524,11 @@ export default {
   max-width: 1100px;
   margin: 0 auto;
   width: 100%;
+<<<<<<< HEAD
+  padding: 28px 0;
+}
+.page-title { font-size: 20px; font-weight: 700; color: #003D7C; margin-bottom: 22px; }
+=======
   padding: 28px max(2rem, 7vw);
 }
 .topbar {
@@ -410,6 +538,7 @@ export default {
   margin-bottom: 22px;
 }
 .page-title { font-size: 20px; font-weight: 700; color: #003D7C; }
+>>>>>>> 3f902e9c38079a41362c8059cee803da9cb1a857
 
 /* ── Empty state ── */
 .empty-state { text-align: center; padding: 64px 20px; color: #8C8C8C; }
@@ -428,7 +557,10 @@ export default {
   transition: box-shadow 0.2s;
 }
 .card:hover { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.11); }
+<<<<<<< HEAD
+=======
 .card.greyed { opacity: 0.65; filter: grayscale(0.2); }
+>>>>>>> 3f902e9c38079a41362c8059cee803da9cb1a857
 
 .card-head {
   display: flex;
@@ -438,20 +570,31 @@ export default {
   gap: 16px;
 }
 .card-info { flex: 1; }
+<<<<<<< HEAD
+.card-title { font-size: 16px; font-weight: 700; color: #1D1D1D; margin: 4px 0 6px; line-height: 24px; }
+.card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+=======
 .card-title { font-size: 16px; font-weight: 700; color: #1D1D1D; margin-bottom: 6px; line-height: 24px; }
 .card-meta {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+>>>>>>> 3f902e9c38079a41362c8059cee803da9cb1a857
   align-items: center;
   font-size: 13px;
   color: #6E6E6E;
 }
 .meta-item { display: inline-flex; align-items: center; gap: 4px; }
+<<<<<<< HEAD
+=======
 .card-actions { display: flex; gap: 8px; flex-shrink: 0; }
 
 .divider { border: none; border-top: 1px solid #F0F2F5; margin: 0 20px; }
 .desc { padding: 12px 20px; font-size: 13px; color: #4F4F4F; line-height: 20px; }
+>>>>>>> 3f902e9c38079a41362c8059cee803da9cb1a857
 
 .card-footer {
   display: flex;
@@ -461,7 +604,11 @@ export default {
 }
 .card-footer-right { justify-content: flex-end; }
 
+<<<<<<< HEAD
+/* ── Applicants / Provider section ── */
+=======
 /* ── Applicants ── */
+>>>>>>> 3f902e9c38079a41362c8059cee803da9cb1a857
 .applicants { background: #F8F9FB; border-top: 1px solid #E5E9EF; padding: 14px 20px; }
 .applicants-head {
   font-size: 11px;
@@ -498,6 +645,26 @@ export default {
   flex-shrink: 0;
   box-shadow: 0 1px 4px rgba(0,0,0,0.15);
 }
+<<<<<<< HEAD
+.applicant-info { flex: 1; }
+.applicant-name {
+  font-size: 14px; font-weight: 600;
+  color: #003D7C;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.applicant-name:hover { opacity: 0.75; text-decoration: underline; }
+
+/* ── Waiting note ── */
+.waiting-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: #9CA3AF;
+  white-space: nowrap;
+}
+=======
 .applicant-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
 .applicant-name {
   font-size: 14px; font-weight: 600; color: #1D1D1D;
@@ -507,6 +674,7 @@ export default {
 .applicant-name:hover { color: #003D7C; text-decoration: underline; }
 .applicant-sub { font-size: 12px; color: #6E6E6E; display: flex; align-items: center; gap: 4px; }
 .applicant-btns { display: flex; gap: 8px; align-items: center; }
+>>>>>>> 3f902e9c38079a41362c8059cee803da9cb1a857
 
 /* ── Toast ── */
 .toast {
@@ -531,8 +699,12 @@ export default {
 
 @media (max-width: 768px) {
   .card-head { flex-direction: column; }
+<<<<<<< HEAD
+  .applicant-row { flex-wrap: wrap; }
+=======
   .card-actions { justify-content: flex-end; }
   .applicant-row { flex-wrap: wrap; }
   .applicant-btns { width: 100%; justify-content: flex-end; }
+>>>>>>> 3f902e9c38079a41362c8059cee803da9cb1a857
 }
 </style>
