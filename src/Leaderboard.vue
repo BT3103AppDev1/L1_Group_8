@@ -24,18 +24,17 @@
         </div>
 
         <div class="tableContainer">
-        <div class="leaderboardTable">
-            <div class="tableHeaders">
-                <span class="headerRank">Rank</span>
-                <span class="headerName">User</span>
-                <span class="headerPoints">Total Points</span>
-            </div>
-        </div>
+            <div class="leaderboardTable">
+                <div class="tableHeaders">
+                    <span class="headerRank">Rank</span>
+                    <span class="headerName">User</span>
+                    <span class="headerPoints">Total Points</span>
+                </div>
 
                 <div class="ScrollableRows">
                     <div v-if="rankedUser.length === 0" class="noWinnerState">
-            No winners in current month....
-        </div>
+                        No winners in current month....
+                    </div>
 
                     <div v-for="(user, index) in rankedUser" 
                         :key="user.rank"
@@ -48,10 +47,11 @@
                         <span class="colPoints">{{ user.totalPoints }}</span>
                     </div>
                 </div>
-                <div v-if="!currentUserEntry" class="currentUserBar">
-            <span class="myRank">{{ currentUserRank }}</span>
-            <span class="myName">{{ currentUsername }}</span>
-            <span class="myPoints">{{ currentUserPoints }}</span>
+
+                <div class="currentUserBar">
+                    <span class="myRank">{{ currentUserRank }}</span>
+                    <span class="myName">{{ currentUsername }}</span>
+                    <span class="myPoints">{{ currentUserPoints }}</span>
                 </div>
             </div>
         </div>
@@ -262,6 +262,7 @@ export default {
         font-size: 18px;
         color: black;
         height: 200px;
+        background-color: #E0E0E0;
     }
 
     .currentUserBar {
@@ -285,7 +286,6 @@ export default {
     }
 
     .leaderboardTable {
-        padding: 10px;
         background-color: #003D7C;
         display: flex;
         flex-direction: column;
