@@ -18,7 +18,7 @@ import TheFooter from '@/components/TheFooter.vue'
 import TheHeader from './components/TheHeader.vue';
 import { onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from '@/firebase.js';
-import { doc } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import '@/assets/main.css';
 
 export default {

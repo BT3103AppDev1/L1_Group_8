@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { getCurrentUser } from '@/auth.js'
 import SignIn from '@/views/SignIn.vue'
 import SignUp from '@/views/SignUp.vue'
 import EmailVerification from '@/views/EmailVerification.vue'
@@ -87,14 +86,14 @@ const routes = [
             requiresAuth: true
         }
     },
-    {   
+    {
         path: '/add-listing',
         name: 'AddListing',
         component: AddListing,
         meta: {
             showHeader: true,
             requiresAuth: true
-        }   
+        }
     },
     {
         path: '/my-listings',
@@ -112,7 +111,7 @@ const routes = [
         meta: {
             showHeader: true,
             requiresAuth: true
-        }   
+        }
     },
     {
         path: '/leaderboard',
@@ -141,7 +140,6 @@ const routes = [
             requiresAuth: true
         }
     },
-    // Catch-all route for 404 Not Found
     {
         path: '/:pathMatch(.*)*',
         name: 'NotFound',
@@ -152,14 +150,13 @@ const routes = [
 const router = createRouter({
     history: createWebHistory(),
     routes
-})  
+})
 
-// Navigation guard to check for authentication on routes that require it
 router.beforeEach(async (to) => {
     /* // TODO: remove comment before deplyment
     const user = await getCurrentUser();
     */
-    
+
     /* // Stimulate not logged in
     const user = false;
     */
@@ -171,10 +168,10 @@ router.beforeEach(async (to) => {
         return '/sign-in';
     } else if (!to.meta.requiresAuth && user) {
         // TODO: Confirm behaviour for logged-in users clicking password reset link
-        return '/'; 
+        return '/';
     }
-    
-    return true; // otherwise, allow navigation to proceed
+
+    return true;
 })
 
 export default router

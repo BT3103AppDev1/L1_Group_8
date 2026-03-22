@@ -1,13 +1,11 @@
-import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase.js';
 
-function getCurrentUser() {
-  return new Promise((resolve, reject) => {
-    const unsubscribe = onAuthStateChanged(auth, user => {
-      unsubscribe();
-      resolve(user);
-    }, reject);
-  });
+// auth.authStateReady() waits for Firebase to finish loading persisted auth state,
+// then resolves immediately on every subsequent call — much faster than creating
+// a new onAuthStateChanged listener each time.
+async function getCurrentUser() {
+  await auth.authStateReady();
+  return auth.currentUser;
 }
 
 export { getCurrentUser };
