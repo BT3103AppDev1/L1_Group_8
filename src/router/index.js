@@ -1,4 +1,33 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { getCurrentUser } from '@/auth.js'
+import { getDoc, doc } from 'firebase/firestore'
+import { onAuthStateChanged } from 'firebase/auth'
+import { db, auth } from '@/firebase.js'
+
+let _cachedUid = null;
+let _cachedOnboardingComplete = null;
+
+onAuthStateChanged(auth, (user) => {
+    if (!user || user.uid !== _cachedUid) {
+        _cachedUid = null;
+        _cachedOnboardingComplete = null;
+    }
+});
+
+async function getOnboardingComplete(uid) {
+    if (_cachedUid === uid && _cachedOnboardingComplete !== null) {
+        return _cachedOnboardingComplete;
+    }
+    const snap = await getDoc(doc(db, 'users', uid));
+    const value = snap.exists() ? (snap.data().onboardingComplete ?? false) : false;
+    _cachedUid = uid;
+    _cachedOnboardingComplete = value;
+    return value;
+}
+
+export function markOnboardingComplete() {
+    _cachedOnboardingComplete = true;
+}
 import SignIn from '@/views/SignIn.vue'
 import SignUp from '@/views/SignUp.vue'
 import EmailVerification from '@/views/EmailVerification.vue'
@@ -14,6 +43,12 @@ import Leaderboard from '@/views/Leaderboard.vue'
 import Profile from '@/views/Profile.vue'
 
 const routes = [
+    {
+        path: '/action',
+        name: 'ActionHandler',
+        component: () => import('@/views/ActionHandler.vue'),
+        meta: { showHeader: false, requiresAuth: false }
+    },
     {
         path: '/sign-in',
         name: 'SignIn',
@@ -153,22 +188,35 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to) => {
-    /* // TODO: remove comment before deplyment
     const user = await getCurrentUser();
-    */
 
-    /* // Stimulate not logged in
-    const user = false;
-    */
+    if (!user) {
+        if (to.meta.requiresAuth) return { name: 'SignIn' };
+        return true;
+    }
 
-    // Simulate logged in
-    const user = true;
+    if (!user.emailVerified) {
+        try { await user.reload(); } catch { /* ignore */ }
+        if (!auth.currentUser?.emailVerified) {
+            if (to.name === 'EmailVerification' || to.name === 'ActionHandler') return true;
+            return { name: 'EmailVerification' };
+        }
+    }
 
-    if (to.meta.requiresAuth && !user) {
-        return '/sign-in';
-    } else if (!to.meta.requiresAuth && user) {
-        // TODO: Confirm behaviour for logged-in users clicking password reset link
-        return '/';
+    const currentUser = auth.currentUser || user;
+
+    try {
+        const onboardingComplete = await getOnboardingComplete(currentUser.uid);
+        if (!onboardingComplete) {
+            if (to.name === 'Onboarding') return true;
+            return { name: 'Onboarding' };
+        }
+        if (!to.meta.requiresAuth || to.name === 'Onboarding') {
+            return { name: 'Explore' };
+        }
+    } catch {
+        if (to.name === 'Onboarding') return true;
+        return { name: 'Onboarding' };
     }
 
     return true;
