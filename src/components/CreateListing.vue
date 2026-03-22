@@ -5,7 +5,12 @@
 
             <!-- insert photo section -->
             <div class="photo">
-                <!-- later insert in code to upload photo -->
+                <img 
+                    :src="listing_pic"
+                    alt="Listing Pic"
+                    class="card-title mb-2"
+                />
+                <input type="file" @click="uploadlistingpic" accept="image/jpg, image/jpeg, image/png, image/heic, image/heif">
             </div>
 
             <!-- service title & description -->
@@ -28,12 +33,14 @@
 <script>
 import { db } from "../firebase.js";
 import { addDoc, collection } from "firebase/firestore";
-
+import defaultPic from '@/assets/listing_pics/default_list_pic.jpg'
 
 export default {
 
     data(){
         return {
+            listing_pic: defaultPic,
+            selectedlistpic: null,
             title:"",
             description: "",
             successupload: false
@@ -41,6 +48,19 @@ export default {
     },
 
     methods: {
+        async uploadlistingpic(event) {
+            const file = event.target.files[0]; //just take first one in case user select too many
+            if (!file) return;
+
+            const approvedFormats = ['image/jpg', 'image/jpeg', 'image/png', 'image/heic', 'image/heif'];
+            if (!approvedFormats.includes(file.type)) {
+                alert('Please only upload approved file formats!')
+                return;
+            }
+
+            this.selectedlistpic = file;
+            this.listing_pic = URL.createObjectURL(file);
+        },
         async createlisting() {
             if (!this.title || !this.description) {
                 alert("Please fill in all mandatory fields!")
@@ -54,7 +74,10 @@ export default {
                 createdon: new Date()
             })
 
+            // reset everything after upload
             alert("Successful Upload!")
+            this.selectedlistpic=null;
+            this.listing_pic= defaultPic
             this.title = ""
             this.description = ""
     
