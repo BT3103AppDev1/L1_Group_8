@@ -31,7 +31,7 @@
                     <span class="headerPoints">Total Points</span>
                 </div>
 
-                <div class="ScrollableRows">
+                <div class="scrollableRows" ref="scrollContainer">
                     <div v-if="rankedUser.length === 0" class="noWinnerState">
                         No winners in current month....
                     </div>
@@ -39,8 +39,9 @@
                     <div v-for="(user, index) in rankedUser" 
                         :key="user.rank"
                         class="leaderboardTableRow" 
-                        :class="{ isCurrentUser: user.isCurrentUser, isEvenRank: index % 2 == 0 }">
-                        <span class="colRank">{{ user.rank }}</span>
+                        :class="{ isCurrentUser: user.isCurrentUser, isEvenRank: index % 2 == 0 }"
+                        :ref="user.isCurrentUser ? 'currentUserRow' : undefined">
+                        <span class="colRank">{{ ordinal(user.rank) }}</span>
                         <span class="colName">
                             <span class="username">{{ user.isCurrentUser ? 'You' : user.username }}</span>
                         </span>
@@ -48,7 +49,7 @@
                     </div>
                 </div>
 
-                <div class="currentUserBar">
+                <div v-if="showUserBar" class="currentUserBar">
                     <span class="myRank">{{ currentUserRank }}</span>
                     <span class="myName">{{ currentUsername }}</span>
                     <span class="myPoints">{{ currentUserPoints }}</span>
@@ -66,14 +67,20 @@ const MONTH = ["May", "June", "July"];
 
 export default {
     name: "Leaderboard",
-    components: {
-        PageHeader
-    },
+    components: { PageHeader},
 
     data() {
         return {
             viewReward: false,
             currentMonth: "June",
+            currentUserRowVisible: false,
+            observer: null,
+
+            mockUserStatus: {
+                "July": null,
+                "June": null,
+                "May": {rank: "Nil", points: 0}
+            },
 
             mockData: {
                 "July": [
@@ -115,7 +122,8 @@ export default {
         },
 
         currentUserRank() {
-            return this.currentUserEntry ? this.currentUserEntry.rank : "N/A";
+            if (this.currentUserEntry) return this.ordinal(this.currentUserEntry.rank);
+            return this.mockUserStatus[this.currentMonth]?.rank ?? "N/A";
         }, 
 
         currentUsername() {
@@ -123,11 +131,61 @@ export default {
         },
 
         currentUserPoints() {
-            return this.currentUserEntry?.totalPoints || 0;
+            if (this.currentUserEntry) return this.currentUserEntry.totalPoints;
+            return this.mockUserStatus[this.currentMonth]?.points ?? 0;
+        },
+
+        showUserBar() {
+            if (!this.currentUserEntry) return true;
+            return !this.currentUserRowVisible;
         }
     },
 
+    watch: {
+        currentMonth() {
+            this.currentUserRowVisible = false;
+            this.$nextTick(() => this.setupObserver());
+        }
+    },
+
+    mounted() {
+        this.$nextTick(() => this.setupObserver());
+    },
+
+    beforeUnmount() {
+        this.teardownObserver();
+    },
+
     methods: {
+        setupObserver() {
+            this.teardownObserver();
+
+            const scrollContainer = this.$refs.scrollContainer;
+            const rowRef = this.$refs.currentUserRow;
+            const row = Array.isArray(rowRef) ? rowRef[0] : rowRef;
+
+            if (!row || !scrollContainer) return;
+
+            this.observer = new IntersectionObserver(
+                ([entry]) => {
+                    this.currentUserRowVisible = entry.isIntersecting;
+                },
+                {
+                    root: scrollContainer,
+                    threshold: 0.5
+                }
+            );
+
+            this.observer.observe(row);
+        },
+
+        teardownObserver() {
+            if (this.observer) {
+                this.observer.disconnect();
+                this.observer = null;
+            }
+        },
+
         previousMonth() {
             const currentIndex = MONTH.indexOf(this.currentMonth);
             if (currentIndex > 0) {
@@ -140,9 +198,16 @@ export default {
             if (currentIndex < MONTH.length - 1) {
                 this.currentMonth = MONTH[currentIndex + 1];
             }
+        },
+
+        ordinal(n) {
+            if (typeof n !== "number") return n;
+            const s = ["th", "st", "nd", "rd"];
+            const v = n % 100;
+            return n + (s[(v - 20) % 10] || s[v] || s[0]);
         }
     }
-}
+};
 </script>
 
 <style scoped>
@@ -163,11 +228,11 @@ export default {
         border-radius: 8px;
         padding: 10px 20px;
         font-size: 16px;
+        cursor: pointer;
     }
 
     .viewRewardButton:hover {
         opacity: 0.8;
-        cursor: pointer;
     }
 
     .viewRewardModalOverlay {
@@ -261,13 +326,14 @@ export default {
         text-align: center;
         font-size: 18px;
         color: black;
-        height: 200px;
+        padding: 60px 20px;
         background-color: #E0E0E0;
     }
 
     .currentUserBar {
         background-color: #EF7C00;
         justify-content: space-between;
+        align-items: center;
         padding: 10px;
         display: flex;
         flex-shrink: 0;
@@ -297,14 +363,15 @@ export default {
     .tableHeaders {
         display: flex;
         justify-content: space-between;
-        font-weight: bold;
         border: none;
+        flex-shrink: 0;
+        padding: 10px;
     }
 
     .headerRank, .headerName, .headerPoints {
         color: white;
         font-size: 18px;
-        padding: 10px;
+        font-weight: bold;
     }
 
     .leaderboardTableRow {
@@ -315,7 +382,7 @@ export default {
         justify-content: space-between;
     }
 
-    .ScrollableRows {
+    .scrollableRows {
         overflow-y: auto;
         flex: 1;
         min-height: 0;
