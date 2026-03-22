@@ -228,7 +228,6 @@ export default {
       this.signIn.loading = true;
       try {
         const credential = await signInWithEmailAndPassword(auth, email, password);
-        // Force a fresh fetch so emailVerified is never stale from a cached sign-in
         try { await credential.user.reload(); } catch { /* ignore */ }
         this.$router.push('/');
       } catch (err) {
@@ -292,18 +291,13 @@ export default {
       this.signUp.loading = true;
 
       try {
-        // Step 1: create the Firebase Auth account (critical — stop if this fails)
         const credential = await createUserWithEmailAndPassword(auth, this.signUp.email, this.signUp.password);
         const user = credential.user;
 
-        // Step 2: send verification email (non-critical — don't block navigation if it fails)
         try {
           await sendEmailVerification(user, { url: window.location.origin + '/sign-in' });
-        } catch (e) {
-          console.warn('Verification email failed to send:', e.message);
-        }
+        } catch { /* ignore */ }
 
-        // Step 3: create Firestore user document (non-critical — don't block navigation if it fails)
         try {
           await setDoc(doc(db, 'users', user.uid), {
             email: user.email,
@@ -311,15 +305,11 @@ export default {
             onboardingComplete: false,
             consentGiven: false,
           });
-        } catch (e) {
-          console.warn('Firestore user doc creation failed:', e.message);
-        }
+        } catch { /* ignore */ }
 
-        // Step 4: navigate to email verification
         this.$router.push({ name: 'EmailVerification' });
 
       } catch (err) {
-        // Only reaches here if Firebase Auth account creation itself failed
         if (err.code === 'auth/email-already-in-use') {
           this.signUp.errors.email = 'This email is already registered. Please Sign In instead.';
           this.signUp.touched.email = true;
@@ -335,7 +325,6 @@ export default {
 </script>
 
 <style scoped>
-/* ── Full page ── */
 .auth-page {
   display: flex;
   flex-direction: column;
@@ -343,7 +332,6 @@ export default {
   background: var(--primary);
 }
 
-/* ── Main two-column area ── */
 .auth-main {
   flex: 1;
   display: flex;
@@ -353,7 +341,6 @@ export default {
   padding: 3rem 2rem;
 }
 
-/* ── Left branding panel ── */
 .brand-panel {
   display: flex;
   flex-direction: column;
@@ -383,11 +370,9 @@ export default {
   height: 36px;
   width: auto;
   object-fit: contain;
-  /* Make the logotype white so it shows on dark background */
   filter: brightness(0) invert(1);
 }
 
-/* ── Right form card ── */
 .form-card {
   background: #fff;
   border-radius: 12px;
@@ -397,7 +382,6 @@ export default {
   max-width: 400px;
 }
 
-/* ── Tab toggle ── */
 .auth-tabs {
   display: flex;
   border-bottom: 2px solid #e5e7eb;
@@ -428,7 +412,6 @@ export default {
   color: var(--gray2);
 }
 
-/* ── Form title ── */
 .form-title {
   font-size: 1.375rem;
   font-weight: 700;
@@ -437,7 +420,6 @@ export default {
   text-align: center;
 }
 
-/* ── Form fields ── */
 .form-group {
   margin-bottom: 1rem;
 }
@@ -490,19 +472,16 @@ export default {
   box-shadow: 0 0 0 3px rgba(0, 61, 124, 0.12);
 }
 
-/* Fig 8.1.2 — red border on invalid */
 .form-input.input-error {
   border-color: var(--error);
   box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.08);
 }
 
-/* Fig 8.1.2 — green border on valid */
 .form-input.input-valid {
   border-color: var(--success);
   box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.08);
 }
 
-/* ── Field messages ── */
 .field-msg {
   margin-top: 0.25rem;
   font-size: 0.8rem;
@@ -511,7 +490,6 @@ export default {
 
 .error-msg { color: var(--error); }
 
-/* Fig 8.1.2 — "Valid" in green below valid fields */
 .valid-msg { color: var(--success); }
 
 .general-error {
@@ -524,7 +502,6 @@ export default {
   margin-bottom: 0.75rem;
 }
 
-/* ── Submit button ── */
 .btn-submit {
   width: 100%;
   padding: 0.7rem 1rem;
@@ -543,7 +520,6 @@ export default {
 .btn-submit:hover { background: var(--secondary-hover); }
 .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
 
-/* ── Switch mode link ── */
 .switch-link {
   margin-top: 1rem;
   text-align: center;
@@ -563,7 +539,6 @@ export default {
   cursor: pointer;
 }
 
-/* ── Footer ── */
 .auth-footer {
   display: flex;
   justify-content: space-between;
@@ -574,7 +549,6 @@ export default {
   color: rgba(255, 255, 255, 0.75);
 }
 
-/* ── Responsive: stack on small screens ── */
 @media (max-width: 700px) {
   .auth-main {
     flex-direction: column;

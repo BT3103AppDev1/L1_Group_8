@@ -1,10 +1,6 @@
 <template>
   <div class="auth-page">
-
-    <!-- ── Main content ── -->
     <main class="auth-main">
-
-      <!-- Left branding panel -->
       <div class="brand-panel" aria-hidden="true">
         <div class="brand-circle">
           <img src="@/assets/logomark.png" alt="" class="brand-logomark" />
@@ -12,10 +8,7 @@
         <img src="@/assets/logotype.png" alt="NUSOS" class="brand-logotype" />
       </div>
 
-      <!-- Right card -->
       <div class="form-card">
-
-        <!-- Verified state -->
         <template v-if="verified">
           <h1 class="form-title">Email Verified!</h1>
           <p class="info-text">
@@ -25,7 +18,6 @@
           <button class="btn-submit" @click="goToSignIn">Go to Sign In</button>
         </template>
 
-        <!-- Awaiting verification state -->
         <template v-else>
           <h1 class="form-title">Verify Your Email</h1>
 
@@ -39,14 +31,12 @@
             If you don't see the email, try checking your spam folder.
           </p>
 
-          <!-- Feedback message -->
           <p
             v-if="resendMessage"
             :class="['feedback-msg', resendError ? 'feedback-error' : 'feedback-success']"
             role="alert"
           >{{ resendMessage }}</p>
 
-          <!-- ACFR2A.2 — resend email -->
           <button
             class="btn-submit"
             @click="resendEmail"
@@ -61,16 +51,13 @@
             <button class="inline-link" @click="signOut">Back to Sign Up</button>
           </p>
         </template>
-
       </div>
     </main>
 
-    <!-- Footer -->
     <footer class="auth-footer">
       <span>© 2026 NUSOS</span>
       <span>Contact: nusos@gmail.com</span>
     </footer>
-
   </div>
 </template>
 
@@ -174,9 +161,7 @@ export default {
             await firebaseSignOut(auth);
             this.$router.replace({ name: 'SignIn' });
           }
-        } catch {
-          // ignore transient errors
-        }
+        } catch { /* ignore */ }
       }, 3000);
     },
   },
@@ -200,7 +185,6 @@ export default {
   padding: 3rem 2rem;
 }
 
-/* ── Left branding panel ── */
 .brand-panel {
   display: flex;
   flex-direction: column;
@@ -233,7 +217,6 @@ export default {
   filter: brightness(0) invert(1);
 }
 
-/* ── Right card ── */
 .form-card {
   background: #fff;
   border-radius: 12px;
@@ -268,7 +251,6 @@ export default {
   font-weight: 700;
 }
 
-/* ── Feedback ── */
 .feedback-msg {
   border-radius: 6px;
   padding: 0.5rem 0.75rem;
@@ -289,7 +271,6 @@ export default {
   color: var(--error);
 }
 
-/* ── Buttons ── */
 .btn-submit {
   width: 100%;
   padding: 0.7rem 1rem;
@@ -308,7 +289,6 @@ export default {
 .btn-submit:hover { background: var(--secondary-hover); }
 .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
 
-/* ── Back link ── */
 .switch-link {
   margin-top: 1rem;
   font-size: 0.85rem;
@@ -328,7 +308,6 @@ export default {
 
 .inline-link:hover { color: var(--gray2); }
 
-/* ── Footer ── */
 .auth-footer {
   display: flex;
   justify-content: space-between;
@@ -339,7 +318,6 @@ export default {
   color: rgba(255, 255, 255, 0.75);
 }
 
-/* ── Responsive ── */
 @media (max-width: 700px) {
   .auth-main {
     flex-direction: column;
