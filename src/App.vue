@@ -2,7 +2,7 @@
   <div id="app">
     <TheHeader v-if="$route.meta.showHeader" :profilePicUrl="profilePicUrl"/>
 
-    <main class="main-content">
+    <main :class="['main-content', {'main-content-with-header': $route.meta.showHeader}]">
       <RouterView v-slot="{ Component }">
         <transition name="fade" mode="out-in">
           <component :is="Component" :key="$router.fullPath"/>
@@ -83,6 +83,12 @@ export default {
 </script>
 
 <style scoped>
+.main-content-with-header {
+  margin-top: 5rem; /* height of header */
+  padding: 1rem max(2rem, 7vw);
+  flex: 1;
+}
+
 /* Fade transition */
 .fade-enter-active, .fade-leave-active {
   transition: opacity 0.2s ease, transform 0.2s ease;

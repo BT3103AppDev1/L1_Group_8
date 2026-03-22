@@ -31,12 +31,6 @@
   min-height: 100vh;
 }
 
-.main-content {
-  margin-top: 5rem; /* height of header */
-  padding: 1rem max(2rem, 7vw);
-  flex: 1;
-}
-
 body {
   background: var(--bg);
   color: #1D1D1D;
@@ -70,11 +64,18 @@ body {
 .btn-outline        { background: transparent; color: var(--primary); border: 1.5px solid var(--primary); }
 .btn-outline:hover  { background: rgba(0, 61, 124, 0.06); }
 
+.btn-secondary-outline        { background: transparent; color: var(--black1); border: 1.5px solid var(--secondary); }
+.btn-secondary-outline:hover  { background: var(--gray4); color: var(--white); }
+
 .btn-danger         { background: var(--error); color: var(--white); }
 .btn-danger:hover   { background: #c82333; }
 
 .btn-danger-outline         { background: transparent; color: var(--error); border: 1.5px solid var(--error); }
 .btn-danger-outline:hover   { background: rgba(220, 53, 69, 0.06); }
+
+.btn-disable         { background: var(--gray5); color: var(--white); }
+
+.btn-disable-outline        { background: transparent; color: var(--gray5); border: 1.5px solid var(--gray5); }
 
 /* ── Status Badges ── */
 .status-badge {
