@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <TheNavbar />
+    <TheHeader />
     <main class="main-content">
       <RouterView v-slot="{ Component }">
         <transition name="fade" mode="out-in">
@@ -14,11 +14,11 @@
 
 <script>
 import TheFooter from '@/components/TheFooter.vue'
-import TheNavbar from '@/components/TheNavbar.vue'
+import TheHeader from '@/components/TheHeader.vue';
 
 export default {
   name: 'App',
-  components: { TheFooter, TheNavbar },
+  components: { TheFooter, TheHeader },
 }
 </script>
 
