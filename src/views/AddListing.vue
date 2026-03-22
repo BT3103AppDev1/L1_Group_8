@@ -17,19 +17,54 @@ export default {
 
             <!-- insert photo section -->
             <div class="photo">
-                <img 
-                    :src="listing_pic"
-                    alt="Listing Pic"
-                    class="card-title mb-2"
-                />
-                <input type="file" @click="uploadlistingpic" accept="image/jpg, image/jpeg, image/png, image/heic, image/heif">
+                <img :src="listing_pic" class="preview-img"/>
+                <p class="hint">Ensure that you photo is of .jpg, .jpeg, .png, .heic, or .heif format. Else, default photo will be used!</p>
+                <input type="file" @change="uploadlistingpic" accept="image/jpg, image/jpeg, image/png, image/heic, image/heif"></input>
             </div>
 
             <!-- service title & description -->
             <div class="service-description">
                 <input v-model="title" placeholder="[Service Title]" required></input>
+                <p v-if="submitted && !title" class="error-message">Mandatory Title!</p>
                 <hr style="border:0; border-top: 2px solid black; background-color: black; margin: 0 0 8px 0;">        
-                <textarea v-model="description" placeholder="Write your description here!" required></textarea>
+                
+                <textarea v-model="description" placeholder="Write your description here (min 10 words, max 800)!" required></textarea>
+                <p v-if="submitted && !description" class="error-message">Mandatory Description!</p>
+                
+            </div>
+
+            <!-- dropwdown selection -->
+            <div class="dropdown">
+                <select v-model="payment_mode">
+                    <option disabled value="">Payment Mode</option>
+                    <option>Cash</option>
+                    <option>Treat to Food</option>
+                    <option>Drinks on me</option>
+                    <option>Free</option>
+                    <option>Contact me</option>
+                </select>
+                <p v-if="submitted && !payment_mode" class="error-message">Mandatory Payment Mode!</p>
+
+                <select v-model="listing_category">
+                    <option disabled value="">Category</option>
+                    <option>Education</option>
+                    <option>Buddy</option>
+                    <option>Survival</option>
+                    <p v-if="submitted && !listing_category" class="error-message">Mandatory Listing Category!</p>
+                
+                </select>
+
+                <select v-model="location_text">
+                    <option disabled value="">Location</option>
+                    <option>UTown</option>
+                    <option>Central Library</option>
+                    <option>FASS</option>
+                    <option>SoC</option>
+                    <!-- check our documentation and add on more later -->
+                     <p v-if="submitted && !location_text" class="error-message">Mandatory location!</p>
+
+                </select>
+                
             </div>
 
             <!-- button -->
@@ -43,19 +78,27 @@ export default {
 
 
 <script>
-import { db } from "../firebase.js";
+import { ref, computed } from 'vue'
+import { db, storage, auth } from "../firebase.js";
 import { addDoc, collection } from "firebase/firestore";
+import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage"
 import defaultPic from '@/assets/listing_pics/default_list_pic.jpg'
 
-export default {
 
+export default {
+    name: 'AddListing',
     data(){
         return {
-            listing_pic: defaultPic,
-            selectedlistpic: null,
-            title:"",
+            listing_pic: defaultPic, //only for display
+            selectedlistpic: null, 
+            picture_url: "", //go into firestore
+            title: "",
             description: "",
-            successupload: false
+            payment_mode: "",
+            listing_category: "",
+            location_text: "",
+            submitted: false,
+            successupload: false,
         }
     },
 
@@ -73,6 +116,17 @@ export default {
             this.selectedlistpic = file;
             this.listing_pic = URL.createObjectURL(file);
         },
+
+        async uploadPic() {
+            if (!this.selectedlistpic) return defaultPic;
+            const ext = this.selectedlistpic.name.split('.').pop(); //i want to get the format 
+            const path = `listings/${Date.now()}.${ext}`; //replace with the date if uploaded to name it unique
+            const storageRef = storageRef(storage, path);
+            await uploadBytes(storageRef, this.selectedlistpic); //to firebase storage
+            return await getDownloadURL(storageRef);
+
+        },
+
         async createlisting() {
             if (!this.title || !this.description) {
                 alert("Please fill in all mandatory fields!")
@@ -81,17 +135,31 @@ export default {
 
             try {
             await addDoc(collection(db, "listings"), {
+                listing_id: this.listing_id,
+                lister_id: this.lister_id,
+                listing_category: this.category,
                 title: this.title,
                 description: this.description,
-                createdon: new Date()
+                location_text: this.location_text,
+                picture_url: this.picture_url,
+                payment_mode: this.payment_mode,
+                listing_cateogry: this.listing_category,
+                location_text: this.location_text,
+                created_at: new Date()
             })
 
             // reset everything after upload
             alert("Successful Upload!")
             this.selectedlistpic=null;
-            this.listing_pic= defaultPic
-            this.title = ""
-            this.description = ""
+            this.listing_pic= defaultPic;
+            this.title = "";
+            this.description = "";
+            this.payment_mode = "";
+            this.listing_category = "";
+            this.location_text = "";
+
+            //
+            document.querySelector('input[type="file"]').value = ""; //empty the choose file again
     
             } catch(error) {
         console.log("Error", error)
@@ -102,6 +170,7 @@ export default {
     }
 };
 </script>
+
 
 <style scoped>
 .container {
