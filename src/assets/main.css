@@ -1,31 +1,46 @@
-/* ── NUSOS Global Design System ── */
+/* ── Style Guides ── */
 :root {
   --primary:          #003D7C;
-  --primary-hover:    #002f60;
+  --primary-hover:    #99B1CB;
   --secondary:        #EF7C00;
-  --secondary-hover:  #d46e00;
+  --secondary-hover:  #ffa34d;
   --success:          #28A745;
   --info:             #2F80ED;
   --error:            #DC3545;
-  --warning:          #F1C100;
-  --bg:               #F4F6F9;
-  --white:            #ffffff;
+  --warning:          #b8860b;
+  --bg:               #fff;
+  --white:            #fff;
+  --black1:           #000;
+  --black2:           #1D1D1D;
+  --black3:           #282828;
+  --grey1:            #333333;
   --gray2:            #4F4F4F;
   --gray3:            #6E6E6E;
   --gray4:            #8C8C8C;
   --gray5:            #B5B5B5;
-  --card-shadow:      0 2px 12px rgba(0, 0, 0, 0.08);
-  --radius:           8px;
+  --card-shadow:      0 0.125rem 0.75rem rgba(0, 0, 0, 0.08);
+  --radius:           0.5rem;
 }
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
+#app {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; 
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  margin-top: 5rem; /* height of header */
+  padding: 1rem max(2rem, 7vw);
+  flex: 1;
+}
+
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background: var(--bg);
   color: #1D1D1D;
   line-height: 1.5;
-  letter-spacing: 0.012em;
 }
 
 /* ── Buttons ── */
@@ -33,7 +48,6 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-family: 'Inter', sans-serif;
   font-weight: 600;
   font-size: 14px;
   padding: 9px 20px;
