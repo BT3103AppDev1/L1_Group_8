@@ -7,6 +7,7 @@
   --success:          #28A745;
   --info:             #2F80ED;
   --error:            #DC3545;
+  --error-hover:      #E57373;
   --warning:          #b8860b;
   --bg:               #fff;
   --white:            #fff;
@@ -65,10 +66,10 @@ body {
 .btn-outline:hover  { background: rgba(0, 61, 124, 0.06); }
 
 .btn-secondary-outline        { background: transparent; color: var(--black1); border: 1.5px solid var(--secondary); }
-.btn-secondary-outline:hover  { background: var(--gray4); color: var(--white); }
+.btn-secondary-outline:hover  { background: #fff2e0; color: var(--black1); }
 
 .btn-danger         { background: var(--error); color: var(--white); }
-.btn-danger:hover   { background: #c82333; }
+.btn-danger:hover   { background: var(--error-hover); }
 
 .btn-danger-outline         { background: transparent; color: var(--error); border: 1.5px solid var(--error); }
 .btn-danger-outline:hover   { background: rgba(220, 53, 69, 0.06); }

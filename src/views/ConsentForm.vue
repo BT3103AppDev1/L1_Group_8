@@ -89,10 +89,12 @@
                         :disabled="isLoadingAccept" @click="showDeclineModal = true">
                             Decline
                     </button>
-                    <button v-if="!isLoadingAccept" class="btn btn-secondary" @click="handleAccept">
-                        Accept
-                    </button>
-                    <ClipLoader v-else :size="28" color="var(--secondary)" class="accept-spinner"/>
+                    <div class="btn-or-spinner">
+                        <button v-if="!isLoadingAccept" class="btn btn-secondary" @click="handleAccept">
+                            Accept
+                        </button>
+                        <VueSpinner v-else size="30" color="var(--secondary)" /> 
+                    </div>
                 </div>
 
                 <p class="warning-note">
@@ -114,14 +116,16 @@
                     immediately</strong>. This action cannot be undone.
                 </p>
                 <div class="confirmation-buttons">
-                    <button class="btn btn-secondary-outline" 
+                    <button class="btn cancel-btn modal-btn" 
                         :disabled="isLoadingDecline" @click="showDeclineModal = false">
                             Cancel
                     </button>
-                    <button class="btn btn-secondary" v-if="!isLoadingDecline" @click="handleDecline">
-                        Confirm Decline
-                    </button>
-                    <ClipLoader v-else :size="28" color="var(--secondary)" class="decline-spinner"/>
+                    <div class="btn-or-spinner">
+                        <button class="btn btn-danger modal-btn" v-if="!isLoadingDecline" @click="handleDecline">
+                            Confirm Decline
+                        </button>
+                        <VueSpinner v-else size="30" color="var(--secondary)" />
+                    </div>
                 </div>
             </div>
         </div>
@@ -129,7 +133,7 @@
 </template>
 
 <script>
-import { ClipLoader } from 'vue-spinner';
+import { VueSpinner } from 'vue3-spinners';
 import { auth, db } from '@/firebase.js';
 import { deleteUser } from 'firebase/auth';
 import { getCurrentUser } from '@/auth.js';
@@ -138,7 +142,7 @@ import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 export default {
     name: 'ConsentForm',
     components: {
-        ClipLoader,
+        VueSpinner,
     },
 
     data() {
@@ -334,13 +338,25 @@ export default {
 }
 
 .btn {
-    padding: 0.75rem 3rem;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    padding: 0.75rem 0;
+    width: 15vw;
 }
 
 .btn:disabled {
     background-color: var(--gray5);
+    border: var(--gray5);
     color: var(--white);
     cursor: not-allowed;
+}
+
+.btn-or-spinner {
+    width: 15vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .warning-note {
@@ -357,6 +373,9 @@ export default {
 }
 
 .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     background: rgba(181, 181, 181, 0.6);
@@ -367,8 +386,10 @@ export default {
 }
 
 .confirmation-modal {
+    position: relative;
     background: var(--white);
     border-radius: var(--radius);
+    width: 50vw;
     padding: 2rem;
 }
 
@@ -376,23 +397,36 @@ export default {
     position: absolute;
     top: 1rem;
     right: 1rem;
-    width: 2.5rem;
+    width: 1.875rem;
+    height: 1.875rem;
     border-radius: var(--radius);
     background: var(--gray4);
+    border: none;
     color: var(--white);
-    font-size: 1rem;
-    font-weight: bold;
+    font-size: 2rem;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.close-modal:hover {
+.cancel-btn {
+    background: var(--gray4);
+    color: var(--white);
+}
+
+.close-modal:hover, .cancel-btn:hover {
     background-color: var(--gray5);
 }
 
+.modal-btn {
+    width: 15vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .modal-title {
-    font-size: 2.5rem;
+    font-size: 2rem;
     font-weight: bold;
     margin-bottom: 1rem;
 }
@@ -404,6 +438,9 @@ export default {
 
 .confirmation-buttons { 
     display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3rem;
     padding: 0 3.5rem;
 }
 </style>
