@@ -1,9 +1,12 @@
 <template>
   <div id="app">
     <TheNavbar />
-    <TheNavbar />
     <main class="main-content">
-      <router-view />
+      <RouterView v-slot="{ Component }">
+        <transition name="fade" mode="out-in">
+          <component :is="Component" :key="$router.fullPath"/>
+        </transition>
+      </RouterView>
     </main>
     <TheFooter />
   </div>
@@ -11,21 +14,27 @@
 
 <script>
 import TheFooter from '@/components/TheFooter.vue'
-import TheNavbar from '@/components/TheNavbar.vue' 
-import CreateListing from './components/CreateListing.vue';
+import TheNavbar from '@/components/TheNavbar.vue'
 
 export default {
-  name: 'App',  components: { TheFooter, TheNavbar, CreateListing },
+  name: 'App',
+  components: { TheFooter, TheNavbar },
 }
 </script>
 
 <style scoped>
-#app {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
+/* Fade transition */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
-.main-content {
-  flex: 1;
+
+.fade-enter-from{
+  opacity: 0;
+  transform: translateY(5px);
+}
+
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-5px);
 }
 </style>

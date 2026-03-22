@@ -19,16 +19,8 @@
     <!-- ── Content ── -->
     <div class="content">
 
-      <!-- Top bar -->
-      <div class="topbar">
-        <h2 class="page-title">{{ tabTitle }}</h2>
-        <button class="btn btn-secondary" @click="showToast('Navigating to Create Listing...')">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-          </svg>
-          Post a Listing
-        </button>
-      </div>
+      <!-- Page title -->
+      <h2 class="page-title">{{ tabTitle }}</h2>
 
       <!-- Empty state -->
       <div v-if="listings[activeTab].length === 0" class="empty-state">
@@ -49,25 +41,15 @@
               <span :class="['cat-tag', catClass(listing.category)]">{{ listing.category }}</span>
               <h3 class="card-title">{{ listing.title }}</h3>
               <div class="card-meta">
+                <span class="meta-item">Posted On: {{ listing.createdAt }}</span>
                 <span class="meta-item">
                   <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1C5.24 1 3 3.24 3 6c0 3.75 5 9 5 9s5-5.25 5-9c0-2.76-2.24-5-5-5zm0 6.75A1.75 1.75 0 118 4.25a1.75 1.75 0 010 3.5z" fill="#6E6E6E"/></svg>
                   {{ listing.location }}
                 </span>
-                <span class="meta-item">
-                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1a5 5 0 100 10A5 5 0 008 1zM1 8a7 7 0 1114 0A7 7 0 011 8z" fill="#6E6E6E"/><path d="M8 4v4l2.5 1.5" stroke="#6E6E6E" stroke-width="1.2" stroke-linecap="round"/></svg>
-                  {{ listing.createdAt }}
-                </span>
-                <span class="status-badge badge-awaiting">● Awaiting</span>
               </div>
             </div>
-            <div class="card-actions">
-              <button class="btn btn-outline btn-sm" @click="showToast('Edit Listing — coming soon!')">Edit</button>
-              <button class="btn btn-danger-outline btn-sm" @click="openDelete(listing)">Delete</button>
-            </div>
+            <button class="btn btn-secondary btn-sm" @click="showToast('View Listing Details — coming soon!')">View Listing Details</button>
           </div>
-
-          <hr class="divider">
-          <p class="desc"><strong>Description:</strong> {{ listing.description }}</p>
 
           <!-- Applicants -->
           <div class="applicants">
@@ -83,21 +65,10 @@
                 <div class="avatar" :style="{ background: a.color }">{{ a.initials }}</div>
                 <div class="applicant-info">
                   <span class="applicant-name" @click="showToast('View profile: ' + a.name)">{{ a.name }}</span>
-                  <span class="applicant-sub">
-                    <span class="stars">{{ stars(a.rating) }}</span>
-                    {{ a.rating.toFixed(1) }} &bull; {{ a.gigs }} gigs completed
-                  </span>
                 </div>
-                <div class="applicant-btns">
-                  <button class="btn btn-outline btn-sm" @click="showToast('View profile: ' + a.name)">View Profile</button>
-                  <button class="btn btn-secondary btn-sm" @click="openChoose(listing, a)">Choose This Provider</button>
-                </div>
+                <button class="btn btn-primary btn-sm" @click="openChoose(listing, a)">Choose This Provider</button>
               </div>
             </div>
-          </div>
-
-          <div class="card-footer">
-            <button class="btn btn-outline btn-sm" @click="showToast('View Listing Details')">View Listing Details</button>
           </div>
         </article>
       </template>
@@ -107,20 +78,15 @@
         <article v-for="listing in listings.ongoing" :key="listing.id" class="card">
           <div class="card-head">
             <div class="card-info">
-              <span :class="['cat-tag', catClass(listing.category)]">{{ listing.category }}</span>
               <h3 class="card-title">{{ listing.title }}</h3>
               <div class="card-meta">
                 <span class="meta-item">
                   <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1C5.24 1 3 3.24 3 6c0 3.75 5 9 5 9s5-5.25 5-9c0-2.76-2.24-5-5-5zm0 6.75A1.75 1.75 0 118 4.25a1.75 1.75 0 010 3.5z" fill="#6E6E6E"/></svg>
                   {{ listing.location }}
                 </span>
-                <span class="meta-item">
-                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1a5 5 0 100 10A5 5 0 008 1zM1 8a7 7 0 1114 0A7 7 0 011 8z" fill="#6E6E6E"/><path d="M8 4v4l2.5 1.5" stroke="#6E6E6E" stroke-width="1.2" stroke-linecap="round"/></svg>
-                  {{ listing.createdAt }}
-                </span>
-                <span class="status-badge badge-ongoing">● Ongoing</span>
               </div>
             </div>
+            <button class="btn btn-secondary btn-sm" @click="showToast('View Listing Details — coming soon!')">View Listing Details</button>
           </div>
 
           <!-- Assigned provider -->
@@ -132,17 +98,15 @@
                 <span class="applicant-name" @click="showToast('View profile: ' + listing.provider.name)">
                   {{ listing.provider.name }}
                 </span>
-                <span class="applicant-sub">
-                  <span class="stars">{{ stars(listing.provider.rating) }}</span>
-                  {{ listing.provider.rating.toFixed(1) }}
-                </span>
               </div>
-              <span class="info-note">ℹ Waiting for provider to complete</span>
+              <span class="waiting-note">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="7" stroke="#9CA3AF" stroke-width="1.5"/><path d="M8 5v3.5l2 1" stroke="#9CA3AF" stroke-width="1.5" stroke-linecap="round"/></svg>
+                Waiting for provider to complete
+              </span>
             </div>
           </div>
 
           <div class="card-footer card-footer-right">
-            <button class="btn btn-outline btn-sm" @click="showToast('View Listing Details')">View Listing Details</button>
             <button class="btn btn-primary btn-sm" @click="openMarkComplete(listing)">Mark as Completed</button>
           </div>
         </article>
@@ -150,28 +114,30 @@
 
       <!-- ════ COMPLETED TAB ════ -->
       <template v-if="activeTab === 'completed'">
-        <article v-for="listing in listings.completed" :key="listing.id" class="card greyed">
+        <article v-for="listing in listings.completed" :key="listing.id" class="card">
           <div class="card-head">
             <div class="card-info">
-              <span class="cat-tag tag-gray">{{ listing.category }}</span>
+              <span :class="['cat-tag', catClass(listing.category)]">{{ listing.category }}</span>
               <h3 class="card-title">{{ listing.title }}</h3>
               <div class="card-meta">
-                <span class="meta-item">{{ listing.location }}</span>
-                <span class="meta-item">{{ listing.createdAt }}</span>
-                <span class="status-badge badge-completed">● Completed</span>
+                <span class="meta-item">Posted On: {{ listing.createdAt }}</span>
+                <span class="meta-item">
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1C5.24 1 3 3.24 3 6c0 3.75 5 9 5 9s5-5.25 5-9c0-2.76-2.24-5-5-5zm0 6.75A1.75 1.75 0 118 4.25a1.75 1.75 0 010 3.5z" fill="#6E6E6E"/></svg>
+                  {{ listing.location }}
+                </span>
               </div>
             </div>
+            <button class="btn btn-secondary btn-sm" @click="showToast('View Listing Details — coming soon!')">View Listing Details</button>
           </div>
-          <hr class="divider">
-          <p class="desc">
-            <strong>Provider:</strong> {{ listing.provider.name }}
-            &nbsp;&bull;&nbsp;
-            <strong>Rated:</strong>
-            <span class="stars">{{ stars(listing.ratingGiven) }}</span>
-            {{ listing.ratingGiven }}.0
-          </p>
-          <div class="card-footer">
-            <button class="btn btn-outline btn-sm" @click="showToast('View Listing Details')">View Listing Details</button>
+
+          <div class="applicants">
+            <div class="applicants-head">Your Provider</div>
+            <div class="applicant-row">
+              <div class="avatar" :style="{ background: listing.provider.color ?? '#9CA3AF' }">{{ listing.provider.initials ?? listing.provider.name.slice(0,2).toUpperCase() }}</div>
+              <div class="applicant-info">
+                <span class="applicant-name">{{ listing.provider.name }}</span>
+              </div>
+            </div>
           </div>
         </article>
       </template>
@@ -213,20 +179,18 @@ export default {
       toast: { show: false, text: '' },
       modal: { show: false, icon: '', title: '', message: '', confirmLabel: '', confirmClass: '', _fn: null },
 
-      // ── Mock data (will be replaced with Firestore calls) ──
       listings: {
         awaiting: [
           {
             id: 'l1',
-            title: 'Help carry heavy items to UTown',
+            title: 'Need someone to help carry heavy items to UTown',
             category: 'Survival',
-            location: "Prince George's Park Residences",
-            createdAt: '24 Feb 2026, 9:00 AM',
-            description: 'I have about 6 boxes to move from PGP to UTown. Looking for someone with a trolley or strong arms — will take about 1 hour.',
+            location: 'University Health Centre',
+            createdAt: '29 February 2026',
             applicants: [
-              { id: 'u1', name: 'James Lim',      initials: 'JL', color: '#003D7C', rating: 4.9, gigs: 12 },
-              { id: 'u2', name: 'Sarah Rajan',     initials: 'SR', color: '#EF7C00', rating: 4.5, gigs: 7  },
-              { id: 'u3', name: 'Muhammad Haziq',  initials: 'MH', color: '#28A745', rating: 5.0, gigs: 3  },
+              { id: 'u1', name: 'Minh Hoang', initials: 'MH', color: '#3B82F6' },
+              { id: 'u2', name: 'Zhao En',    initials: 'ZE', color: '#6366F1' },
+              { id: 'u3', name: 'Ruoyi',      initials: 'RY', color: '#3B82F6' },
             ],
           },
           {
@@ -234,29 +198,28 @@ export default {
             title: 'CS2040S Study Buddy Needed for Finals Week',
             category: 'Education',
             location: 'COM1 Level 2 Study Area',
-            createdAt: '23 Feb 2026, 2:00 PM',
-            description: 'Looking for someone strong in graphs and DP. Willing to trade notes in return! Session is about 2 hours.',
+            createdAt: '23 February 2026',
             applicants: [],
           },
         ],
         ongoing: [
           {
             id: 'l3',
-            title: 'Print and collect documents from COM1 office',
+            title: 'Print and collect documents from UTown Starbucks',
             category: 'Survival',
-            location: 'COM1, Level 1',
-            createdAt: '24 Feb 2026, 11:00 AM',
-            provider: { name: 'Sarah Rajan', initials: 'SR', color: '#EF7C00', rating: 4.5 },
+            location: 'University Town',
+            createdAt: '29 February 2026',
+            provider: { name: 'Minh Hoang', initials: 'MH', color: '#3B82F6' },
           },
         ],
         completed: [
           {
             id: 'l4',
-            title: 'Tapao lunch from The Deck for me please',
+            title: 'Print and collect documents from UTown Starbucks',
             category: 'Survival',
-            location: 'The Deck, University Cultural Centre',
-            createdAt: '19 Feb 2026, 11:30 AM',
-            provider: { name: 'James Lim' },
+            location: 'University Town',
+            createdAt: '29 February 2026',
+            provider: { name: 'Minh Hoang', initials: 'MH', color: '#3B82F6' },
             ratingGiven: 5,
           },
         ],
@@ -266,7 +229,7 @@ export default {
 
   computed: {
     tabTitle() {
-      return { awaiting: 'Awaiting Applications', ongoing: 'Ongoing Services', completed: 'Completed Services' }[this.activeTab]
+      return { awaiting: 'Awaiting Services', ongoing: 'Ongoing Services', completed: 'Completed Services' }[this.activeTab]
     },
     emptyMsg() {
       return {
@@ -281,10 +244,6 @@ export default {
     catClass(category) {
       return { Education: 'tag-education', Buddy: 'tag-buddy', Survival: 'tag-survival' }[category] ?? 'tag-gray'
     },
-    stars(r) {
-      const n = Math.round(r)
-      return '★'.repeat(n) + '☆'.repeat(5 - n)
-    },
     showToast(text) {
       this.toast = { show: true, text }
       clearTimeout(this._toastTimer)
@@ -293,19 +252,6 @@ export default {
     handleConfirm() {
       this.modal._fn?.()
       this.modal.show = false
-    },
-
-    openDelete(listing) {
-      this.modal = {
-        show: true, icon: '🗑️',
-        title: 'Delete this listing?',
-        message: 'This action cannot be undone. The listing and all its applications will be permanently removed.',
-        confirmLabel: 'Delete Listing', confirmClass: 'btn-danger',
-        _fn: () => {
-          this.listings.awaiting = this.listings.awaiting.filter(l => l.id !== listing.id)
-          this.showToast('Listing deleted successfully!')
-        },
-      }
     },
 
     openChoose(listing, applicant) {
@@ -351,7 +297,7 @@ export default {
 
 <style scoped>
 /* ── Layout ── */
-.view { display: flex; flex-direction: column; min-height: calc(100vh - 60px); }
+.view { display: flex; flex-direction: column; min-height: calc(100vh - 64px); }
 
 /* ── Tab Header ── */
 .tab-header {
@@ -361,7 +307,6 @@ export default {
 .tab-header-inner {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 0 max(2rem, 7vw);
   display: flex;
   gap: 4px;
 }
@@ -401,15 +346,9 @@ export default {
   max-width: 1100px;
   margin: 0 auto;
   width: 100%;
-  padding: 28px max(2rem, 7vw);
+  padding: 28px 0;
 }
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 22px;
-}
-.page-title { font-size: 20px; font-weight: 700; color: #003D7C; }
+.page-title { font-size: 20px; font-weight: 700; color: #003D7C; margin-bottom: 22px; }
 
 /* ── Empty state ── */
 .empty-state { text-align: center; padding: 64px 20px; color: #8C8C8C; }
@@ -428,7 +367,6 @@ export default {
   transition: box-shadow 0.2s;
 }
 .card:hover { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.11); }
-.card.greyed { opacity: 0.65; filter: grayscale(0.2); }
 
 .card-head {
   display: flex;
@@ -438,20 +376,16 @@ export default {
   gap: 16px;
 }
 .card-info { flex: 1; }
-.card-title { font-size: 16px; font-weight: 700; color: #1D1D1D; margin-bottom: 6px; line-height: 24px; }
+.card-title { font-size: 16px; font-weight: 700; color: #1D1D1D; margin: 4px 0 6px; line-height: 24px; }
 .card-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 12px;
   align-items: center;
   font-size: 13px;
   color: #6E6E6E;
 }
 .meta-item { display: inline-flex; align-items: center; gap: 4px; }
-.card-actions { display: flex; gap: 8px; flex-shrink: 0; }
-
-.divider { border: none; border-top: 1px solid #F0F2F5; margin: 0 20px; }
-.desc { padding: 12px 20px; font-size: 13px; color: #4F4F4F; line-height: 20px; }
 
 .card-footer {
   display: flex;
@@ -461,7 +395,7 @@ export default {
 }
 .card-footer-right { justify-content: flex-end; }
 
-/* ── Applicants ── */
+/* ── Applicants / Provider section ── */
 .applicants { background: #F8F9FB; border-top: 1px solid #E5E9EF; padding: 14px 20px; }
 .applicants-head {
   font-size: 11px;
@@ -498,15 +432,24 @@ export default {
   flex-shrink: 0;
   box-shadow: 0 1px 4px rgba(0,0,0,0.15);
 }
-.applicant-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.applicant-info { flex: 1; }
 .applicant-name {
-  font-size: 14px; font-weight: 600; color: #1D1D1D;
+  font-size: 14px; font-weight: 600;
+  color: #003D7C;
   cursor: pointer;
-  transition: color 0.15s;
+  transition: opacity 0.15s;
 }
-.applicant-name:hover { color: #003D7C; text-decoration: underline; }
-.applicant-sub { font-size: 12px; color: #6E6E6E; display: flex; align-items: center; gap: 4px; }
-.applicant-btns { display: flex; gap: 8px; align-items: center; }
+.applicant-name:hover { opacity: 0.75; text-decoration: underline; }
+
+/* ── Waiting note ── */
+.waiting-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: #9CA3AF;
+  white-space: nowrap;
+}
 
 /* ── Toast ── */
 .toast {
@@ -531,8 +474,6 @@ export default {
 
 @media (max-width: 768px) {
   .card-head { flex-direction: column; }
-  .card-actions { justify-content: flex-end; }
   .applicant-row { flex-wrap: wrap; }
-  .applicant-btns { width: 100%; justify-content: flex-end; }
 }
 </style>

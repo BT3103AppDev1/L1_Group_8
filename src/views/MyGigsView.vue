@@ -1,16 +1,9 @@
 <template>
-  <div class="page">
-    <!-- Page Header -->
-    <div class="page-header">
-      <div class="header-inner">
-        <h1 class="page-title">My Gigs</h1>
-        <p class="page-subtitle">Track gigs you've applied for or are currently fulfilling</p>
-      </div>
-    </div>
+  <div class="view">
 
-    <!-- Tab Bar -->
-    <div class="tab-bar">
-      <div class="tab-inner">
+    <!-- ── Tab Header ── -->
+    <div class="tab-header">
+      <div class="tab-header-inner">
         <button
           v-for="tab in tabs"
           :key="tab.key"
@@ -18,162 +11,131 @@
           @click="activeTab = tab.key"
         >
           {{ tab.label }}
-          <span v-if="tabCount(tab.key) > 0" class="tab-badge">{{ tabCount(tab.key) }}</span>
+          <span class="tab-badge">{{ gigs[tab.key].length }}</span>
         </button>
       </div>
     </div>
 
-    <!-- Content -->
+    <!-- ── Content ── -->
     <div class="content">
 
-      <!-- ── AWAITING ── -->
-      <div v-if="activeTab === 'awaiting'">
+      <!-- Page title -->
+      <h2 class="page-title">{{ tabTitle }}</h2>
+
+      <!-- ════ AWAITING TAB ════ -->
+      <template v-if="activeTab === 'awaiting'">
         <div v-if="gigs.awaiting.length === 0" class="empty-state">
-          <div class="empty-icon">📋</div>
+          <svg width="52" height="52" viewBox="0 0 52 52" fill="none" aria-hidden="true">
+            <circle cx="26" cy="26" r="24" stroke="#B5B5B5" stroke-width="2"/>
+            <path d="M18 26h16M26 18v16" stroke="#B5B5B5" stroke-width="2" stroke-linecap="round"/>
+          </svg>
           <p class="empty-title">No pending applications</p>
           <p class="empty-sub">Browse the Explore page to find gigs that match your skills.</p>
         </div>
 
-        <div v-for="gig in gigs.awaiting" :key="gig.id" class="card" :class="{ 'card-rejected': gig.status === 'rejected' }">
-          <div class="card-header">
-            <div class="card-meta-row">
-              <span :class="['tag', categoryTag(gig.category)]">{{ gig.category }}</span>
-              <span v-if="gig.status === 'pending'" class="badge badge-awaiting">Pending Review</span>
-              <span v-else-if="gig.status === 'rejected'" class="badge badge-rejected">Rejected</span>
+        <article v-for="gig in gigs.awaiting" :key="gig.id" class="card">
+          <!-- Dismiss X for rejected -->
+          <button
+            v-if="gig.status === 'rejected'"
+            class="card-dismiss"
+            title="Dismiss"
+            @click="openRemove(gig)"
+          >✕</button>
+
+          <!-- Card head -->
+          <div class="card-head">
+            <div class="card-info">
+              <span :class="['cat-tag', catClass(gig.category)]">{{ gig.category }}</span>
+              <h3 class="card-title">{{ gig.title }}</h3>
+              <div class="card-meta">
+                <span class="meta-item">Posted On: {{ gig.postedOn }}</span>
+                <span class="meta-item">
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1C5.24 1 3 3.24 3 6c0 3.75 5 9 5 9s5-5.25 5-9c0-2.76-2.24-5-5-5zm0 6.75A1.75 1.75 0 118 4.25a1.75 1.75 0 010 3.5z" fill="#6E6E6E"/></svg>
+                  {{ gig.location }}
+                </span>
+              </div>
             </div>
-            <h3 class="card-title">{{ gig.title }}</h3>
-            <div class="card-meta">
-              <span>📍 {{ gig.location }}</span>
-              <span>💰 {{ gig.pay }}</span>
-              <span>📅 {{ gig.date }}</span>
-            </div>
+            <button class="btn btn-secondary btn-sm" @click="showToast('View Listing Details — coming soon!')">View Listing Details</button>
           </div>
 
-          <!-- Lister info -->
-          <div class="lister-row">
-            <div class="avatar">{{ gig.lister.initials }}</div>
-            <div class="lister-info">
-              <span class="lister-name">{{ gig.lister.name }}</span>
-              <span class="lister-sub">Listed by</span>
-            </div>
+          <!-- Pending: Withdraw button -->
+          <div v-if="gig.status === 'pending'" class="card-body">
+            <button class="btn btn-danger-outline btn-sm" @click="openWithdraw(gig)">Withdraw</button>
           </div>
 
-          <!-- Rejected message -->
-          <div v-if="gig.status === 'rejected'" class="reject-note">
-            <span>Your application was not selected. This listing will be removed from your list in {{ gig.daysUntilRemoval }} days.</span>
+          <!-- Rejected: status + auto-remove -->
+          <div v-if="gig.status === 'rejected'" class="card-body card-body-row">
+            <span class="badge-rejected-pill">● Rejected</span>
+            <span class="auto-remove">Auto-remove in <strong>{{ gig.daysUntilRemoval }} days</strong></span>
           </div>
+        </article>
+      </template>
 
-          <!-- Applied note -->
-          <div v-if="gig.status === 'pending'" class="info-note">
-            Applied {{ gig.appliedDate }} · Waiting for the lister to review your application.
-          </div>
-
-          <div class="card-actions">
-            <button
-              v-if="gig.status === 'pending'"
-              class="btn btn-danger-outline btn-sm"
-              @click="openWithdraw(gig)"
-            >Withdraw Application</button>
-            <button
-              v-else-if="gig.status === 'rejected'"
-              class="btn btn-outline btn-sm"
-              @click="openRemove(gig)"
-            >Remove</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── ONGOING ── -->
-      <div v-if="activeTab === 'ongoing'">
+      <!-- ════ ONGOING TAB ════ -->
+      <template v-if="activeTab === 'ongoing'">
         <div v-if="gigs.ongoing.length === 0" class="empty-state">
-          <div class="empty-icon">🚀</div>
+          <svg width="52" height="52" viewBox="0 0 52 52" fill="none" aria-hidden="true">
+            <circle cx="26" cy="26" r="24" stroke="#B5B5B5" stroke-width="2"/>
+            <path d="M18 26h16M26 18v16" stroke="#B5B5B5" stroke-width="2" stroke-linecap="round"/>
+          </svg>
           <p class="empty-title">No ongoing gigs</p>
           <p class="empty-sub">Once a lister accepts your application, the gig will appear here.</p>
         </div>
 
-        <div v-for="gig in gigs.ongoing" :key="gig.id" class="card">
-          <div class="card-header">
-            <div class="card-meta-row">
-              <span :class="['tag', categoryTag(gig.category)]">{{ gig.category }}</span>
-              <span class="badge badge-ongoing">Ongoing</span>
+        <article v-for="gig in gigs.ongoing" :key="gig.id" class="card">
+          <div class="card-head">
+            <div class="card-info">
+              <span :class="['cat-tag', catClass(gig.category)]">{{ gig.category }}</span>
+              <h3 class="card-title">{{ gig.title }}</h3>
+              <div class="card-meta">
+                <span class="meta-item">Posted On: {{ gig.postedOn }}</span>
+                <span class="meta-item">
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1C5.24 1 3 3.24 3 6c0 3.75 5 9 5 9s5-5.25 5-9c0-2.76-2.24-5-5-5zm0 6.75A1.75 1.75 0 118 4.25a1.75 1.75 0 010 3.5z" fill="#6E6E6E"/></svg>
+                  {{ gig.location }}
+                </span>
+              </div>
             </div>
-            <h3 class="card-title">{{ gig.title }}</h3>
-            <div class="card-meta">
-              <span>📍 {{ gig.location }}</span>
-              <span>💰 {{ gig.pay }}</span>
-              <span>📅 {{ gig.date }}</span>
-            </div>
+            <button class="btn btn-secondary btn-sm" @click="showToast('View Listing Details — coming soon!')">View Listing Details</button>
           </div>
 
-          <!-- Lister info -->
-          <div class="lister-row">
-            <div class="avatar">{{ gig.lister.initials }}</div>
-            <div class="lister-info">
-              <span class="lister-name">{{ gig.lister.name }}</span>
-              <span class="lister-sub">Requested by · <span class="stars">{{ gig.lister.rating }}</span> ({{ gig.lister.gigsCount }} gigs)</span>
-            </div>
-            <button class="btn btn-outline btn-sm" @click="showToast('Profile view coming soon!')">View Profile</button>
+          <div class="card-body">
+            <span class="waiting-pill">Waiting for Lister Confirmation</span>
           </div>
+        </article>
+      </template>
 
-          <div class="info-note">
-            Both you and the lister must mark the gig as complete before it is finalised.
-          </div>
-
-          <div class="card-actions">
-            <button class="btn btn-primary btn-sm" @click="openMarkComplete(gig)">Mark as Completed</button>
-            <button class="btn btn-outline btn-sm" @click="showToast('Chat coming soon!')">Message Lister</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── COMPLETED ── -->
-      <div v-if="activeTab === 'completed'">
+      <!-- ════ COMPLETED TAB ════ -->
+      <template v-if="activeTab === 'completed'">
         <div v-if="gigs.completed.length === 0" class="empty-state">
-          <div class="empty-icon">🏆</div>
+          <svg width="52" height="52" viewBox="0 0 52 52" fill="none" aria-hidden="true">
+            <circle cx="26" cy="26" r="24" stroke="#B5B5B5" stroke-width="2"/>
+            <path d="M18 26h16M26 18v16" stroke="#B5B5B5" stroke-width="2" stroke-linecap="round"/>
+          </svg>
           <p class="empty-title">No completed gigs yet</p>
-          <p class="empty-sub">Complete your first gig to start building your reputation and earning points!</p>
+          <p class="empty-sub">Complete your first gig to start building your reputation!</p>
         </div>
 
-        <div v-for="gig in gigs.completed" :key="gig.id" class="card card-done">
-          <div class="card-header">
-            <div class="card-meta-row">
-              <span :class="['tag', categoryTag(gig.category)]">{{ gig.category }}</span>
-              <span class="badge badge-completed">Completed</span>
+        <article v-for="gig in gigs.completed" :key="gig.id" class="card">
+          <div class="card-head">
+            <div class="card-info">
+              <span :class="['cat-tag', catClass(gig.category)]">{{ gig.category }}</span>
+              <h3 class="card-title">{{ gig.title }}</h3>
+              <div class="card-meta">
+                <span class="meta-item">Posted On: {{ gig.postedOn }}</span>
+                <span class="meta-item">
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1C5.24 1 3 3.24 3 6c0 3.75 5 9 5 9s5-5.25 5-9c0-2.76-2.24-5-5-5zm0 6.75A1.75 1.75 0 118 4.25a1.75 1.75 0 010 3.5z" fill="#6E6E6E"/></svg>
+                  {{ gig.location }}
+                </span>
+              </div>
             </div>
-            <h3 class="card-title">{{ gig.title }}</h3>
-            <div class="card-meta">
-              <span>📍 {{ gig.location }}</span>
-              <span>💰 {{ gig.pay }}</span>
-              <span>📅 {{ gig.date }}</span>
-            </div>
+            <button class="btn btn-secondary btn-sm" @click="showToast('View Listing Details — coming soon!')">View Listing Details</button>
           </div>
-
-          <!-- Lister info -->
-          <div class="lister-row">
-            <div class="avatar avatar-done">{{ gig.lister.initials }}</div>
-            <div class="lister-info">
-              <span class="lister-name">{{ gig.lister.name }}</span>
-              <span class="lister-sub">Lister</span>
-            </div>
-          </div>
-
-          <!-- Rating received -->
-          <div class="rating-row">
-            <div class="rating-block">
-              <span class="rating-label">Rating received</span>
-              <span class="stars">{{ gig.ratingReceived }}</span>
-            </div>
-            <div class="points-block">
-              <span class="points-label">Points earned</span>
-              <span class="points-value">+{{ gig.pointsEarned }} pts</span>
-            </div>
-          </div>
-        </div>
-      </div>
+        </article>
+      </template>
 
     </div><!-- /content -->
 
-    <!-- Toast -->
+    <!-- Toast notification -->
     <div v-if="toast.show" class="toast">{{ toast.message }}</div>
 
     <!-- Confirm Modal -->
@@ -205,121 +167,83 @@ export default {
         { key: 'ongoing',   label: 'Ongoing' },
         { key: 'completed', label: 'Completed' },
       ],
-
       toast: { show: false, message: '' },
-      modal: {
-        show: false, icon: '', title: '', message: '',
-        confirmLabel: 'Confirm', confirmClass: 'btn-primary',
-        _fn: null,
-      },
+      modal: { show: false, icon: '', title: '', message: '', confirmLabel: 'Confirm', confirmClass: 'btn-primary', _fn: null },
 
       gigs: {
         awaiting: [
           {
             id: 101,
             status: 'pending',
-            category: 'Education',
-            title: 'Help with CS2040S problem sets (Week 8–10)',
-            location: 'COM1 Study Area',
-            pay: '$30 / session',
-            date: 'Flexible this week',
-            appliedDate: '3 days ago',
-            lister: { initials: 'TW', name: 'Tan Wei Liang' },
+            category: 'Survival',
+            title: 'Print and collect documents from UTown Starbucks',
+            location: 'University Town',
+            postedOn: '29 February 2026',
           },
           {
             id: 102,
-            status: 'pending',
-            category: 'Buddy',
-            title: 'Gym buddy for morning sessions at UTown Rec',
-            location: 'UTown Recreation Centre',
-            pay: '$0 (mutual)',
-            date: 'Mon / Wed / Fri mornings',
-            appliedDate: '1 day ago',
-            lister: { initials: 'SR', name: 'Siti Rahayu' },
-          },
-          {
-            id: 103,
             status: 'rejected',
             category: 'Survival',
-            title: 'Urgent: Return library books before fine kicks in',
-            location: 'Central Library',
-            pay: '$10 flat',
-            date: 'ASAP',
-            appliedDate: '5 days ago',
-            daysUntilRemoval: 2,
-            lister: { initials: 'LJ', name: 'Lee Jun Hao' },
+            title: 'Print and collect documents from UTown Starbucks',
+            location: 'University Town',
+            postedOn: '29 February 2026',
+            daysUntilRemoval: 28,
           },
         ],
         ongoing: [
           {
             id: 201,
-            category: 'Education',
-            title: 'Weekly tutoring sessions for MA1521',
-            location: 'Science Library, Level 2',
-            pay: '$25 / hr',
-            date: 'Every Saturday 2–4 pm',
-            lister: {
-              initials: 'PY',
-              name: 'Priya Nair',
-              rating: '★★★★★',
-              gigsCount: 12,
-            },
+            category: 'Survival',
+            title: 'Print and collect documents from UTown Starbucks',
+            location: 'University Town',
+            postedOn: '29 February 2026',
           },
         ],
         completed: [
           {
             id: 301,
             category: 'Survival',
-            title: 'Queue for Add/Drop tutorial slots (CS3216)',
-            location: 'Online / NUSMods',
-            pay: '$15',
-            date: '14 Jan 2026',
-            lister: { initials: 'BK', name: 'Bryan Koh' },
-            ratingReceived: '★★★★★',
-            pointsEarned: 150,
-          },
-          {
-            id: 302,
-            category: 'Buddy',
-            title: 'Accompaniment to medical appointment at UHC',
-            location: 'University Health Centre',
-            pay: '$20',
-            date: '2 Feb 2026',
-            lister: { initials: 'AC', name: 'Aisha Chong' },
-            ratingReceived: '★★★★☆',
-            pointsEarned: 120,
+            title: 'Print and collect documents from UTown Starbucks',
+            location: 'University Town',
+            postedOn: '29 February 2026',
           },
         ],
       },
     }
   },
 
-  methods: {
-    tabCount(key) {
-      return this.gigs[key]?.length ?? 0
-    },
-
-    categoryTag(cat) {
+  computed: {
+    tabTitle() {
       return {
-        Education: 'tag-education',
-        Buddy:     'tag-buddy',
-        Survival:  'tag-survival',
-      }[cat] ?? 'tag-gray'
+        awaiting:  'Applied & Awaiting Decision',
+        ongoing:   'Currently Helping With',
+        completed: 'Completed Gigs',
+      }[this.activeTab]
+    },
+  },
+
+  methods: {
+    catClass(category) {
+      return { Education: 'tag-education', Buddy: 'tag-buddy', Survival: 'tag-survival' }[category] ?? 'tag-gray'
     },
 
     showToast(msg) {
       this.toast = { show: true, message: msg }
-      setTimeout(() => { this.toast.show = false }, 2200)
+      clearTimeout(this._toastTimer)
+      this._toastTimer = setTimeout(() => { this.toast.show = false }, 2200)
+    },
+
+    handleConfirm() {
+      this.modal._fn?.()
+      this.modal.show = false
     },
 
     openWithdraw(gig) {
       this.modal = {
-        show: true,
-        icon: '↩️',
+        show: true, icon: '↩️',
         title: 'Withdraw application?',
         message: `You will lose your spot for "${gig.title}". You can re-apply later if the listing is still open.`,
-        confirmLabel: 'Yes, withdraw',
-        confirmClass: 'btn-danger',
+        confirmLabel: 'Yes, withdraw', confirmClass: 'btn-danger',
         _fn: () => {
           this.gigs.awaiting = this.gigs.awaiting.filter(g => g.id !== gig.id)
           this.showToast('Application withdrawn.')
@@ -329,45 +253,15 @@ export default {
 
     openRemove(gig) {
       this.modal = {
-        show: true,
-        icon: '🗑️',
+        show: true, icon: '🗑️',
         title: 'Remove from list?',
         message: `"${gig.title}" will be removed from your gig list.`,
-        confirmLabel: 'Remove',
-        confirmClass: 'btn-danger',
+        confirmLabel: 'Remove', confirmClass: 'btn-danger',
         _fn: () => {
           this.gigs.awaiting = this.gigs.awaiting.filter(g => g.id !== gig.id)
           this.showToast('Removed from your list.')
         },
       }
-    },
-
-    openMarkComplete(gig) {
-      this.modal = {
-        show: true,
-        icon: '✅',
-        title: 'Mark gig as completed?',
-        message: `Confirm that you have finished "${gig.title}". The lister will also need to confirm before points are awarded.`,
-        confirmLabel: 'Yes, I\'m done',
-        confirmClass: 'btn-primary',
-        _fn: () => {
-          const done = this.gigs.ongoing.find(g => g.id === gig.id)
-          this.gigs.ongoing = this.gigs.ongoing.filter(g => g.id !== gig.id)
-          if (done) {
-            this.gigs.completed.unshift({
-              ...done,
-              ratingReceived: '—',
-              pointsEarned: 0,
-            })
-          }
-          this.showToast('Marked as complete! Waiting for lister confirmation.')
-        },
-      }
-    },
-
-    handleConfirm() {
-      this.modal._fn?.()
-      this.modal.show = false
     },
   },
 }
@@ -375,116 +269,182 @@ export default {
 
 <style scoped>
 /* ── Layout ── */
-.page { background: var(--bg, #F4F6F9); min-height: 100vh; }
+.view { display: flex; flex-direction: column; min-height: calc(100vh - 64px); }
 
-.page-header {
-  background: var(--primary, #003D7C);
-  padding: 32px max(2rem, 7vw);
+/* ── Tab Header ── */
+.tab-header {
+  background: #fff;
+  border-bottom: 1px solid #E5E9EF;
 }
-.header-inner { max-width: 860px; margin: 0 auto; }
-.page-title   { color: #fff; font-size: 26px; font-weight: 800; margin: 0 0 6px; }
-.page-subtitle { color: rgba(255,255,255,0.7); font-size: 14px; margin: 0; }
-
-/* ── Tabs ── */
-.tab-bar  { background: #fff; border-bottom: 1px solid #E5E7EB; position: sticky; top: 60px; z-index: 50; }
-.tab-inner { max-width: 860px; margin: 0 auto; display: flex; gap: 4px; padding: 0 max(2rem, 7vw); }
-
+.tab-header-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  gap: 4px;
+}
 .tab-btn {
-  position: relative;
-  padding: 14px 20px 12px;
-  font-size: 14px; font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 18px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
   color: #6E6E6E;
-  background: none; border: none; cursor: pointer;
+  background: none;
+  border: none;
   border-bottom: 3px solid transparent;
-  transition: color .15s, border-color .15s;
-  display: flex; align-items: center; gap: 7px;
+  margin-bottom: -1px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
 }
-.tab-btn:hover { color: #1D1D1D; }
-.tab-btn.active { color: var(--primary, #003D7C); border-bottom-color: var(--primary, #003D7C); }
-
+.tab-btn:hover:not(.active) { color: #1D1D1D; }
+.tab-btn.active { color: #003D7C; font-weight: 700; border-bottom-color: #003D7C; }
 .tab-badge {
-  background: var(--secondary, #EF7C00); color: #fff;
-  font-size: 11px; font-weight: 700;
-  padding: 1px 6px; border-radius: 20px;
-  line-height: 16px;
+  background: #B5B5B5;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 20px;
+  min-width: 20px;
+  text-align: center;
+  transition: background 0.15s;
 }
+.tab-btn.active .tab-badge { background: #003D7C; }
 
 /* ── Content ── */
-.content { max-width: 860px; margin: 0 auto; padding: 28px max(2rem, 7vw) 60px; display: flex; flex-direction: column; gap: 18px; }
-
-/* ── Cards ── */
-.card {
-  background: #fff;
-  border: 1px solid #E5E7EB;
-  border-radius: 12px;
-  padding: 22px 24px;
-  display: flex; flex-direction: column; gap: 14px;
-  transition: box-shadow .15s;
+.content {
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 28px 0;
 }
-.card:hover { box-shadow: 0 4px 18px rgba(0,0,0,0.08); }
-.card-done { opacity: 0.72; }
-.card-rejected { border-left: 4px solid var(--error, #DC3545); }
-
-.card-header { display: flex; flex-direction: column; gap: 6px; }
-.card-meta-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-
-.card-title { font-size: 16px; font-weight: 700; color: #1D1D1D; margin: 0; }
-.card-meta  { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: #6E6E6E; }
-
-/* ── Lister row ── */
-.lister-row {
-  display: flex; align-items: center; gap: 12px;
-  background: #F8F9FB; border-radius: 10px; padding: 12px 14px;
-}
-.avatar {
-  width: 36px; height: 36px; border-radius: 50%;
-  background: var(--primary, #003D7C); color: #fff;
-  font-size: 12px; font-weight: 700;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.avatar-done { background: #9CA3AF; }
-.lister-info { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.lister-name { font-size: 14px; font-weight: 600; color: #1D1D1D; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.lister-sub  { font-size: 12px; color: #6E6E6E; }
-
-/* ── Reject / pending notes ── */
-.reject-note {
-  background: #FFF1F1; border: 1px solid #FECACA;
-  border-radius: 8px; padding: 10px 14px;
-  font-size: 13px; color: #B91C1C;
-}
-
-/* ── Rating row ── */
-.rating-row {
-  display: flex; gap: 24px; flex-wrap: wrap;
-  background: #F8F9FB; border-radius: 10px; padding: 12px 16px;
-}
-.rating-block, .points-block { display: flex; flex-direction: column; gap: 3px; }
-.rating-label, .points-label { font-size: 11px; color: #9CA3AF; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
-.points-value { font-size: 16px; font-weight: 800; color: var(--secondary, #EF7C00); }
-
-/* ── Actions ── */
-.card-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.page-title { font-size: 20px; font-weight: 700; color: #003D7C; margin-bottom: 22px; }
 
 /* ── Empty state ── */
-.empty-state { text-align: center; padding: 64px 24px; }
-.empty-icon  { font-size: 48px; margin-bottom: 16px; }
-.empty-title { font-size: 17px; font-weight: 700; color: #1D1D1D; margin: 0 0 8px; }
-.empty-sub   { font-size: 14px; color: #6E6E6E; margin: 0; }
+.empty-state { text-align: center; padding: 64px 20px; color: #8C8C8C; }
+.empty-state svg { display: block; margin: 0 auto 16px; }
+.empty-title { font-size: 16px; font-weight: 600; color: #4F4F4F; margin-bottom: 6px; }
+.empty-sub   { font-size: 13px; }
+
+/* ── Card ── */
+.card {
+  position: relative;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #E5E9EF;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+  margin-bottom: 20px;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+.card:hover { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.11); }
+
+/* Dismiss X button (rejected cards) */
+.card-dismiss {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  border: 1px solid #D1D5DB;
+  background: #F9FAFB;
+  color: #6B7280;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, color 0.15s;
+  z-index: 1;
+}
+.card-dismiss:hover { background: #FEE2E2; color: #DC2626; border-color: #FCA5A5; }
+
+.card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 18px 20px 14px;
+  gap: 16px;
+}
+/* Push content away from the dismiss X on rejected cards */
+.card:has(.card-dismiss) .card-head { padding-right: 52px; }
+
+.card-info { flex: 1; }
+.card-title { font-size: 16px; font-weight: 700; color: #1D1D1D; margin: 4px 0 6px; line-height: 24px; }
+.card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 13px;
+  color: #6E6E6E;
+}
+.meta-item { display: inline-flex; align-items: center; gap: 4px; }
+
+/* ── Card body (below head) ── */
+.card-body {
+  padding: 0 20px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.card-body-row { flex-direction: row; }
+
+/* ── Withdraw btn lives in card-body ── */
+
+/* ── Rejected status ── */
+.badge-rejected-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #DC2626;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 5px 14px;
+  border-radius: 999px;
+}
+.auto-remove {
+  font-size: 13px;
+  color: #6B7280;
+}
+.auto-remove strong { color: #1D1D1D; }
+
+/* ── Waiting pill (ongoing) ── */
+.waiting-pill {
+  display: inline-flex;
+  align-items: center;
+  background: #F3F4F6;
+  color: #2D6A6A;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 16px;
+  border-radius: 999px;
+  border: 1px solid #E5E7EB;
+}
 
 /* ── Toast ── */
 .toast {
-  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
-  background: #1D1D1D; color: #fff;
-  padding: 12px 24px; border-radius: 40px;
-  font-size: 14px; font-weight: 500;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1D1D1D;
+  color: #fff;
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
   z-index: 500;
-  animation: slide-up .2s ease;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  animation: slide-up 0.2s ease;
 }
 @keyframes slide-up {
-  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
-  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+  from { transform: translateX(-50%) translateY(10px); opacity: 0; }
+  to   { transform: translateX(-50%) translateY(0);   opacity: 1; }
+}
+
+@media (max-width: 768px) {
+  .card-head { flex-direction: column; }
+  .card:has(.card-dismiss) .card-head { padding-right: 20px; }
 }
 </style>
