@@ -23,6 +23,7 @@
             <button class="navigationArrow" @click="nextMonth">></button>
         </div>
 
+        <div class="tableContainer">
         <div class="leaderboardTable">
             <div class="tableHeaders">
                 <span class="headerRank">Rank</span>
@@ -31,14 +32,28 @@
             </div>
         </div>
 
-        <div v-if="rankedUsers.length === 0" class="noWinnerState">
+                <div class="ScrollableRows">
+                    <div v-if="rankedUser.length === 0" class="noWinnerState">
             No winners in current month....
         </div>
 
-        <div class="currentUserBar">
+                    <div v-for="(user, index) in rankedUser" 
+                        :key="user.rank"
+                        class="leaderboardTableRow" 
+                        :class="{ isCurrentUser: user.isCurrentUser, isEvenRank: index % 2 == 0 }">
+                        <span class="colRank">{{ user.rank }}</span>
+                        <span class="colName">
+                            <span class="username">{{ user.isCurrentUser ? 'You' : user.username }}</span>
+                        </span>
+                        <span class="colPoints">{{ user.totalPoints }}</span>
+                    </div>
+                </div>
+                <div v-if="!currentUserEntry" class="currentUserBar">
             <span class="myRank">{{ currentUserRank }}</span>
             <span class="myName">{{ currentUsername }}</span>
             <span class="myPoints">{{ currentUserPoints }}</span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -46,6 +61,8 @@
 
 <script>
 import PageHeader from "./PageHeader.vue";
+
+const MONTH = ["May", "June", "July"];
 
 export default {
     name: "Leaderboard",
@@ -206,12 +223,15 @@ export default {
         text-align: center;
         font-size: 18px;
         color: black;
+        height: 200px;
     }
 
     .currentUserBar {
         background-color: #EF7C00;
         justify-content: space-between;
         padding: 10px;
+        display: flex;
+        flex-shrink: 0;
     }
 
     .myRank, .myName, .myPoints {
@@ -220,9 +240,20 @@ export default {
         font-weight: bold;
     }
 
+    .tableContainer {
+        display: flex;
+        flex-direction: column;
+        max-height: 500px;
+    }
+
     .leaderboardTable {
         padding: 10px;
         background-color: #003D7C;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        overflow: hidden;
+        min-height: 0;
     }
 
     .tableHeaders {
@@ -235,6 +266,34 @@ export default {
     .headerRank, .headerName, .headerPoints {
         color: white;
         font-size: 18px;
+        padding: 10px;
     }
 
+    .leaderboardTableRow {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        background-color: white;
+        justify-content: space-between;
+    }
+
+    .ScrollableRows {
+        overflow-y: auto;
+        flex: 1;
+        min-height: 0;
+    }
+
+    .leaderboardTableRow.isCurrentUser {
+        background-color: #EF7C00;
+    }
+
+    .leaderboardTableRow.isEvenRank {
+        background-color: #E0E0E0;
+    }
+
+    .colRank, .username, .colPoints {
+        font-size: 16px;
+        padding: 10px;
+        color: black;
+    }
 </style>
