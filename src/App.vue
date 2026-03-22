@@ -14,11 +14,11 @@
 
 <script>
 import TheFooter from '@/components/TheFooter.vue'
-import TheHeader from '@/components/TheHeader.vue';
+import TheNavbar from '@/components/TheNavbar.vue'
 
 export default {
   name: 'App',
-  components: { TheFooter, TheHeader },
+  components: { TheFooter, TheNavbar },
 }
 </script>
 
