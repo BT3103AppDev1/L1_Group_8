@@ -28,19 +28,6 @@ async function getOnboardingComplete(uid) {
 export function markOnboardingComplete() {
     _cachedOnboardingComplete = true;
 }
-import SignIn from '@/views/SignIn.vue'
-import SignUp from '@/views/SignUp.vue'
-import EmailVerification from '@/views/EmailVerification.vue'
-import ForgotPassword from '@/views/ForgotPassword.vue'
-import ResetPassword from '@/views/ResetPassword.vue'
-import ConsentForm from '@/views/ConsentForm.vue'
-import Onboarding from '@/views/Onboarding.vue'
-import Explore from '@/views/ExploreView.vue'
-import AddListing from '@/views/AddListing.vue'
-import MyListingsView from '@/views/MyListingsView.vue'
-import MyGigsView from '@/views/MyGigsView.vue'
-import Leaderboard from '@/views/Leaderboard.vue'
-import Profile from '@/views/Profile.vue'
 
 const routes = [
     {
@@ -52,128 +39,86 @@ const routes = [
     {
         path: '/sign-in',
         name: 'SignIn',
-        component: SignIn,
-        meta: {
-            showHeader: false,
-            requiresAuth: false
-        }
+        component: () => import('@/views/SignIn.vue'),
+        meta: { showHeader: false, requiresAuth: false }
     },
     {
         path: '/sign-up',
         name: 'SignUp',
-        component: SignUp,
-        meta: {
-            showHeader: false,
-            requiresAuth: false
-        }
+        component: () => import('@/views/SignUp.vue'),
+        meta: { showHeader: false, requiresAuth: false }
     },
     {
         path: '/email-verification',
         name: 'EmailVerification',
-        component: EmailVerification,
-        meta: {
-            showHeader: false,
-            requiresAuth: true
-        }
+        component: () => import('@/views/EmailVerification.vue'),
+        meta: { showHeader: false, requiresAuth: true }
     },
     {
         path: '/forgot-password',
         name: 'ForgotPassword',
-        component: ForgotPassword,
-        meta: {
-            showHeader: false,
-            requiresAuth: false
-        }
+        component: () => import('@/views/ForgotPassword.vue'),
+        meta: { showHeader: false, requiresAuth: false }
     },
     {
         path: '/reset-password',
         name: 'ResetPassword',
-        component: ResetPassword,
-        meta: {
-            showHeader: false,
-            requiresAuth: false
-        }
+        component: () => import('@/views/ResetPassword.vue'),
+        meta: { showHeader: false, requiresAuth: false }
     },
     {
         path: '/consent',
         name: 'ConsentForm',
-        component: ConsentForm,
-        meta: {
-            showHeader: false,
-            requiresAuth: true
-        }
+        component: () => import('@/views/ConsentForm.vue'),
+        meta: { showHeader: false, requiresAuth: true }
     },
     {
         path: '/onboarding',
         name: 'Onboarding',
-        component: Onboarding,
-        meta: {
-            showHeader: false,
-            requiresAuth: true
-        }
+        component: () => import('@/views/Onboarding.vue'),
+        meta: { showHeader: false, requiresAuth: true }
     },
     {
         path: '/',
         name: 'Explore',
-        component: Explore,
-        meta: {
-            showHeader: true,
-            requiresAuth: true
-        }
+        component: () => import('@/views/Explore.vue'),
+        meta: { showHeader: true, requiresAuth: true }
     },
     {
         path: '/add-listing',
         name: 'AddListing',
-        component: AddListing,
-        meta: {
-            showHeader: true,
-            requiresAuth: true
-        }
+        component: () => import('@/views/AddListing.vue'),
+        meta: { showHeader: true, requiresAuth: true }
     },
     {
         path: '/my-listings',
         name: 'MyListings',
-        component: MyListingsView,
-        meta: {
-            showHeader: true,
-            requiresAuth: true
-        }
+        component: () => import('@/views/MyListingsView.vue'),
+        meta: { showHeader: true, requiresAuth: true }
     },
     {
         path: '/my-gigs',
         name: 'MyGigs',
-        component: MyGigsView,
-        meta: {
-            showHeader: true,
-            requiresAuth: true
-        }
+        component: () => import('@/views/MyGigsView.vue'),
+        meta: { showHeader: true, requiresAuth: true }
     },
     {
         path: '/leaderboard',
         name: 'Leaderboard',
-        component: Leaderboard,
-        meta: {
-            showHeader: true,
-            requiresAuth: true
-        }
+        component: () => import('@/views/Leaderboard.vue'),
+        meta: { showHeader: true, requiresAuth: true }
     },
     {
         path: '/my-profile',
         name: 'PrivateProfile',
-        component: Profile,
-        meta: {
-            showHeader: true,
-            requiresAuth: true
-        }
+        component: () => import('@/views/Profile.vue'),
+        meta: { showHeader: true, requiresAuth: true }
     },
     {
         path: '/users/:uid',
         name: 'PublicProfile',
-        component: Profile,
-        meta: {
-            showHeader: true,
-            requiresAuth: true
-        }
+        component: () => import('@/views/Profile.vue'),
+        meta: { showHeader: true, requiresAuth: true }
     },
     {
         path: '/:pathMatch(.*)*',
@@ -207,10 +152,12 @@ router.beforeEach(async (to) => {
 
     try {
         const onboardingComplete = await getOnboardingComplete(currentUser.uid);
+
         if (!onboardingComplete) {
             if (to.name === 'Onboarding') return true;
             return { name: 'Onboarding' };
         }
+
         if (!to.meta.requiresAuth || to.name === 'Onboarding') {
             return { name: 'Explore' };
         }
