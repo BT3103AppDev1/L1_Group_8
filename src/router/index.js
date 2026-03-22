@@ -13,7 +13,6 @@ import MyListingsView from '@/views/MyListingsView.vue'
 import MyGigsView from '@/views/MyGigsView.vue'
 import Leaderboard from '@/views/Leaderboard.vue'
 import Profile from '@/views/Profile.vue'
-import ExploreView    from '@/views/ExploreView.vue'
 
 const routes = [
     {
@@ -150,6 +149,10 @@ const routes = [
     }
 ]
 
+const router = createRouter({
+    history: createWebHistory(),
+    routes
+})  
 
 // Navigation guard to check for authentication on routes that require it
 router.beforeEach(async (to) => {
