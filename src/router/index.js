@@ -7,7 +7,7 @@ import ForgotPassword from '@/views/ForgotPassword.vue'
 import ResetPassword from '@/views/ResetPassword.vue'
 import ConsentForm from '@/views/ConsentForm.vue'
 import Onboarding from '@/views/Onboarding.vue'
-import Explore from '@/views/ExploreView.vue'
+import ExploreView from '@/views/ExploreView.vue'
 import AddListing from '@/views/AddListing.vue'
 import MyListingsView from '@/views/MyListingsView.vue'
 import MyGigsView from '@/views/MyGigsView.vue'
@@ -81,7 +81,7 @@ const routes = [
     {
         path: '/',
         name: 'Explore',
-        component: Explore,
+        component: ExploreView,
         meta: {
             showHeader: true,
             requiresAuth: true
