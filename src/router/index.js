@@ -4,12 +4,9 @@ import { getDoc, doc } from 'firebase/firestore'
 import { onAuthStateChanged } from 'firebase/auth'
 import { db, auth } from '@/firebase.js'
 
-// ── Onboarding status cache ────────────────────────────────────────────────────
-// Avoids a Firestore read on every navigation after the first one.
 let _cachedUid = null;
 let _cachedOnboardingComplete = null;
 
-// Clear cache when the user signs out or switches account
 onAuthStateChanged(auth, (user) => {
     if (!user || user.uid !== _cachedUid) {
         _cachedUid = null;
@@ -28,11 +25,9 @@ async function getOnboardingComplete(uid) {
     return value;
 }
 
-// Call this after onboarding completes so the guard doesn't redirect back
 export function markOnboardingComplete() {
     _cachedOnboardingComplete = true;
 }
-// ──────────────────────────────────────────────────────────────────────────────
 
 const routes = [
     {
@@ -140,44 +135,33 @@ const router = createRouter({
 router.beforeEach(async (to) => {
     const user = await getCurrentUser();
 
-    // Not logged in
     if (!user) {
         if (to.meta.requiresAuth) return { name: 'SignIn' };
         return true;
     }
 
-    // Logged in but email not verified — reload from server first to get latest status
     if (!user.emailVerified) {
-        try { await user.reload(); } catch (e) { console.warn('Router guard: reload failed', e); }
-        // Use auth.currentUser after reload as the local `user` object is stale
+        try { await user.reload(); } catch { /* ignore */ }
         if (!auth.currentUser?.emailVerified) {
-            // Allow EmailVerification and ActionHandler through — ActionHandler must
-            // run applyActionCode before emailVerified can become true
             if (to.name === 'EmailVerification' || to.name === 'ActionHandler') return true;
             return { name: 'EmailVerification' };
         }
     }
 
-    // Use the refreshed user object from this point on
     const currentUser = auth.currentUser || user;
 
-    // Check onboarding status (cached after first read)
     try {
         const onboardingComplete = await getOnboardingComplete(currentUser.uid);
 
         if (!onboardingComplete) {
-            // Must complete onboarding — redirect away from everywhere except Onboarding
             if (to.name === 'Onboarding') return true;
             return { name: 'Onboarding' };
         }
 
-        // Onboarding done — redirect away from public pages and setup pages
         if (!to.meta.requiresAuth || to.name === 'Onboarding') {
             return { name: 'Explore' };
         }
-    } catch (err) {
-        console.error('Router guard: Firestore error', err);
-        // On Firestore failure, treat as not onboarded — safer than granting full access
+    } catch {
         if (to.name === 'Onboarding') return true;
         return { name: 'Onboarding' };
     }
