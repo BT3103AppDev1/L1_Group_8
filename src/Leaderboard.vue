@@ -56,11 +56,35 @@ export default {
     data() {
         return {
             viewReward: false,
-            currentMonth: "July",
-            currentUserRank: 10,
-            currentUsername: "John Doe",
-            currentUserPoints: 1500,
-            rankedUsers: []
+            currentMonth: "June",
+
+            mockData: {
+                "July": [
+                    { rank: 1, username: "Alice", totalPoints: 3000, isCurrentUser: false },
+                    { rank: 2, username: "Bob", totalPoints: 2500, isCurrentUser: false },
+                    { rank: 3, username: "Charlie", totalPoints: 2000, isCurrentUser: false },
+                    { rank: 4, username: "David", totalPoints: 1800, isCurrentUser: false },
+                    { rank: 5, username: "Eve", totalPoints: 1700, isCurrentUser: false },
+                    { rank: 6, username: "Frank", totalPoints: 1600, isCurrentUser: false },
+                    { rank: 7, username: "Grace", totalPoints: 1550, isCurrentUser: false },
+                    { rank: 8, username: "Heidi", totalPoints: 1520, isCurrentUser: false },
+                    { rank: 9, username: "Ivan", totalPoints: 1510, isCurrentUser: false },
+                    { rank: 10, username: "John Doe", totalPoints: 1500, isCurrentUser: true }
+                ],
+                "June": [
+                    { rank: 1, username: "Alice", totalPoints: 2800, isCurrentUser: false },
+                    { rank: 2, username: "Bob", totalPoints: 2600, isCurrentUser: false },
+                    { rank: 3, username: "Charlie", totalPoints: 2200, isCurrentUser: false },
+                    { rank: 4, username: "David", totalPoints: 1900, isCurrentUser: false },
+                    { rank: 5, username: "Eve", totalPoints: 1800, isCurrentUser: false },
+                    { rank: 6, username: "Frank", totalPoints: 1700, isCurrentUser: false },
+                    { rank: 7, username: "Grace", totalPoints: 1600, isCurrentUser: false },
+                    { rank: 8, username: "Heidi", totalPoints: 1550, isCurrentUser: false },
+                    { rank: 9, username:"Ivan", totalPoints :1520 ,isCurrentUser:false},
+                    {rank :10 ,username:"John Doe", totalPoints: 1500, isCurrentUser: true}
+                ], 
+                "May": []
+            }
         }
     },
 }
