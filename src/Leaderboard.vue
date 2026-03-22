@@ -104,6 +104,44 @@ export default {
             }
         }
     },
+
+    computed: {
+        rankedUser() {
+            return this.mockData[this.currentMonth] || [];
+        },
+
+        currentUserEntry() {
+            return this.rankedUser.find(user => user.isCurrentUser) || null;
+        },
+
+        currentUserRank() {
+            return this.currentUserEntry ? this.currentUserEntry.rank : "N/A";
+        }, 
+
+        currentUsername() {
+            return this.currentUserEntry?.username || "N/A";
+        },
+
+        currentUserPoints() {
+            return this.currentUserEntry?.totalPoints || 0;
+        }
+    },
+
+    methods: {
+        previousMonth() {
+            const currentIndex = MONTH.indexOf(this.currentMonth);
+            if (currentIndex > 0) {
+                this.currentMonth = MONTH[currentIndex - 1];
+            }
+        },
+
+        nextMonth() {
+            const currentIndex = MONTH.indexOf(this.currentMonth);
+            if (currentIndex < MONTH.length - 1) {
+                this.currentMonth = MONTH[currentIndex + 1];
+            }
+        }
+    }
 }
 </script>
 
