@@ -1,9 +1,16 @@
 <template>
-    <div> Onboarding </div>
+    <PublicPageLayout>
+        
+    </PublicPageLayout>
 </template>
 
 <script>
+import PublicPageLayout from '@/components/PublicPageLayout.vue';
+
 export default {
-    name: 'Onboarding'
+    name: 'Onboarding',
+    components: {
+        PublicPageLayout,
+    },
 }
 </script>
