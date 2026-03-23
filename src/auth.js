@@ -1,13 +1,21 @@
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase.js';
 
+let currentUser = auth.currentUser;
+const listeners = [];
+
+auth.onAuthStateChanged((user) => {
+  currentUser = user;
+  listeners.forEach(listener => listener(user));
+});
+
 function getCurrentUser() {
-  return new Promise((resolve, reject) => {
-    const unsubscribe = onAuthStateChanged(auth, user => {
-      unsubscribe();
-      resolve(user);
-    }, reject);
-  });
+  return currentUser;
 }
 
-export { getCurrentUser };
+function onAuthUserChanged(callback) {
+  listeners.push(callback);
+  callback(currentUser); 
+}
+
+export { getCurrentUser, onAuthUserChanged };

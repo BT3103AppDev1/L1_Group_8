@@ -14,11 +14,11 @@
 </template>
 
 <script>
-import TheFooter from '@/components/TheFooter.vue'
+import TheFooter from '@/components/TheFooter.vue';
 import TheHeader from './components/TheHeader.vue';
-import { onAuthStateChanged } from 'firebase/auth';
-import { db, auth } from '@/firebase.js';
-import { doc } from 'firebase/firestore';
+import { onAuthUserChanged } from './auth';
+import { db } from '@/firebase.js';
+import { doc, onSnapshot } from 'firebase/firestore';
 import '@/assets/main.css';
 
 export default {
@@ -32,16 +32,16 @@ export default {
   data() {
     return {
       profilePicUrl: null,
-
-      // store unsubscibe functions
-      _authUnsubscribe: null,
+      user: getCurrentUser(),
       _firestoreUnsubscribe: null,
     }
   },
 
   created() {
+
     // Listen for auth state changes
-    this._authUnsubscribe = onAuthStateChanged(auth, async (user) => {
+    onAuthUserChanged((user) => {
+      this.user = user;
       // Unsubscribe from previous Firestore listener if it exists
       if (this._firestoreUnsubscribe) {
         this._firestoreUnsubscribe();
@@ -52,7 +52,7 @@ export default {
         // User is signed in
 
         /* // TODO: remove comment when auth is available
-        const userDocRef = doc(db, 'users', user.uid); */
+        const userDocRef = doc(db, "users", user.uid); */
 
         // Simulate user ID for testing without auth
         const userDocRef = doc(db, "users", "mockUserId");
@@ -61,6 +61,8 @@ export default {
           if (doc.exists) {
             const data = doc.data();
             this.profilePicUrl = data.profilePicUrl || null;
+          } else {
+            this.profilePicUrl = null;
           }
         });
       } else {
@@ -71,10 +73,7 @@ export default {
   },
 
   beforeUnmount() {
-    // Clean up listeners
-    if (this._authUnsubscribe) {
-      this._authUnsubscribe();
-    }
+    // Clean up listener
     if (this._firestoreUnsubscribe) {
       this._firestoreUnsubscribe();
     }
