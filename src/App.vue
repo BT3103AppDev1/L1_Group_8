@@ -32,7 +32,7 @@ export default {
   data() {
     return {
       profilePicUrl: null,
-      user: getCurrentUser(),
+      user: null,
       _firestoreUnsubscribe: null,
     }
   },
