@@ -84,7 +84,7 @@
                 <button v-if="!isLoadingAccept" class="btn btn-secondary" @click="handleAccept">
                     Accept
                 </button>
-                <VueSpinner v-else size="30" color="var(--secondary)" /> 
+                <VueSpinner v-else size="30" color="var(--secondary)" aria-label="Loading..." /> 
             </div>
         </div>
 
@@ -114,7 +114,7 @@
                     <button class="btn btn-danger modal-btn" v-if="!isLoadingDecline" @click="handleDecline">
                         Confirm Decline
                     </button>
-                    <VueSpinner v-else size="30" color="var(--secondary)" />
+                    <VueSpinner v-else size="30" color="var(--secondary)" aria-label="Loading..." />
                 </div>
             </div>
         </div>
