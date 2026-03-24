@@ -73,7 +73,12 @@
             </p>
           </div>
 
-          <p v-if="signIn.generalError" class="general-error" role="alert">{{ signIn.generalError }}</p>
+          <div v-if="signIn.generalError" class="general-error" role="alert">
+            {{ signIn.generalError }}
+            <span v-if="signIn.promptSignUp">
+              New here? <button class="inline-link error-link" @click="switchMode('signup')">Sign Up</button>
+            </span>
+          </div>
 
           <button type="submit" class="btn-submit" :disabled="signIn.loading">
             <span v-if="signIn.loading">Signing in…</span>
@@ -233,6 +238,7 @@ export default {
       } catch (err) {
         if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
           this.signIn.generalError = 'Invalid email or password. Please try again.';
+          this.signIn.promptSignUp = true;
         } else if (err.code === 'auth/user-not-found') {
           this.signIn.errors.email = 'No account found for this email.';
           this.signIn.promptSignUp = true;
@@ -489,6 +495,18 @@ export default {
 }
 
 .error-msg { color: var(--error); }
+
+.error-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: inherit;
+  color: var(--error);
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
 
 .valid-msg { color: var(--success); }
 
