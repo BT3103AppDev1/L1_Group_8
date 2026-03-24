@@ -1,6 +1,8 @@
 <template>
-    <div class="consent-page">
-        <img src="@/assets/background-decoration.png" class="bg-decoration"/>
+    <div class="public-page">
+        <div class="bg-decoration-container">
+            <img src="@/assets/background-decoration.png" class="bg-decoration"/>
+        </div>
         <div class="logo-container">
             <div class="logo-content">
                 <img src="@/assets/logo.png" alt="NUSOS Logo" class="logo" />
@@ -22,10 +24,22 @@ export default {
 </script>
 
 <style scoped> 
-.consent-page {
+.public-page {
     display: flex;
     padding: 2rem;
     background-color: var(--primary);
+    min-height: 88vh;
+    position: relative;
+}
+
+.bg-decoration-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 0;
 }
 
 .bg-decoration {
@@ -34,7 +48,6 @@ export default {
     position: absolute;
     top: 10vh;
     left: 0;
-    z-index: 0;
     pointer-events: none;
 }
 

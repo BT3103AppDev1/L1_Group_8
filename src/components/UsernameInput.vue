@@ -1,7 +1,7 @@
 <template>
     <div class="input-container">
         <label class="input-label" for="username">
-        Username <span class="compulsory">*</span>
+            Username *
         </label>
 
         <input 
@@ -39,7 +39,7 @@
 <script>
 import { query, collection, where, getDocs } from 'firebase/firestore'; 
 import { db } from '@/firebase.js';
-import VueSpinnerDots from 'vue-spinner/src/Dots.vue';
+import { VueSpinnerDots } from 'vue3-spinners';
 
 export default {
     name: "UsernameInput",
@@ -60,7 +60,7 @@ export default {
     data() {
         return {
             localValue: this.initialValue,
-            status: "untouched", // untouched or touched (focused at least once but currently empty) or checking or valid or invalid
+            status: "idle", // idle or checking or valid or invalid
             errorMessage: "",
             debounceTimer: null,
         };
@@ -82,16 +82,18 @@ export default {
 
         onInput() {
             clearTimeout(this.debounceTimer);
+            this.status = "idle";
             if (!this.localValue) {
-                this.status = "touched";
                 return;
             }
             this.debounceTimer = setTimeout(() => this.validate(), 400); // validate if user stops typing for 400ms
         },
 
         onBlur() {
-            this.validate();
-            this.checkUniquness();
+            const isValid = this.validate();
+            if (isValid) {
+                this.checkUniquness();
+            }
         },
 
         setError(message) {
@@ -100,42 +102,48 @@ export default {
         },
 
         validate() {
-            this.status = "checking";
             const username = this.localValue;
 
             if (!username) {
-                this.setError("Username is required.");
-                return;
+                this.setError("Username cannot be left blank.");
+                return false;
             }
             if (username.length < 3) {
                 this.setError("Username must be at least 3 characters.");
-                return;
+                return false;
             }
             if (username.length > 20) {
                 this.setError("Username must be at most 20 characters.");
-                return;
+                return false;
             }
             if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
                 this.setError(
-                "Only letters, numbers, underscores, and hyphens are allowed."
+                    "Only letters, numbers, underscores, and hyphens are allowed."
                 );
-                return;
+                return false;
             }
             if (/^[_-]|[_-]$/.test(username)) {
                 this.setError("Username must not start or end with _ or -.");
-                return;
+                return false;
             }
             if (/NUSOS/i.test(username)) {
                 this.setError('"NUSOS" is a reserved name.');
-                return;
+                return false;
             }
+
+            this.errorMessage = "";
+            return true;
         },
 
         async checkUniquness() {
+            const valueToCheck = this.localValue;
             this.status = "checking";
             try {
-                const queryRef = query(collection(db, "users"), where("usernameLower", "==", this.localValue.toLowerCase()));
+                const queryRef = query(collection(db, "users"), where("username", "==", this.localValue));
                 const querySnapshot = await getDocs(queryRef);
+                if (this.localValue !== valueToCheck) {
+                    return false; // user has changed the input while we were checking, so ignore this result
+                }
                 if (!querySnapshot.empty) {
                     this.setError("This username is already taken.");
                     return false;
@@ -149,10 +157,12 @@ export default {
             }
         },
 
-        // called by parent to trigger validation before submit
-        async triggerValidation() {
-            await this.validate();
-            await this.checkUniquness();
+        async fullValidation() {
+            const isValid = this.validate();
+            if (isValid) {
+                return await this.checkUniquness();
+            }
+            return false;
         },
     },
 
