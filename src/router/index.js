@@ -80,7 +80,7 @@ const routes = [
     },
     {
         path: '/',
-        name: 'Explore',
+        name: 'ExploreView',
         component: ExploreView,
         meta: {
             showHeader: true,
