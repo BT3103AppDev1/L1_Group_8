@@ -1,15 +1,3 @@
-<!-- <template>
-    <div> Add Listing </div>
-</template>
-
-<script>
-export default {
-    name: 'AddListing'
-}
-</script> -->
-
-
-
 <template>
     <div class="container">
         <div class="listing-card">
@@ -29,7 +17,6 @@ export default {
                 <hr style="border:0; border-top: 2px solid black; background-color: black; margin: 0 0 8px 0;">        
                 
                 <textarea v-model="description" placeholder="Write your description here (min 10 words, max 800)!" required></textarea>
-                <p v-if="submitted && !description" class="error-message">Mandatory Description!</p>
                 
             </div>
 
@@ -43,15 +30,12 @@ export default {
                     <option>Free</option>
                     <option>Contact me</option>
                 </select>
-                <p v-if="submitted && !payment_mode" class="error-message">Mandatory Payment Mode!</p>
 
                 <select v-model="listing_category">
                     <option disabled value="">Category</option>
                     <option>Education</option>
                     <option>Buddy</option>
                     <option>Survival</option>
-                    <p v-if="submitted && !listing_category" class="error-message">Mandatory Listing Category!</p>
-                
                 </select>
 
                 <select v-model="location_text">
@@ -60,9 +44,11 @@ export default {
                     <option>Central Library</option>
                     <option>FASS</option>
                     <option>SoC</option>
-                    <!-- check our documentation and add on more later -->
-                     <p v-if="submitted && !location_text" class="error-message">Mandatory location!</p>
-
+                    <option>Business School</option>
+                    <option>Engineering buidling</option>
+                    <option>Kent Ridge MRT</option>
+                    <option>YST</option>
+                    
                 </select>
                 
             </div>
@@ -102,6 +88,15 @@ export default {
         }
     },
 
+    computed: {
+        wordCount() {
+            if (!this.description) return 0;
+            else return this.description.trim().length()
+
+        }
+        
+    },
+
     methods: {
         async uploadlistingpic(event) {
             const file = event.target.files[0]; //just take first one in case user select too many
@@ -129,23 +124,29 @@ export default {
 
         async createlisting() {
             if (!this.title || !this.description) {
-                alert("Please fill in all mandatory fields!")
-                return 
-            } else {
+                alert("Please fill in the title and description!")
+                return;
+            } 
 
+            // if (this.description && (this.wordCount < 10 || this.wordCount >800)) {
+            //     alert("Please stay within the word count of 10 to 800 words! You are currently at: ${this.wordCount}")
+            // }
+
+            if (!this.payment_mode || !this.listing_category || !this.location_text) {
+                alert("Please fill in all the dropdown boxes!")
+            } else
             try {
             await addDoc(collection(db, "listings"), {
-                listing_id: this.listing_id,
-                lister_id: this.lister_id,
-                listing_category: this.category,
+                // lister_id: this.lister_id, -> will need to check with xinyan later on the id part
+                listing_category: this.listing_category,
                 title: this.title,
                 description: this.description,
+                created_at: new Date(),
                 location_text: this.location_text,
                 picture_url: this.picture_url,
                 payment_mode: this.payment_mode,
                 listing_cateogry: this.listing_category,
                 location_text: this.location_text,
-                created_at: new Date()
             })
 
             // reset everything after upload
@@ -167,8 +168,7 @@ export default {
             }
     }
     }
-    }
-};
+}
 </script>
 
 
