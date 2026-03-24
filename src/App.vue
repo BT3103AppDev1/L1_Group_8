@@ -18,7 +18,7 @@ import TheFooter from '@/components/TheFooter.vue'
 import TheHeader from './components/TheHeader.vue';
 import { onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from '@/firebase.js';
-import { doc } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import '@/assets/main.css';
 
 export default {
@@ -51,11 +51,7 @@ export default {
       if (user) {
         // User is signed in
 
-        /* // TODO: remove comment when auth is available
-        const userDocRef = doc(db, 'users', user.uid); */
-
-        // Simulate user ID for testing without auth
-        const userDocRef = doc(db, "users", "mockUserId");
+        const userDocRef = doc(db, 'users', user.uid);
 
         this._firestoreUnsubscribe = onSnapshot(userDocRef, (doc) => {
           if (doc.exists) {
