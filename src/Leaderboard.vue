@@ -18,9 +18,9 @@
         </div>
 
         <div class="monthNavigation">
-            <button class="navigationArrow" @click="previousMonth"><</button>
+            <button class="navigationArrow" @click="previousMonth">&lt;</button>
             <span class="currentMonth">{{ currentMonth }}</span>
-            <button class="navigationArrow" @click="nextMonth">></button>
+            <button class="navigationArrow" @click="nextMonth">&gt;</button>
         </div>
 
         <div class="tableContainer">
@@ -32,107 +32,110 @@
                 </div>
 
                 <div class="scrollableRows" ref="scrollContainer">
-                    <div v-if="rankedUser.length === 0" class="noWinnerState">
-                        No winners in current month....
+
+                    <div v-if="loading" class="noWinnerState">
+                            Loading.....
                     </div>
 
-                    <div v-for="(user, index) in rankedUser" 
+                    <div v-else-if="rankedUser.length === 0" class="noWinnerState">
+                        No winners for {{ currentMonth }} yet. 
+                    </div>
+
+                    <div
+                        v-else 
+                        v-for="(user, index) in rankedUser" 
                         :key="user.rank"
                         class="leaderboardTableRow" 
-                        :class="{ isCurrentUser: user.isCurrentUser, isEvenRank: index % 2 == 0 }"
+                        :class="{ isCurrentUser: user.isCurrentUser, isEvenRank: index % 2 !== 0 }"
                         :ref="user.isCurrentUser ? 'currentUserRow' : undefined">
+
                         <span class="colRank">{{ ordinal(user.rank) }}</span>
                         <span class="colName">
+                            <span class="profilePic" :class="{ 'currentUserProfilePic': user.isCurrentUser }"></span>
                             <span class="username">{{ user.isCurrentUser ? 'You' : user.username }}</span>
                         </span>
                         <span class="colPoints">{{ user.totalPoints }}</span>
                     </div>
                 </div>
+            </div>
 
-                <div v-if="showUserBar" class="currentUserBar">
-                    <span class="myRank">{{ currentUserRank }}</span>
-                    <span class="myName">{{ currentUsername }}</span>
-                    <span class="myPoints">{{ currentUserPoints }}</span>
-                </div>
+            <div v-if="showUserBar" class="currentUserBar">
+                <span class="myRank">{{ currentUserRank }}</span>
+                <span class="profilePic currentUserProfilePic"></span>
+                <span class="myName">{{ currentUsername }}</span>
+                <span class="myPoints">{{ currentUserPoints }}</span>
             </div>
         </div>
     </div>
-
 </template>
 
 <script>
 import PageHeader from "./PageHeader.vue";
+import { db, auth } from '@/firebase'
+import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore' 
+import { ratingToPoints } from "./mockLeaderboard.js";
 
-const MONTH = ["May", "June", "July"];
+function buildMonthLabels() {
+    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const now = new Date();
+    return [months[new Date(now.getFullYear(), now.getMonth() - 2, 1).getMonth()],
+            months[new Date(now.getFullYear(), now.getMonth() - 1, 1).getMonth()],
+            months[now.getMonth()]];
+}
+
+function getMonthRange(offset) {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+    const end = new Date(now.getFullYear(), now.getMonth() + offset + 1, 1);
+    return { start, end };
+}
+
+const MONTH_LABELS = buildMonthLabels();
+const CURRENT_MONTH_INDEX = 2; 
 
 export default {
     name: "Leaderboard",
-    components: { PageHeader},
+    components: { PageHeader },
 
     data() {
         return {
             viewReward: false,
-            currentMonth: "June",
+            currentMonthIndex: CURRENT_MONTH_INDEX,
             currentUserRowVisible: false,
             observer: null,
+            loading: false,
 
-            mockUserStatus: {
-                "July": null,
-                "June": null,
-                "May": {rank: "Nil", points: 0}
-            },
+            rankedUser: [],
 
-            mockData: {
-                "July": [
-                    { rank: 1, username: "Alice", totalPoints: 3000, isCurrentUser: false },
-                    { rank: 2, username: "Bob", totalPoints: 2500, isCurrentUser: false },
-                    { rank: 3, username: "Charlie", totalPoints: 2000, isCurrentUser: false },
-                    { rank: 4, username: "David", totalPoints: 1800, isCurrentUser: false },
-                    { rank: 5, username: "Eve", totalPoints: 1700, isCurrentUser: false },
-                    { rank: 6, username: "Frank", totalPoints: 1600, isCurrentUser: false },
-                    { rank: 7, username: "Grace", totalPoints: 1550, isCurrentUser: false },
-                    { rank: 8, username: "Heidi", totalPoints: 1520, isCurrentUser: false },
-                    { rank: 9, username: "Ivan", totalPoints: 1510, isCurrentUser: false },
-                    { rank: 10, username: "John Doe", totalPoints: 1500, isCurrentUser: true }
-                ],
-                "June": [
-                    { rank: 1, username: "Alice", totalPoints: 2800, isCurrentUser: false },
-                    { rank: 2, username: "Bob", totalPoints: 2600, isCurrentUser: false },
-                    { rank: 3, username: "Charlie", totalPoints: 2200, isCurrentUser: false },
-                    { rank: 4, username: "David", totalPoints: 1900, isCurrentUser: false },
-                    { rank: 5, username: "Eve", totalPoints: 1800, isCurrentUser: false },
-                    { rank: 6, username: "Frank", totalPoints: 1700, isCurrentUser: false },
-                    { rank: 7, username: "Grace", totalPoints: 1600, isCurrentUser: false },
-                    { rank: 8, username: "Heidi", totalPoints: 1550, isCurrentUser: false },
-                    { rank: 9, username:"Ivan", totalPoints :1520 ,isCurrentUser:false},
-                    {rank :10 ,username:"John Doe", totalPoints: 1500, isCurrentUser: true}
-                ], 
-                "May": []
-            }
-        }
+            currentUserStatus: null,
+        };
     },
 
     computed: {
-        rankedUser() {
-            return this.mockData[this.currentMonth] || [];
+        currentMonth() {
+            return MONTH_LABELS[this.currentMonthIndex];
+        },
+
+        monthOffset() {
+            return this.currentMonthIndex - CURRENT_MONTH_INDEX;
         },
 
         currentUserEntry() {
             return this.rankedUser.find(user => user.isCurrentUser) || null;
         },
 
+        currentUsername() {
+            return this.currentUserEntry ? this.currentUserEntry.username : "You";
+        },
+
         currentUserRank() {
             if (this.currentUserEntry) return this.ordinal(this.currentUserEntry.rank);
-            return this.mockUserStatus[this.currentMonth]?.rank ?? "N/A";
+            return this.currentUserStatus?.rank ?? "N/A"; 
         }, 
-
-        currentUsername() {
-            return this.currentUserEntry?.username || "N/A";
-        },
 
         currentUserPoints() {
             if (this.currentUserEntry) return this.currentUserEntry.totalPoints;
-            return this.mockUserStatus[this.currentMonth]?.points ?? 0;
+            return this.currentUserStatus?.points ?? 0;
         },
 
         showUserBar() {
@@ -142,14 +145,14 @@ export default {
     },
 
     watch: {
-        currentMonth() {
+        currentMonthIndex() {
             this.currentUserRowVisible = false;
             this.$nextTick(() => this.setupObserver());
         }
     },
 
     mounted() {
-        this.$nextTick(() => this.setupObserver());
+        this.fetchLeaderboardData();
     },
 
     beforeUnmount() {
@@ -157,9 +160,78 @@ export default {
     },
 
     methods: {
+        async fetchLeaderboardData() {
+            this.loading = true;
+            this.rankedUser = [];
+            this.currentUserStatus = null;
+
+            try {
+                const { start, end } = getMonthRange(this.monthOffset);
+                const currentUid = auth.currentUser?.uid;
+
+                const ratingsSnap = await getDocs(query(collection(db, 'ratings'), where('rated_at', '>=', Timestamp.fromDate(start)), where('rated_at', '<', Timestamp.fromDate(end))));
+
+                const pointsMap = {};
+                ratingsSnap.forEach(docSnap => {
+                    const { receiver_id, rating } = docSnap.data();
+                    pointsMap[receiver_id] = (pointsMap[receiver_id] || 0) + ratingToPoints(rating);
+                })
+
+                if (Object.keys(pointsMap).length === 0) {
+                    this.loading = false;
+                    return;
+                }
+
+                const uids = Object.keys(pointsMap);
+                const usersSnap = await getDocs(collection(db, "users"));
+                const usersMap = {};
+                usersSnap.forEach(docSnap => {
+                    if (uids.includes(docSnap.id)) {
+                        usersMap[docSnap.id] = { uid: docSnap.id, ...docSnap.data()};
+                    }
+                });
+
+                const sorted = uids.map(uid => ({
+                    uid,
+                    username: usersMap[uid]?.username || "Unknown User",
+                    totalPoints: pointsMap[uid],
+                })).sort((a, b) => b.totalPoints - a.totalPoints);
+
+                const top1Count = Math.max(1, Math.ceil(sorted.length * 0.10));
+                const top1 = sorted.slice(0, top1Count);
+
+                this.rankedUser = top1.map((u, i) => ({
+                    rank: i + 1,
+                    uid: u.uid,
+                    username: u.username,
+                    totalPoints: u.totalPoints,
+                    isCurrentUser: u.uid === currentUid
+                }));
+
+                const currentUserPosition = sorted.findIndex(u => u.uid === currentUid);
+                const isInTop = currentUserPosition !== -1 && currentUserPosition < top1Count;
+
+                if (currentUid && !isInTop) {
+                    if (currentUserPosition === -1) {
+                        this.currentUserStatus = { rank : "N/A", points: 0 };
+                    } else {
+                        const pct = Math.round(((currentUserPosition + 1) / sorted.length) * 100);
+                        this.currentUserStatus = {
+                            rank: `${pct}%~`,
+                            points: sorted[currentUserPosition].totalPoints,
+                        };
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching leaderboard data:", error);
+            }
+
+            this.loading = false;
+            this.$nextTick(() => this.setupObserver());
+        },
+
         setupObserver() {
             this.teardownObserver();
-
             const scrollContainer = this.$refs.scrollContainer;
             const rowRef = this.$refs.currentUserRow;
             const row = Array.isArray(rowRef) ? rowRef[0] : rowRef;
@@ -187,16 +259,14 @@ export default {
         },
 
         previousMonth() {
-            const currentIndex = MONTH.indexOf(this.currentMonth);
-            if (currentIndex > 0) {
-                this.currentMonth = MONTH[currentIndex - 1];
+            if (this.currentMonthIndex > 0) {
+                this.currentMonthIndex--;
             }
         },
 
         nextMonth() {
-            const currentIndex = MONTH.indexOf(this.currentMonth);
-            if (currentIndex < MONTH.length - 1) {
-                this.currentMonth = MONTH[currentIndex + 1];
+            if (this.currentMonthIndex < MONTH_LABELS.length - 1) {
+                this.currentMonthIndex++;
             }
         },
 
