@@ -1,9 +1,9 @@
 /* ── Style Guides ── */
 :root {
   --primary:          #003D7C;
-  --primary-hover:    #99B1CB;
+  --primary-hover:    #336496;
   --secondary:        #EF7C00;
-  --secondary-hover:  #ffa34d;
+  --secondary-hover:  #ff944d;
   --success:          #28A745;
   --info:             #2F80ED;
   --error:            #DC3545;
@@ -53,6 +53,7 @@ body {
   transition: background 0.15s, opacity 0.12s;
   white-space: nowrap;
   text-decoration: none;
+  letter-spacing: 0.05em;
 }
 .btn:active { opacity: 0.82; }
 .btn-sm { font-size: 13px; padding: 6px 14px; }
@@ -141,6 +142,12 @@ body {
   letter-spacing: 0.02em;
 }
 
+.input-label--optional {
+  font-weight: normal;
+  color: var(--gray3);
+  font-size: 0.875rem;
+}
+
 .input-field {
   box-sizing: border-box;
   width: 100%;
@@ -183,6 +190,7 @@ body {
   line-height: 1.5;
   letter-spacing: 0.02em;
   margin-top: 0.125rem;
+  min-height: 3em;
 }
 
 .input-info--invalid {
@@ -198,5 +206,4 @@ body {
 .input-info--checking {
   display: flex;
   align-items: center;
-  height: 20px;
 }
