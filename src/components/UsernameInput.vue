@@ -17,6 +17,7 @@
             maxlength="20"
             @input="onInput"
             @blur="onBlur"
+            :disabled="isSubmitting"
         />
 
         <p v-if="status === 'invalid'" class="input-info input-info--invalid"
@@ -27,7 +28,7 @@
             aria-live="polite">Valid</p>
         <div v-else-if="status === 'checking'" class="input-info--checking" 
             role="status" aria-live="polite" aria-label="Checking username validity">
-            <VueSpinnerDots size="16" color="var(--secondary)"/>
+            <VueSpinnerDots size="24" color="var(--secondary)"/>
         </div>
         <p v-else class="input-info">
             3–20 characters. Use letters, numbers, _ or - only. Cannot start or end
@@ -52,7 +53,11 @@ export default {
         initialValue: {
             type: String,
             default: "",
-        }
+        },
+        isSubmitting: {
+            type: Boolean,
+            default: false,
+        },
     },
 
     emits: ["status-object"], // {status, value}
