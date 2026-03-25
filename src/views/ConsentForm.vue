@@ -217,68 +217,6 @@ export default {
 </script>
 
 <style scoped> 
-.consent-page {
-    display: flex;
-    padding: 2rem;
-    background-color: var(--primary);
-}
-
-.bg-decoration {
-    width: 100vw;
-    height: auto;
-    position: absolute;
-    top: 10vh;
-    left: 0;
-    z-index: 0;
-    pointer-events: none;
-}
-
-.logo-container, .consent-container {
-    z-index: 1;
-}
-
-.logo-container {
-    position: absolute;
-    top: 15vh;
-    left: 15vw;
-    width: 25vw;
-    display: flex;
-    align-items: center;
-    justify-content: center; 
-    top: 25vh;
-}
-
-.logo-content {
-    width: 20vw;
-    height: 20vw;
-    border-radius: 50%;
-    background-color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: var(--card-shadow);
-}
-
-.logo {
-    width: 15vw;
-    object-fit: contain;
-}
-
-.consent-container {
-    padding-left: 45vw;
-    display: flex;
-    align-items: flex-start;
-    justify-content: flex-end;
-}
-
-.consent-card {
-    background-color: var(--white);
-    border-radius: var(--radius);
-    padding: 2.75rem;
-    box-shadow: var(--card-shadow);
-    width: 40vw;
-}
-
 .consent-title {
     font-size: 2rem;
     font-weight: bold;
@@ -354,6 +292,7 @@ export default {
     margin-top: 1rem;
     color: var(--gray3);
     font-size: 0.875rem;
+    text-align: center;
 }
 
 .accept-spinner, .decline-spinner {
