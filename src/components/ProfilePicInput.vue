@@ -35,7 +35,7 @@
             @change="onFileSelected"
         />
 
-        <p class="input-info">
+        <p class="input-info file-requirements">
             Supported file types: jpg, jpeg, png, heic, heif. Maximum file size: 5MB.
         </p>
     </div>
@@ -67,8 +67,8 @@ export default {
     data() {
         return {
             profilePicUrl: this.initialUrl, 
-            status: this.initialUrl ? "ready" : "idle", // idle or ready 
-            // idle: no file selected or reverted to default
+            status: "idle", // idle or ready 
+            // idle: no new file selected or reverted to default
             // ready: file selected and valid, blob ready for parent to upload on submit
             blob: null,
             defaultProfilePic,
@@ -226,5 +226,9 @@ export default {
     border: var(--gray5);
     color: var(--white);
     cursor: not-allowed;
+}
+
+.file-requirements {
+    min-height: 0;
 }
 </style>

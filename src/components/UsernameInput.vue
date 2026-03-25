@@ -65,7 +65,7 @@ export default {
     data() {
         return {
             localValue: this.initialValue,
-            status: "idle", // idle or checking or valid or invalid
+            status: this.initialValue ? "valid" : "idle", // idle or checking or valid or invalid
             errorMessage: "",
             debounceTimer: null,
         };

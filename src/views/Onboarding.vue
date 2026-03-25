@@ -7,8 +7,17 @@
             <UsernameInput ref="usernameInput" @status-object="onUsernameStatusChange" 
                 :isSubmitting="isSubmitting"/>
 
+            <!-- Profile Picture -->
             <ProfilePictureInput ref="profilePicInput" @status-object="onProfilePicStatusChange" 
                 :isSubmitting="isSubmitting"/>
+
+            <!-- Contact Methods -->
+            <ContactMethodsInput ref="contactMethodsInput" @contact-change="onContactChange"
+                :isSubmitting="isSubmitting"/>
+            
+            <button type="submit" class="btn btn-secondary submit-btn" :disabled="isSubmitting">
+                Finish Setup
+            </button>
         </form>
     </PublicPageLayout>
 </template>
@@ -20,7 +29,9 @@ const CLOUDINARY_UPLOAD_PRESET = "nusos-profile-pics";
 import PublicPageLayout from '@/components/PublicPageLayout.vue';
 import UsernameInput from '@/components/UsernameInput.vue';
 import ProfilePictureInput from '@/components/ProfilePicInput.vue';
+import ContactMethodsInput from '@/components/ContactMethodsInput.vue';
 import { getCurrentUser } from '@/auth.js';
+import { db } from '@/firebase.js';
 import { setDoc } from 'firebase/firestore';
 import axios from 'axios';
 
@@ -31,6 +42,7 @@ export default {
         PublicPageLayout,
         UsernameInput,
         ProfilePictureInput,
+        ContactMethodsInput,
     },
 
     data() {
@@ -39,6 +51,7 @@ export default {
             usernameStatus: "idle", // idle or checking or valid or invalid
             profilePicStatus: "idle", // idle or ready 
             profilePicBlob: null,
+            contact: null,
             isSubmitting: false,
         }
     },
@@ -54,6 +67,10 @@ export default {
             // handle the status object from the ProfilePictureInput component
             this.profilePicStatus = status;
             this.profilePicBlob = blob;
+        },
+
+        onContactChange(contactChange) {
+            this.contact = contactChange;
         },
 
         async uploadToCloudinary(blob, uid) {
@@ -83,13 +100,17 @@ export default {
                 }
             }
 
+            const contactValid = this.$refs.contactMethodsInput.triggerValidation();
+            if (!contactValid) {
+                return;
+            }
+
             this.isSubmitting = true;
 
             try {
                 const user = getCurrentUser();
                 if (!user) {
                     throw new Error("No user found!");
-                    return; 
                 }
                 const uid = user.uid;
 
@@ -100,8 +121,15 @@ export default {
 
                 await setDoc(doc(db, "users", uid), {
                     username: this.username,
-                    onboarded: true,
                     profilePicUrl: profilePicUrl,
+                    country_code: this.contact.countryCode,
+                    dial_code: this.contact.dialCode,
+                    mobile_number: this.contact.mobile,
+                    accept_calls: this.contact.acceptCalls,
+                    accept_messages: this.contact.acceptMessages,
+                    accept_whatsapp: this.contact.acceptWhatsApp,
+                    telegram_handle: this.contact.telegram,
+                    onboarded: true,
                 }, { merge: true });
 
                 this.$router.replace("/");
@@ -121,12 +149,31 @@ export default {
     font-size: 2rem;
     font-weight: bold;
     color: var(--secondary);
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
 }
 
 .onboarding-form {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1rem;
+}
+
+.btn {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    padding: 1rem 0;
+    width: 100%;
+}
+
+.btn:disabled {
+    background-color: var(--gray5);
+    border: var(--gray5);
+    color: var(--white);
+    cursor: not-allowed;
+}
+
+.submit-btn {
+    font-size: 1rem;
 }
 </style>
