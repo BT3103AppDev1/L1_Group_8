@@ -95,30 +95,25 @@
     </PublicPageLayout>
     
     <!-- decline confirmation modal -->
-    <div v-if="showDeclineModal" class="modal-overlay">
-        <div class="confirmation-modal">
-            <button class="close-modal" @click="showDeclineModal = false">
-                &times;
+    <confirmation-modal v-model:showModal="showDeclineModal" title="Are you sure you want to decline?">
+        Your personal data is necessary for NUSOS to function.
+        If you choose to decline, your account will be 
+        <strong>permanently deleted immediately</strong>. 
+        This action cannot be undone.
+
+        <template #buttons>
+            <button class="btn cancel-btn modal-btn" 
+                :disabled="isLoadingDecline" @click="showDeclineModal = false">
+                    Cancel
             </button>
-            <h3 class="modal-title">Are you sure you want to decline?</h3>
-            <p class="modal-body">Your personal data is necessary for NUSOS to function.
-                If you choose to decline, your account will be <strong>permanently deleted 
-                immediately</strong>. This action cannot be undone.
-            </p>
-            <div class="confirmation-buttons">
-                <button class="btn cancel-btn modal-btn" 
-                    :disabled="isLoadingDecline" @click="showDeclineModal = false">
-                        Cancel
+            <div class="btn-or-spinner">
+                <button class="btn btn-danger modal-btn" v-if="!isLoadingDecline" @click="handleDecline">
+                    Confirm Decline
                 </button>
-                <div class="btn-or-spinner">
-                    <button class="btn btn-danger modal-btn" v-if="!isLoadingDecline" @click="handleDecline">
-                        Confirm Decline
-                    </button>
-                    <VueSpinner v-else size="30" color="var(--secondary)" aria-label="Loading..." />
-                </div>
+                <VueSpinner v-else size="30" color="var(--secondary)" aria-label="Loading..." />
             </div>
-        </div>
-    </div>
+        </template>
+    </confirmation-modal>
 </template>
 
 <script>
@@ -128,12 +123,14 @@ import { deleteUser } from 'firebase/auth';
 import { getCurrentUser } from '@/auth.js';
 import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import PublicPageLayout from '@/components/PublicPageLayout.vue';
+import ConfirmationModal from '@/components/ConfirmationModal.vue';
 
 export default {
     name: 'ConsentForm',
     components: {
         VueSpinner,
         PublicPageLayout,
+        ConfirmationModal,
     },
 
     data() {
@@ -302,49 +299,12 @@ export default {
     flex: 1;
 }
 
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(181, 181, 181, 0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 999; 
-}
-
-.confirmation-modal {
-    position: relative;
-    background: var(--white);
-    border-radius: var(--radius);
-    width: 50vw;
-    padding: 2rem;
-}
-
-.close-modal {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    width: 1.875rem;
-    height: 1.875rem;
-    border-radius: var(--radius);
-    background: var(--gray4);
-    border: none;
-    color: var(--white);
-    font-size: 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
 .cancel-btn {
     background: var(--gray4);
     color: var(--white);
 }
 
-.close-modal:hover, .cancel-btn:hover {
+.cancel-btn:hover {
     background-color: var(--gray5);
 }
 
@@ -353,24 +313,5 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-.modal-title {
-    font-size: 2rem;
-    font-weight: bold;
-    margin-bottom: 1rem;
-}
-
-.modal-body {
-    font-size: 0.875rem;
-    margin-bottom: 2rem;
-}
-
-.confirmation-buttons { 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 3rem;
-    padding: 0 3.5rem;
 }
 </style>

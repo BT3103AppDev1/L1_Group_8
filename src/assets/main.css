@@ -38,6 +38,7 @@ input, textarea, [contenteditable] {
 }
 
 body {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; 
   background: var(--bg);
   color: #1D1D1D;
   line-height: 1.5;
