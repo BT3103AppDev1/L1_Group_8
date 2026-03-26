@@ -13,24 +13,24 @@
                 'input-field--invalid': status === 'invalid',
                 'input-field--valid': status === 'valid',
             }"
-            autocomplete="username"
+            autocomplete="off"
             maxlength="20"
             @input="onInput"
             @blur="onBlur"
             :disabled="isSubmitting"
         />
 
-        <p v-if="status === 'invalid'" class="input-info input-info--invalid"
+        <p v-if="status === 'invalid'" class="input-info input-info--invalid input-info--long"
             aria-live="polite">
             {{ errorMessage }}
         </p>
-        <p v-else-if="status === 'valid'" class="input-info input-info--valid"
+        <p v-else-if="status === 'valid'" class="input-info input-info--valid input-info--long"
             aria-live="polite">Valid</p>
         <div v-else-if="status === 'checking'" class="input-info--checking" 
             role="status" aria-live="polite" aria-label="Checking username validity">
             <VueSpinnerDots size="24" color="var(--secondary)"/>
         </div>
-        <p v-else class="input-info">
+        <p v-else class="input-info input-info--long">
             3–20 characters. Use letters, numbers, _ or - only. Cannot start or end
             with _ or -. No spaces or other special characters.
         </p>

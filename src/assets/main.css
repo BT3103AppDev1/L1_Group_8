@@ -33,6 +33,10 @@
   caret-color: transparent;
 }
 
+input, textarea, [contenteditable] {
+  caret-color: auto;
+}
+
 body {
   background: var(--bg);
   color: #1D1D1D;
@@ -190,6 +194,9 @@ body {
   line-height: 1.5;
   letter-spacing: 0.02em;
   margin-top: 0.125rem;
+}
+
+.input-info--long {
   min-height: 3em;
 }
 

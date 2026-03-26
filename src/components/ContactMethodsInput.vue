@@ -4,11 +4,11 @@
             Contact Methods *
         </h4>
         <hr class="divider">
-        <p v-if="displayHelper" class="input-info" style="margin-top: 0; margin-bottom: 12px">
+        <p v-if="displayHelper" class="input-info input-info--long" style="margin-top: 0; margin-bottom: 12px">
             Please provide at least one contact method for communication during
             service exchange.
         </p>
-        <p v-else class="input-info input-info--invalid" aria-live="polite">
+        <p v-else class="input-info input-info--invalid input-info--long" aria-live="polite">
             Either mobile number or Telegram handle must be provided!
         </p>
 
@@ -33,6 +33,7 @@
                     id: 'mobile-number',
                     name: 'mobile',
                     styleClasses: mobileInputClass,
+                    autocomplete: 'off',
                 }"
                 :valid-characters-only="true"
                 :disabled="isSubmitting"
@@ -50,20 +51,19 @@
                 aria-live="polite">
                     Valid
             </p>
-
+            
             <!-- communication preferences -->
             <transition name="fade">
                 <div v-if="mobileStatus === 'valid'" class="preferences">
-                    <p class="input-info" :class="{ 'input-info--error': preferencesError }">
+                    <p class="input-info" :class="{ 'input-info--invalid': preferencesError }">
                         Please select at least one communication preference.
                     </p>
-                    <div class="checkbox-grid">
+                    <div class="checkbox-grid" :class="{'preferences--invalid': preferencesError}">
                         <label class="checkbox-label">
                         <input
                             v-model="acceptCalls"
                             type="checkbox"
                             class="checkbox-input"
-                            :class="{'checkbox-input--invalid': preferencesError}"
                             :disabled="isSubmitting"
                             @change="onPreferencesChange"
                         />
@@ -75,7 +75,6 @@
                             v-model="acceptMessages"
                             type="checkbox"
                             class="checkbox-input"
-                            :class="{'checkbox-input--invalid': preferencesError}"
                             :disabled="isSubmitting"
                             @change="onPreferencesChange"
                         />
@@ -87,7 +86,6 @@
                             v-model="acceptWhatsApp"
                             type="checkbox"
                             class="checkbox-input"
-                            :class="{'checkbox-input--invalid': preferencesError}"
                             :disabled="isSubmitting"
                             @change="onPreferencesChange"
                         />
@@ -216,7 +214,10 @@ export default {
                 (this.mobileStatus === "valid" && this.mobile) ||
                 (this.telegramStatus === "valid" && this.telegram)
             );
-        }
+        },
+        displayHelper() {
+            return !this.triggeredValidation || this.hasContactMethods; 
+        },     
     },
 
     watch: {
@@ -254,11 +255,7 @@ export default {
                 acceptWhatsApp: this.mobileStatus === "valid" ? this.acceptWhatsApp : false,
                 telegram: this.telegramStatus === "valid" ? this.telegram : "",
             });
-        },
-
-        displayHelper() {
-            return !this.triggeredValidation || this.hasContactMethods; 
-        },        
+        },   
 
         // mobile
         onMobileValidate(result) {
@@ -274,14 +271,14 @@ export default {
                 this.dialCode = result.country?.dialCode ? `+${result.country.dialCode}` : "+65";  
             } else {
                 this.mobileStatus = "invalid";
-                this.mobileError = "Please enter a valid phone number for the selected country.";
-            }
+                this.mobileError = "Please enter a valid mobile number for the selected country.";
+            } 
         },
 
         onMobileBlur() {
             if (!this.mobile || this.mobile.trim() === "") {
                 this.mobileStatus = "idle";
-            }
+            } 
         },
 
         onPreferencesChange() {
@@ -314,11 +311,11 @@ export default {
         // call by parent to check if form is valid before submit 
         triggerValidation() {
             this.triggeredValidation = true;
-            if (!this.hasContactMethods()) {
+            if (!this.hasContactMethods) {
                 return false;
             }
 
-            if (this.mobileStatus === "valid" && !this.mobile) {
+            if (this.mobileStatus === "valid" && this.mobile) {
                 const anyChecked = this.acceptCalls || this.acceptMessages || this.acceptWhatsApp;
                 if (!anyChecked) {
                     this.preferencesError = true;
@@ -352,6 +349,7 @@ export default {
     font-family: inherit;
     font-size: 1rem;
     color: var(--gray2);
+    caret-color: var(--gray2);
     line-height: 1.5;
     letter-spacing: 0.02em;
     transition: border-color 0.15s, box-shadow 0.15s;
@@ -405,7 +403,10 @@ export default {
 }
 
 .preferences {
-    margin-top: 0.75rem;
+    margin-top: 0.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
 }
 
 .checkbox-grid {
@@ -413,6 +414,7 @@ export default {
     grid-template-columns: repeat(2, auto);
     gap: 0.5rem 1.5rem;
     justify-content: start;
+    padding: 0.5rem 0.7rem;
 }
 
 .checkbox-label {
@@ -426,21 +428,23 @@ export default {
 }
 
 .checkbox-input {
-    width: 1rem;
-    height: 1rem;
+    width: 1.25rem;
+    height: 1.25rem;
     accent-color: var(--primary);
     border-radius: 0.25rem;
     cursor: pointer;
 }
 
-.checkbox-input--invalid {
-    outline: 1.5px solid var(--error);
+.preferences--invalid {
+    border: 0.0625rem solid var(--error);
+    border-radius: var(--radius);
+    padding: 0.4375rem 0.6375rem;
 }
 
 .mobile-section, .telegram-section {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 0.25rem;
     width: 100%; 
     margin-bottom: 1rem;
 }
@@ -455,7 +459,7 @@ export default {
     align-items: center;
     justify-content: center;
     padding: 0 0.75rem;
-    height: 1100%;
+    height: 100%;
     background: var(--white);
     font-size: 1rem;
     color: var(--gray2);
