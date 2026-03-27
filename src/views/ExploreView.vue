@@ -6,15 +6,20 @@
     <input v-model="search" type="text" placeholder="Search Listings" class="search-bar"/>
 
     <!--Category Filter-->
+    <!--When categorical button is clicked, other buttons become 'grey' and unselected -->
     <div class="category-filter"> 
-      <button v-for="cat in categories" :key="cat" @click="toggleCategory(cat)":class="['filter-btn', selectedCategory === cat ? 'active' : '']">
+      <button v-for="cat in categories" :key="cat"  @click="toggleCategory(cat)" :class="['btn', 'btn-outline', categoryClass(cat)]">
         {{ cat }}
       </button>
     </div>
 
     <!--Listing Cards Imported from ListingCard component-->
-    <div class="listing-grid"> 
+    <div v-if = "filteredListings.length > 0" class="listing-grid"> 
       <ListingCard v-for="item in filteredListings" :key="item.id" :listing="item"/>
+    </div>
+    <!--Empty State where there is no relevant listings to display-->
+    <div v-else class="empty-state">
+      <p>No available listings...</p>
     </div>
   </div>
 </template>
@@ -45,16 +50,24 @@ onMounted(async () => {
       id: doc.id,
       //Normalise title for the search 
       title: data.title?.trim(),
-      //Normalie category to ensure it fit category button 
+      //For search purposes to fit functional requirements, 
+      // but this will not be displayed for users
+      description: data.description?.trim(),
+      //Normalisee category to ensure it fit category button 
       category: data.listing_category?.trim(),
       //This one must change because I need the legitimate user with user id 1
       listedBy: data.lister_id,
       //Convert timestamp to readable date
       postedOn: data.created_at?.toDate().toLocaleDateString(),
+      //Raw timestamp for sorting purposes, but this will not be displayed for users
+      createdAt: data.created_at?.toDate(),
+      //Location 
       location: data.location_text,
+      //Status
       status: data.status?.trim()
     }
-  })
+    //Sort the listings in descending order based on created_at. Most recent listing displayed first 
+  }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
 })
 
 //Toggle category filter
@@ -63,15 +76,27 @@ const toggleCategory = (cat) => {
   selectedCategory.value = selectedCategory.value === cat ? null : cat
 }
 
+const categoryClass = (cat) => {
+  if (selectedCategory.value === null) {
+    //No category selected, all buttons are coloured
+    return `cat-${cat.toLowerCase()}`   
+  }
+  //None of the categories are selected, all buttons are grey
+  if (selectedCategory.value === cat) {
+    return `cat-${cat.toLowerCase()}`   
+  }
+  return 'neutral'                      
+}
+
 //Get the filtered listings based on search query and selected category
 const filteredListings = computed(() => {
   return listings.value.filter((item) => {
     //Can only show listings that have status "awaiting"
     const matchesStatus = item.status === "Awaiting"
     //Can only show listing that have title that matches search query 
-    const matchesSearch = item.title
-      .toLowerCase()
-      .includes(search.value.toLowerCase())
+    const matchesSearch = 
+      item.title.toLowerCase().includes(search.value.toLowerCase()) ||
+      item.description.toLowerCase().includes(search.value.toLowerCase())
     //Can only show listing that have category that matches selected category, or if no category is selected, show all
     const matchesCategory =
       selectedCategory.value === null ||
@@ -109,29 +134,47 @@ const filteredListings = computed(() => {
   margin-bottom: 2rem;
 }
 
-.filter-btn {
-  padding: 8px 18px;
-  border-radius: 20px;
+/* Selected category colors */
+.cat-education {
+  background: var(--primary);
+  color: var(--white);
+  border-color: var(--primary);
+}
+
+.cat-buddy {
+  background: var(--info);
+  color: var(--white);
+  border-color: var(--info);
+}
+
+.cat-survival {
+  background: var(--success);
+  color: var(--white);
+  border-color: var(--success);
+}
+/* Unselected category style */
+.neutral {
+  background: var(--gray3);
+  color: var(--white);
   border: 1px solid #ccc;
-  background: #fff;
-  font-size: 14px;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.filter-btn:hover {
-  background: #f5f5f5;
-}
-
-.filter-btn.active {
-  background: #ef7c00;
-  color: white;
-  border-color: #ef7c00;
 }
 
 .listing-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
 }
+
+/* Empty state styling */
+.empty-state {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.empty-text {
+  font-weight: bold;
+  font-size: 60px;
+  color: var(--black);
+}
+
 </style>
