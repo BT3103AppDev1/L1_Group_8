@@ -147,6 +147,7 @@ export default {
                 payment_mode: this.payment_mode,
                 listing_cateogry: this.listing_category,
                 location_text: this.location_text,
+                status: "Awaiting",
             })
 
             // reset everything after upload
