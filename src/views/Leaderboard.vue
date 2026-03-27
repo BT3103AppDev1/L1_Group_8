@@ -46,7 +46,7 @@
                         v-for="(user, index) in rankedUser" 
                         :key="user.rank"
                         class="leaderboardTableRow" 
-                        :class="{ isCurrentUser: user.isCurrentUser, isEvenRank: index % 2 === 0 }"
+                        :class="{ isCurrentUser: user.isCurrentUser, isEvenRank: index % 2 !== 0 }"
                         :ref="user.isCurrentUser ? 'currentUserRow' : undefined">
 
                         <span class="colRank">{{ ordinal(user.rank) }}</span>
@@ -73,6 +73,7 @@
 import PageHeader from "../components/PageHeader.vue";
 import { db, auth } from '@/firebase'
 import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore' 
+import { seedAll } from "@/mockLeaderboard";
 
 function buildMonthLabels() {
     const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -91,6 +92,7 @@ function getMonthRange(offset) {
 
 const MONTH_LABELS = buildMonthLabels();
 const CURRENT_MONTH_INDEX = 2; 
+const DISPLAY_LIMIT = 20;
 
 export default {
     name: "Leaderboard",
@@ -146,7 +148,7 @@ export default {
     watch: {
         currentMonthIndex() {
             this.currentUserRowVisible = false;
-            this.$nextTick(() => this.setupObserver());
+            this.fetchLeaderboardData();
         }
     },
 
@@ -174,7 +176,7 @@ export default {
 
             try {
                 const { start, end } = getMonthRange(this.monthOffset);
-                const currentUid = auth.currentUser?.uid;
+                const currentUid = 'user023'
 
                 const ratingsSnap = await getDocs(query(collection(db, 'ratings'), where('rated_at', '>=', Timestamp.fromDate(start)), where('rated_at', '<', Timestamp.fromDate(end))));
 
@@ -204,27 +206,27 @@ export default {
                     totalPoints: pointsMap[uid],
                 })).sort((a, b) => b.totalPoints - a.totalPoints);
 
-                const top1Count = Math.max(1, Math.ceil(sorted.length * 0.10));
-                const top1 = sorted.slice(0, top1Count);
+                const displayCount = sorted.length <= DISPLAY_LIMIT ? sorted.length : DISPLAY_LIMIT;
+                const displayList = sorted.slice(0, displayCount);
 
-                this.rankedUser = top1.map((u, i) => ({
+                this.rankedUser = displayList.map((u, i) => ( {
                     rank: i + 1,
                     uid: u.uid,
                     username: u.username,
                     totalPoints: u.totalPoints,
-                    isCurrentUser: u.uid === currentUid
+                    isCurrentUser: u.uid === currentUid,
                 }));
 
                 const currentUserPosition = sorted.findIndex(u => u.uid === currentUid);
-                const isInTop = currentUserPosition !== -1 && currentUserPosition < top1Count;
+                const isInDisplayList = currentUserPosition !== -1 && currentUserPosition < displayCount;
 
-                if (currentUid && !isInTop) {
+                if (currentUid && !isInDisplayList) {
                     if (currentUserPosition === -1) {
-                        this.currentUserStatus = { rank : "N/A", points: 0 };
+                        this.currentUserStatus = { rank: "N/A", points: 0 };
                     } else {
                         const pct = Math.round(((currentUserPosition + 1) / sorted.length) * 100);
                         this.currentUserStatus = {
-                            rank: `${pct}%~`,
+                            rank: `${pct} %`,
                             points: sorted[currentUserPosition].totalPoints,
                         };
                     }
