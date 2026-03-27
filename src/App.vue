@@ -15,6 +15,7 @@
 <script>
 import TheFooter from '@/components/TheFooter.vue'
 import TheHeader from '@/components/TheHeader.vue'
+import '@/assets/main.css'
 
 export default {
   name: 'App',
