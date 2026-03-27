@@ -22,8 +22,13 @@
       <!-- Page title -->
       <h2 class="page-title">{{ tabTitle }}</h2>
 
+      <!-- Loading state -->
+      <div v-if="loading" class="empty-state">
+        <p class="empty-title">Loading...</p>
+      </div>
+
       <!-- Empty state -->
-      <div v-if="listings[activeTab].length === 0" class="empty-state">
+      <div v-else-if="listings[activeTab].length === 0" class="empty-state">
         <svg width="52" height="52" viewBox="0 0 52 52" fill="none" aria-hidden="true">
           <circle cx="26" cy="26" r="24" stroke="#B5B5B5" stroke-width="2"/>
           <path d="M18 26h16M26 18v16" stroke="#B5B5B5" stroke-width="2" stroke-linecap="round"/>
@@ -163,6 +168,9 @@
 
 <script>
 import ConfirmModal from '@/components/ConfirmModal.vue'
+import { db, auth } from '@/firebase.js'
+import { collection, query, where, getDocs } from 'firebase/firestore'
+import { onAuthStateChanged } from 'firebase/auth'
 
 export default {
   name: 'MyListingsView',
@@ -178,53 +186,48 @@ export default {
       ],
       toast: { show: false, text: '' },
       modal: { show: false, icon: '', title: '', message: '', confirmLabel: '', confirmClass: '', _fn: null },
+      loading: false,
 
       listings: {
-        awaiting: [
-          {
-            id: 'l1',
-            title: 'Need someone to help carry heavy items to UTown',
-            category: 'Survival',
-            location: 'University Health Centre',
-            createdAt: '29 February 2026',
-            applicants: [
-              { id: 'u1', name: 'Minh Hoang', initials: 'MH', color: '#3B82F6' },
-              { id: 'u2', name: 'Zhao En',    initials: 'ZE', color: '#6366F1' },
-              { id: 'u3', name: 'Ruoyi',      initials: 'RY', color: '#3B82F6' },
-            ],
-          },
-          {
-            id: 'l2',
-            title: 'CS2040S Study Buddy Needed for Finals Week',
-            category: 'Education',
-            location: 'COM1 Level 2 Study Area',
-            createdAt: '23 February 2026',
-            applicants: [],
-          },
-        ],
-        ongoing: [
-          {
-            id: 'l3',
-            title: 'Print and collect documents from UTown Starbucks',
-            category: 'Survival',
-            location: 'University Town',
-            createdAt: '29 February 2026',
-            provider: { name: 'Minh Hoang', initials: 'MH', color: '#3B82F6' },
-          },
-        ],
-        completed: [
-          {
-            id: 'l4',
-            title: 'Print and collect documents from UTown Starbucks',
-            category: 'Survival',
-            location: 'University Town',
-            createdAt: '29 February 2026',
-            provider: { name: 'Minh Hoang', initials: 'MH', color: '#3B82F6' },
-            ratingGiven: 5,
-          },
-        ],
+        awaiting:  [],
+        ongoing:   [],
+        completed: [],
       },
     }
+  },
+
+  async mounted() {
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) return
+      this.loading = true
+      try {
+        const q = query(collection(db, 'listings'), where('lister_id', '==', user.uid))
+        const snapshot = await getDocs(q)
+        const awaiting = [], ongoing = [], completed = []
+        snapshot.forEach(doc => {
+          const d = doc.data()
+          const listing = {
+            id: doc.id,
+            title: d.title,
+            category: d.listing_category,
+            location: d.location_text,
+            createdAt: d.created_at?.toDate().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) ?? '',
+            applicants: d.applicants ?? [],
+            provider: d.provider ?? null,
+            ratingGiven: d.rating_given ?? null,
+          }
+          const status = (d.status ?? '').trim().toLowerCase()
+          if (status === 'ongoing') ongoing.push(listing)
+          else if (status === 'completed') completed.push(listing)
+          else awaiting.push(listing)
+        })
+        this.listings = { awaiting, ongoing, completed }
+      } catch (e) {
+        console.error('Failed to load listings:', e)
+      } finally {
+        this.loading = false
+      }
+    })
   },
 
   computed: {

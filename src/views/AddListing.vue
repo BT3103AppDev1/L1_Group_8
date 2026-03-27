@@ -129,8 +129,8 @@ export default {
             } 
 
             // if (this.description && (this.wordCount < 10 || this.wordCount >800)) {
-            //     alert("Please stay within the word count of 10 to 800 words! You are currently at: ${this.wordCount}")
-            // }
+            //      alert("Please stay within the word count of 10 to 800 words! You are currently at: ${this.wordCount}")
+            //  }
 
             if (!this.payment_mode || !this.listing_category || !this.location_text) {
                 alert("Please fill in all the dropdown boxes!")

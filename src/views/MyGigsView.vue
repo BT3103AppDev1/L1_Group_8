@@ -22,8 +22,13 @@
       <!-- Page title -->
       <h2 class="page-title">{{ tabTitle }}</h2>
 
+      <!-- Loading state -->
+      <div v-if="loading" class="empty-state">
+        <p class="empty-title">Loading...</p>
+      </div>
+
       <!-- ════ AWAITING TAB ════ -->
-      <template v-if="activeTab === 'awaiting'">
+      <template v-if="!loading && activeTab === 'awaiting'">
         <div v-if="gigs.awaiting.length === 0" class="empty-state">
           <svg width="52" height="52" viewBox="0 0 52 52" fill="none" aria-hidden="true">
             <circle cx="26" cy="26" r="24" stroke="#B5B5B5" stroke-width="2"/>
@@ -72,7 +77,7 @@
       </template>
 
       <!-- ════ ONGOING TAB ════ -->
-      <template v-if="activeTab === 'ongoing'">
+      <template v-if="!loading && activeTab === 'ongoing'">
         <div v-if="gigs.ongoing.length === 0" class="empty-state">
           <svg width="52" height="52" viewBox="0 0 52 52" fill="none" aria-hidden="true">
             <circle cx="26" cy="26" r="24" stroke="#B5B5B5" stroke-width="2"/>
@@ -105,7 +110,7 @@
       </template>
 
       <!-- ════ COMPLETED TAB ════ -->
-      <template v-if="activeTab === 'completed'">
+      <template v-if="!loading && activeTab === 'completed'">
         <div v-if="gigs.completed.length === 0" class="empty-state">
           <svg width="52" height="52" viewBox="0 0 52 52" fill="none" aria-hidden="true">
             <circle cx="26" cy="26" r="24" stroke="#B5B5B5" stroke-width="2"/>
@@ -154,6 +159,9 @@
 
 <script>
 import ConfirmModal from '@/components/ConfirmModal.vue'
+import { db, auth } from '@/firebase.js'
+import { collection, query, where, getDocs } from 'firebase/firestore'
+import { onAuthStateChanged } from 'firebase/auth'
 
 export default {
   name: 'MyGigsView',
@@ -169,47 +177,59 @@ export default {
       ],
       toast: { show: false, message: '' },
       modal: { show: false, icon: '', title: '', message: '', confirmLabel: 'Confirm', confirmClass: 'btn-primary', _fn: null },
+      loading: false,
 
       gigs: {
-        awaiting: [
-          {
-            id: 101,
-            status: 'pending',
-            category: 'Survival',
-            title: 'Print and collect documents from UTown Starbucks',
-            location: 'University Town',
-            postedOn: '29 February 2026',
-          },
-          {
-            id: 102,
-            status: 'rejected',
-            category: 'Survival',
-            title: 'Print and collect documents from UTown Starbucks',
-            location: 'University Town',
-            postedOn: '29 February 2026',
-            daysUntilRemoval: 28,
-          },
-        ],
-        ongoing: [
-          {
-            id: 201,
-            category: 'Survival',
-            title: 'Print and collect documents from UTown Starbucks',
-            location: 'University Town',
-            postedOn: '29 February 2026',
-          },
-        ],
-        completed: [
-          {
-            id: 301,
-            category: 'Survival',
-            title: 'Print and collect documents from UTown Starbucks',
-            location: 'University Town',
-            postedOn: '29 February 2026',
-          },
-        ],
+        awaiting:  [],
+        ongoing:   [],
+        completed: [],
       },
     }
+  },
+
+  async mounted() {
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) return
+      this.loading = true
+      try {
+        const listingsRef = collection(db, 'listings')
+
+        // Awaiting: listings where user is in applicants array and still open
+        const awaitingSnap = await getDocs(
+          query(listingsRef, where('applicants', 'array-contains', user.uid), where('status', '==', 'Awaiting'))
+        )
+
+        // Ongoing: listings where user is the accepted provider
+        const ongoingSnap = await getDocs(
+          query(listingsRef, where('provider_id', '==', user.uid), where('status', '==', 'Ongoing'))
+        )
+
+        // Completed: listings where user was the provider and job is done
+        const completedSnap = await getDocs(
+          query(listingsRef, where('provider_id', '==', user.uid), where('status', '==', 'Completed'))
+        )
+
+        const mapGig = (doc) => {
+          const d = doc.data()
+          return {
+            id: doc.id,
+            status: 'pending',
+            category: d.listing_category,
+            title: d.title,
+            location: d.location_text,
+            postedOn: d.created_at?.toDate().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) ?? '',
+          }
+        }
+
+        this.gigs.awaiting  = awaitingSnap.docs.map(mapGig)
+        this.gigs.ongoing   = ongoingSnap.docs.map(mapGig)
+        this.gigs.completed = completedSnap.docs.map(mapGig)
+      } catch (e) {
+        console.error('Failed to load gigs:', e)
+      } finally {
+        this.loading = false
+      }
+    })
   },
 
   computed: {

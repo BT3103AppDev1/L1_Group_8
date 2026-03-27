@@ -8,8 +8,7 @@
     <span class="listing-category" :class="categoryClass(listing.category)">
       {{ listing.category }}
     </span>
-
-    <!-- Info group (with all the relevant information) -->
+    <!-- Info group -->
     <div class="listing-info-group">
       <p class="listing-info"><strong>Listed By:</strong> {{ listing.listedBy }}</p>
       <p class="listing-info"><strong>Posted On:</strong> {{ listing.postedOn }}</p>
@@ -18,7 +17,6 @@
       <p class="listing-info location-line">
         <span class="location-icon">
           <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-            <!--Location pin icon was inspired from My Listings Page-->
             <path d="M8 1C5.24 1 3 3.24 3 6c0 3.75 5 9 5 9s5-5.25 5-9c0-2.76-2.24-5-5-5zm0 6.75A1.75 1.75 0 118 4.25a1.75 1.75 0 010 3.5z" fill="var(--primary)"/>
           </svg>
         </span>
@@ -27,9 +25,10 @@
       <p class="listing-info"><strong>Status:</strong> {{ listing.status }}</p>
     </div>
     <!-- Button -->
-    <button class="listing-btn">
+    <button class="listing-btn" @click="$router.push(`/listing/${listing.id}`)">
       View Listing Details
     </button>
+
 
   </div>
 </template>
@@ -56,70 +55,70 @@ const categoryClass = (cat) => {
   background: var(--white);
   border: 1px solid var(--black3);
   border-radius: var(--radius);
-  padding: 1rem 1.2rem;
+  padding: 1.2rem 1.4rem;
   box-shadow: 0 1px 6px rgba(0,0,0,0.06);
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
-  margin-bottom: 1.2rem; 
+  gap: 0.55rem;
+  font-size: 1rem;
+  overflow: hidden; 
 }
 
 /* Title */
 .listing-title {
-  font-size: 1.05rem;
+  font-size: 1.35rem;
   font-weight: 700;
   color: var(--black2);
-  margin-bottom: 0.1rem;
+  margin-bottom: 0.2rem;
 }
 
 /* Category tag */
 .listing-category {
-  font-size: 0.7rem;
+  font-size: 0.9rem;
   font-weight: 700;
-  padding: 3px 10px;
+  padding: 4px 12px;
   border-radius: 20px;
   width: fit-content;
   color: var(--white);
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.4rem;
 }
 
 /* Category Tag colors */
-.listing-category.education {
-  background: var(--primary);
-}
-.listing-category.buddy {
-  background: var(--info);
-}
-.listing-category.survival {
-  background: var(--success);
-}
+.listing-category.education { background: var(--primary); }
+.listing-category.buddy { background: var(--info); }
+.listing-category.survival { background: var(--success); }
 
 /* Info group */
 .listing-info-group {
   display: flex;
   flex-direction: column;
-  gap: 0.18rem;
+  gap: 0.25rem;
 }
 
 .listing-info {
-  font-size: 0.85rem;
-  color: var(--gray3);
-  line-height: 1.28;
+  font-size: 1rem;
+  color: var(--black3);
+  line-height: 1.35;
 }
 
-/* Button */
+/* Button — clean full-width footer */
 .listing-btn {
-  margin-top: 0.8rem;
-  padding: 9px 18px;
-  font-size: 0.85rem;
+  margin-top: 1rem;
+  margin-left: -1.4rem;
+  margin-right: -1.4rem;
+  margin-bottom: -1.2rem;
+  width: calc(100% + 2.8rem);
+  padding: 14px 0;
+  font-size: 1rem;
   font-weight: 600;
-  border-radius: 6px;
   background: var(--secondary);
   color: var(--white);
   border: none;
   cursor: pointer;
   transition: 0.15s ease;
+  border-radius: 0 0 var(--radius) var(--radius);
 }
+
 .listing-btn:hover {
   opacity: 0.5;
 }
