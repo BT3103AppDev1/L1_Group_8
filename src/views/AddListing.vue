@@ -144,7 +144,7 @@ export default {
                 location_text: this.location_text,
                 picture_url: this.picture_url,
                 payment_mode: this.payment_mode,
-                listing_cateogry: this.listing_category,
+                listing_category: this.listing_category,
                 location_text: this.location_text,
                 status: "Awaiting",
             })
