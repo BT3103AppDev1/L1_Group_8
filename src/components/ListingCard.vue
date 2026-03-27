@@ -25,9 +25,10 @@
       <p class="listing-info"><strong>Status:</strong> {{ listing.status }}</p>
     </div>
     <!-- Button -->
-    <button class="listing-btn">
+    <button class="listing-btn" @click="$router.push(`/listing/${listing.id}`)">
       View Listing Details
     </button>
+
 
   </div>
 </template>
