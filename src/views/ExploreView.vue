@@ -56,9 +56,14 @@ onMounted(async () => {
       //Normalisee category to ensure it fit category button 
       category: data.listing_category?.trim(),
       //This one must change because I need the legitimate user with user id 1
+      //Make sure there is user table and then use the corresponding user_name
       listedBy: data.lister_id,
-      //Convert timestamp to readable date
-      postedOn: data.created_at?.toDate().toLocaleDateString(),
+      //Update date format into something more readable
+      postedOn: data.created_at?.toDate().toLocaleDateString("en-SG", {
+        year: "numeric",
+        month: "short",
+        day: "numeric"
+      }),
       //Raw timestamp for sorting purposes, but this will not be displayed for users
       createdAt: data.created_at?.toDate(),
       //Location 

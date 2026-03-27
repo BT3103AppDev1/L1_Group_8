@@ -13,6 +13,7 @@ import MyListingsView from '@/views/MyListingsView.vue'
 import MyGigsView from '@/views/MyGigsView.vue'
 import Leaderboard from '@/views/Leaderboard.vue'
 import Profile from '@/views/Profile.vue'
+import ListingDetailsView from '@/views/ListingDetailsView.vue'
 
 const routes = [
     {
@@ -141,6 +142,15 @@ const routes = [
             requiresAuth: true
         }
     },
+    {
+        path: '/listing/:id',
+        name: 'ListingDetails',
+        component: ListingDetailsView,
+        meta: {
+            showHeader: true,
+            requiresAuth: true
+    }
+},
     // Catch-all route for 404 Not Found
     {
         path: '/:pathMatch(.*)*',
