@@ -46,7 +46,7 @@
                         v-for="(user, index) in rankedUser" 
                         :key="user.rank"
                         class="leaderboardTableRow" 
-                        :class="{ isCurrentUser: user.isCurrentUser, isEvenRank: index % 2 === 0 }"
+                        :class="{ isCurrentUser: user.isCurrentUser, isEvenRank: index % 2 !== 0 && !user.isCurrentUser }"
                         :ref="user.isCurrentUser ? 'currentUserRow' : undefined">
 
                         <span class="colRank">{{ ordinal(user.rank) }}</span>
@@ -61,8 +61,10 @@
 
             <div v-if="showUserBar" class="currentUserBar">
                 <span class="myRank">{{ currentUserRank }}</span>
-                <span class="profilePic currentUserProfilePic"></span>
-                <span class="myName">{{ currentUsername }}</span>
+                <span class="myName">
+                    <span class="profilePic currentUserProfilePic"></span>
+                    {{ currentUsername }}
+                </span>
                 <span class="myPoints">{{ currentUserPoints }}</span>
             </div>
         </div>
@@ -73,6 +75,7 @@
 import PageHeader from "../components/PageHeader.vue";
 import { db, auth } from '@/firebase'
 import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore' 
+import { seedAll } from "@/mockLeaderboard";
 
 function buildMonthLabels() {
     const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -91,6 +94,7 @@ function getMonthRange(offset) {
 
 const MONTH_LABELS = buildMonthLabels();
 const CURRENT_MONTH_INDEX = 2; 
+const DISPLAY_LIMIT = 20;
 
 export default {
     name: "Leaderboard",
@@ -146,7 +150,7 @@ export default {
     watch: {
         currentMonthIndex() {
             this.currentUserRowVisible = false;
-            this.$nextTick(() => this.setupObserver());
+            this.fetchLeaderboardData();
         }
     },
 
@@ -174,7 +178,7 @@ export default {
 
             try {
                 const { start, end } = getMonthRange(this.monthOffset);
-                const currentUid = auth.currentUser?.uid;
+                const currentUid = 'user023'
 
                 const ratingsSnap = await getDocs(query(collection(db, 'ratings'), where('rated_at', '>=', Timestamp.fromDate(start)), where('rated_at', '<', Timestamp.fromDate(end))));
 
@@ -202,29 +206,36 @@ export default {
                     uid,
                     username: usersMap[uid]?.username || "Unknown User",
                     totalPoints: pointsMap[uid],
-                })).sort((a, b) => b.totalPoints - a.totalPoints);
+                })).sort((a, b) => {
+                    if (b.totalPoints !== a.totalPoints) return b.totalPoints - a.totalPoints;
+                    return a.username.localeCompare(b.username);
+                });
 
-                const top1Count = Math.max(1, Math.ceil(sorted.length * 0.10));
-                const top1 = sorted.slice(0, top1Count);
 
-                this.rankedUser = top1.map((u, i) => ({
-                    rank: i + 1,
-                    uid: u.uid,
-                    username: u.username,
-                    totalPoints: u.totalPoints,
-                    isCurrentUser: u.uid === currentUid
-                }));
+                const displayCount = sorted.length <= DISPLAY_LIMIT ? sorted.length : DISPLAY_LIMIT;
+                const displayList = sorted.slice(0, displayCount);
+
+                this.rankedUser = displayList.map((u, i) => {
+                    const rank = displayList.filter(other => other.totalPoints > u.totalPoints).length + 1;
+                    return {
+                        rank,
+                        uid: u.uid,
+                        username: u.username,
+                        totalPoints: u.totalPoints,
+                        isCurrentUser: u.uid === currentUid,
+                    }
+                })
 
                 const currentUserPosition = sorted.findIndex(u => u.uid === currentUid);
-                const isInTop = currentUserPosition !== -1 && currentUserPosition < top1Count;
+                const isInDisplayList = currentUserPosition !== -1 && currentUserPosition < displayCount;
 
-                if (currentUid && !isInTop) {
+                if (currentUid && !isInDisplayList) {
                     if (currentUserPosition === -1) {
-                        this.currentUserStatus = { rank : "N/A", points: 0 };
+                        this.currentUserStatus = { rank: "N/A", points: 0 };
                     } else {
                         const pct = Math.round(((currentUserPosition + 1) / sorted.length) * 100);
                         this.currentUserStatus = {
-                            rank: `${pct}%~`,
+                            rank: `${pct} %`,
                             points: sorted[currentUserPosition].totalPoints,
                         };
                     }
@@ -409,9 +420,9 @@ export default {
 
     .currentUserBar {
         background-color: #EF7C00;
-        justify-content: space-between;
         align-items: center;
-        padding: 10px;
+        justify-content: space-between;
+        padding: 10px 16px;
         display: flex;
         flex-shrink: 0;
     }
@@ -442,7 +453,7 @@ export default {
         justify-content: space-between;
         border: none;
         flex-shrink: 0;
-        padding: 10px;
+        padding: 10px 16px;
     }
 
     .headerRank, .headerName, .headerPoints {
@@ -454,7 +465,7 @@ export default {
     .leaderboardTableRow {
         display: flex;
         align-items: center;
-        padding: 10px;
+        padding: 10px 16px;
         background-color: white;
         justify-content: space-between;
     }
@@ -469,13 +480,20 @@ export default {
         background-color: #EF7C00;
     }
 
+    .leaderboardTableRow.isCurrentUser .colRank,
+    .leaderboardTableRow.isCurrentUser .username,
+    .leaderboardTableRow.isCurrentUser .colPoints {
+        color: white;
+        font-weight: bold;
+    }
+
     .leaderboardTableRow.isEvenRank {
         background-color: #E0E0E0;
     }
 
     .colRank, .username, .colPoints {
         font-size: 16px;
-        padding: 10px;
+        padding: 10px 0;
         color: black;
     }
 </style>
