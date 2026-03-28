@@ -188,7 +188,7 @@ export default {
   },
 
   async mounted() {
-    const user = getCurrentUser()
+    const user = await getCurrentUser()
     if (!user) return
     this.loading = true
     try {

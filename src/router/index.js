@@ -132,8 +132,8 @@ const router = createRouter({
     routes
 })
 
-router.beforeEach((to) => {
-    const user = getCurrentUser();
+router.beforeEach(async (to) => {
+    const user = await getCurrentUser();
 
     if (to.meta.requiresAuth && !user) {
         return '/sign-in';
