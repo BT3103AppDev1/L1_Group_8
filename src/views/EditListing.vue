@@ -55,7 +55,7 @@
 
             <!-- button -->
             <div class="button-design">
-            <button @click="updatelisting" class="update-button">UPDATE</button>
+            <button @click="updatelisting" class="btn-secondary">UPDATE</button>
             </div>
         </div>
     </div>
@@ -228,7 +228,8 @@ export default {
     font-family: Arial, Helvetica, sans-serif;
 }
 
-.upload-button {
+/* old one dont use pls */
+/* .upload-button {
     display: flex;
     padding: 8px;
     font-size: 16px;
@@ -239,7 +240,7 @@ export default {
     border: none;
     justify-content: center;
     align-items: center;
-}
+} */
 
 
 input {
