@@ -38,7 +38,11 @@ export default {
   },
 
   created() {
+<<<<<<< Updated upstream
     this._authUnsubscribe = onAuthStateChanged(auth, async (user) => {
+=======
+    this._authUnsubscribe = onAuthStateChanged(auth, (user) => {
+>>>>>>> Stashed changes
       if (this._firestoreUnsubscribe) {
         this._firestoreUnsubscribe();
         this._firestoreUnsubscribe = null;
@@ -80,6 +84,15 @@ export default {
 </script>
 
 <style scoped>
+<<<<<<< Updated upstream
+=======
+.main-content-with-header {
+  margin-top: 5rem;
+  padding: 1rem max(2rem, 7vw);
+  flex: 1;
+}
+
+>>>>>>> Stashed changes
 .fade-enter-active, .fade-leave-active {
   transition: opacity 0.2s ease, transform 0.2s ease;
 }

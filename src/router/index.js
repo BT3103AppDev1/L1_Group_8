@@ -67,7 +67,14 @@ const routes = [
         path: '/add-listing',
         name: 'AddListing',
         component: AddListing,
+<<<<<<< Updated upstream
         meta: { showHeader: true, requiresAuth: true }
+=======
+        meta: {
+            showHeader: true,
+            requiresAuth: true
+        }
+>>>>>>> Stashed changes
     },
     {
         path: '/my-listings',
@@ -79,7 +86,14 @@ const routes = [
         path: '/my-gigs',
         name: 'MyGigs',
         component: MyGigsView,
+<<<<<<< Updated upstream
         meta: { showHeader: true, requiresAuth: true }
+=======
+        meta: {
+            showHeader: true,
+            requiresAuth: true
+        }
+>>>>>>> Stashed changes
     },
     {
         path: '/leaderboard',
