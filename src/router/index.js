@@ -101,7 +101,11 @@ const routes = [
     {
         path: '/edit-listing/:listing_id', //id will be according to the listing id 
         name: 'EditListing',
-        component: EditListing
+        component: EditListing,
+        meta: {
+            showHeader: true,
+            requiresAuth: true
+        }
     },
     {
         path: '/my-listings',
@@ -142,6 +146,15 @@ const routes = [
     {
         path: '/users/:uid',
         name: 'PublicProfile',
+        component: Profile,
+        meta: {
+            showHeader: true,
+            requiresAuth: true
+        }
+    },
+    {
+        path: '/edit-profile',
+        name: 'EditProfile',
         component: Profile,
         meta: {
             showHeader: true,

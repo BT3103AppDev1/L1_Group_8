@@ -5,15 +5,15 @@
         <form novalidate @submit.prevent="handleSubmit" class="onboarding-form">
             <!-- Username -->
             <UsernameInput ref="usernameInput" @status-object="onUsernameStatusChange" 
-                :isSubmitting="isSubmitting"/>
+                :is-submitting="isSubmitting"/>
 
             <!-- Profile Picture -->
             <ProfilePictureInput ref="profilePicInput" @status-object="onProfilePicStatusChange" 
-                :isSubmitting="isSubmitting"/>
+                :is-submitting="isSubmitting"/>
 
             <!-- Contact Methods -->
             <ContactMethodsInput ref="contactMethodsInput" @contact-change="onContactChange"
-                :isSubmitting="isSubmitting"/>
+                :is-submitting="isSubmitting"/>
             
             <button type="submit" class="btn btn-secondary submit-btn" :disabled="isSubmitting">
                 Finish Setup
@@ -113,7 +113,7 @@ export default {
                 if (!user) {
                     throw new Error("No user found!");
                 }
-                const uid = user.uid;
+                const uid = user.uid; 
                 */
 
                 // Simulate user ID for testing without auth
