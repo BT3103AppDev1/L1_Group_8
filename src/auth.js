@@ -1,4 +1,3 @@
-import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase.js';
 
 let currentUser = auth.currentUser;
@@ -9,7 +8,8 @@ onAuthStateChanged(auth, (user) => {
   listeners.forEach(listener => listener(user));
 });
 
-function getCurrentUser() {
+async function getCurrentUser() {
+  await auth.authStateReady();
   return currentUser;
 }
 

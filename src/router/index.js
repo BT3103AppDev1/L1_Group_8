@@ -21,155 +21,104 @@ const routes = [
         path: '/sign-in',
         name: 'SignIn',
         component: SignIn,
-        meta: {
-            showHeader: false,
-            requiresAuth: false
-        }
+        meta: { showHeader: false, requiresAuth: false }
     },
     {
         path: '/sign-up',
         name: 'SignUp',
         component: SignUp,
-        meta: {
-            showHeader: false,
-            requiresAuth: false
-        }
+        meta: { showHeader: false, requiresAuth: false }
     },
     {
         path: '/email-verification',
         name: 'EmailVerification',
         component: EmailVerification,
-        meta: {
-            showHeader: false,
-            requiresAuth: true
-        }
+        meta: { showHeader: false, requiresAuth: true }
     },
     {
         path: '/forgot-password',
         name: 'ForgotPassword',
         component: ForgotPassword,
-        meta: {
-            showHeader: false,
-            requiresAuth: false
-        }
+        meta: { showHeader: false, requiresAuth: false }
     },
     {
         path: '/reset-password',
         name: 'ResetPassword',
         component: ResetPassword,
-        meta: {
-            showHeader: false,
-            requiresAuth: false
-        }
+        meta: { showHeader: false, requiresAuth: false }
     },
     {
         path: '/consent',
         name: 'ConsentForm',
         component: ConsentForm,
-        meta: {
-            showHeader: false,
-            requiresAuth: true
-        }
+        meta: { showHeader: false, requiresAuth: true }
     },
     {
         path: '/onboarding',
         name: 'Onboarding',
         component: Onboarding,
-        meta: {
-            showHeader: false,
-            requiresAuth: true
-        }
+        meta: { showHeader: false, requiresAuth: true }
     },
     {
         path: '/',
         name: 'ExploreView',
         component: ExploreView,
-        meta: {
-            showHeader: true,
-            requiresAuth: true
-        }
+        meta: { showHeader: true, requiresAuth: true }
     },
-    {   
+    {
         path: '/add-listing',
         name: 'AddListing',
         component: AddListing,
-        meta: {
-            showHeader: true,
-            requiresAuth: true
-        }   
+        meta: { showHeader: true, requiresAuth: true }
     },
     {
         path: '/edit-listing/:listing_id', //id will be according to the listing id 
         name: 'EditListing',
         component: EditListing,
-        meta: {
-            showHeader: true,
-            requiresAuth: true
-        }
+        meta: { showHeader: true, requiresAuth: true }
     },
     {
         path: '/my-listings',
         name: 'MyListings',
         component: MyListingsView,
-        meta: {
-            showHeader: true,
-            requiresAuth: true
-        }
+        meta: { showHeader: true, requiresAuth: true }
     },
     {
         path: '/my-gigs',
         name: 'MyGigs',
         component: MyGigsView,
-        meta: {
-            showHeader: true,
-            requiresAuth: true
-        }   
+        meta: { showHeader: true, requiresAuth: true }
     },
     {
         path: '/leaderboard',
         name: 'Leaderboard',
         component: Leaderboard,
-        meta: {
-            showHeader: true,
-            requiresAuth: true
-        }
+        meta: { showHeader: true, requiresAuth: true }
     },
     {
         path: '/my-profile',
         name: 'PrivateProfile',
         component: Profile,
-        meta: {
-            showHeader: true,
-            requiresAuth: true
-        }
+        meta: { showHeader: true, requiresAuth: true }
     },
     {
         path: '/users/:uid',
         name: 'PublicProfile',
         component: Profile,
-        meta: {
-            showHeader: true,
-            requiresAuth: true
-        }
+        meta: { showHeader: true, requiresAuth: true }
     },
     {
         path: '/edit-profile',
         name: 'EditProfile',
         component: Profile,
-        meta: {
-            showHeader: true,
-            requiresAuth: true
-        }
+        meta: { showHeader: true, requiresAuth: true }
     },
     {
         path: '/listing/:id',
         name: 'ListingDetails',
         component: ListingDetailsView,
-        meta: {
-            showHeader: true,
-            requiresAuth: true
-    }
-},
+        meta: { showHeader: true, requiresAuth: true }
+    },
     // Catch-all route for 404 Not Found
     {
         path: '/:pathMatch(.*)*',
@@ -181,29 +130,18 @@ const routes = [
 const router = createRouter({
     history: createWebHistory(),
     routes
-})  
+})
 
-// Navigation guard to check for authentication on routes that require it
-router.beforeEach(async (to) => {
-    /* // TODO: remove comment before deplyment
-    const user = await getCurrentUser();
-    */
-    
-    /* // Stimulate not logged in
-    const user = false;
-    */
-
-    // Simulate logged in
-    const user = true;
+router.beforeEach((to) => {
+    const user = getCurrentUser();
 
     if (to.meta.requiresAuth && !user) {
         return '/sign-in';
     } else if (!to.meta.requiresAuth && user) {
-        // TODO: Confirm behaviour for logged-in users clicking password reset link
-        return '/'; 
+        return '/';
     }
-    
-    return true; // otherwise, allow navigation to proceed
+
+    return true;
 })
 
 export default router
