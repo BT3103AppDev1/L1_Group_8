@@ -32,63 +32,59 @@ export default {
   data() {
     return {
       profilePicUrl: null,
-
-      // store unsubscibe functions
       _authUnsubscribe: null,
       _firestoreUnsubscribe: null,
     }
   },
 
   created() {
-    // Listen for auth state changes
     this._authUnsubscribe = onAuthStateChanged(auth, async (user) => {
-      // Unsubscribe from previous Firestore listener if it exists
       if (this._firestoreUnsubscribe) {
         this._firestoreUnsubscribe();
         this._firestoreUnsubscribe = null;
       }
 
       if (user) {
-        // User is signed in
+        const userDocRef = doc(db, 'users', user.uid);
 
-        /* // TODO: remove comment when auth is available
-        const userDocRef = doc(db, 'users', user.uid); */
-
-        // Simulate user ID for testing without auth
-        const userDocRef = doc(db, "users", "mockUserId");
-
-        this._firestoreUnsubscribe = onSnapshot(userDocRef, (doc) => {
-          if (doc.exists) {
-            const data = doc.data();
+        this._firestoreUnsubscribe = onSnapshot(userDocRef, (snap) => {
+          if (snap.exists()) {
+            const data = snap.data();
             this.profilePicUrl = data.profilePicUrl || null;
+
+            const route = this.$route.path;
+            if (!data.email_verified) {
+              if (route !== '/email-verification') this.$router.replace('/email-verification');
+            } else if (!data.granted_consent) {
+              if (route !== '/consent') this.$router.replace('/consent');
+            } else if (!data.onboarded) {
+              if (route !== '/onboarding') this.$router.replace('/onboarding');
+            } else if (route === '/email-verification' || route === '/consent' || route === '/onboarding') {
+              this.$router.replace('/');
+            }
+          } else {
+            this.profilePicUrl = null;
           }
         });
       } else {
-        // User is signed out
         this.profilePicUrl = null;
       }
     });
   },
 
   beforeUnmount() {
-    // Clean up listeners
-    if (this._authUnsubscribe) {
-      this._authUnsubscribe();
-    }
-    if (this._firestoreUnsubscribe) {
-      this._firestoreUnsubscribe();
-    }
+    if (this._authUnsubscribe) this._authUnsubscribe();
+    if (this._firestoreUnsubscribe) this._firestoreUnsubscribe();
   },
 }
 </script>
 
 <style scoped>
-/* Fade transition */
 .fade-enter-active, .fade-leave-active {
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-.fade-enter-from{
+.fade-enter-from {
   opacity: 0;
   transform: translateY(5px);
 }
