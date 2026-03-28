@@ -159,9 +159,9 @@
 
 <script>
 import ConfirmModal from '@/components/ConfirmModal.vue'
-import { db, auth } from '@/firebase.js'
+import { db } from '@/firebase.js'
 import { collection, query, where, getDocs } from 'firebase/firestore'
-import { onAuthStateChanged } from 'firebase/auth'
+import { getCurrentUser } from '@/auth.js'
 
 export default {
   name: 'MyGigsView',
@@ -188,48 +188,47 @@ export default {
   },
 
   async mounted() {
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) return
-      this.loading = true
-      try {
-        const listingsRef = collection(db, 'listings')
+    const user = getCurrentUser()
+    if (!user) return
+    this.loading = true
+    try {
+      const listingsRef = collection(db, 'listings')
 
-        // Awaiting: listings where user is in applicants array and still open
-        const awaitingSnap = await getDocs(
-          query(listingsRef, where('applicants', 'array-contains', user.uid), where('status', '==', 'Awaiting'))
-        )
+      // Awaiting: listings where user is in applicants array and still open
+      const awaitingSnap = await getDocs(
+        query(listingsRef, where('applicants', 'array-contains', user.uid), where('status', '==', 'Awaiting'))
+      )
 
-        // Ongoing: listings where user is the accepted provider
-        const ongoingSnap = await getDocs(
-          query(listingsRef, where('provider_id', '==', user.uid), where('status', '==', 'Ongoing'))
-        )
+      // Ongoing: listings where user is the accepted provider
+      const ongoingSnap = await getDocs(
+        query(listingsRef, where('provider_id', '==', user.uid), where('status', '==', 'Ongoing'))
+      )
 
-        // Completed: listings where user was the provider and job is done
-        const completedSnap = await getDocs(
-          query(listingsRef, where('provider_id', '==', user.uid), where('status', '==', 'Completed'))
-        )
+      // Completed: listings where user was the provider and job is done
+      const completedSnap = await getDocs(
+        query(listingsRef, where('provider_id', '==', user.uid), where('status', '==', 'Completed'))
+      )
 
-        const mapGig = (doc) => {
-          const d = doc.data()
-          return {
-            id: doc.id,
-            status: 'pending',
-            category: d.listing_category,
-            title: d.title,
-            location: d.location_text,
-            postedOn: d.created_at?.toDate().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) ?? '',
-          }
+      const mapGig = (doc) => {
+        const d = doc.data()
+        return {
+          id: doc.id,
+          status: 'pending',
+          category: d.listing_category,
+          title: d.title,
+          location: d.location_text,
+          postedOn: d.created_at?.toDate().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) ?? '',
         }
-
-        this.gigs.awaiting  = awaitingSnap.docs.map(mapGig)
-        this.gigs.ongoing   = ongoingSnap.docs.map(mapGig)
-        this.gigs.completed = completedSnap.docs.map(mapGig)
-      } catch (e) {
-        console.error('Failed to load gigs:', e)
-      } finally {
-        this.loading = false
       }
-    })
+
+      this.gigs.awaiting  = awaitingSnap.docs.map(mapGig)
+      this.gigs.ongoing   = ongoingSnap.docs.map(mapGig)
+      this.gigs.completed = completedSnap.docs.map(mapGig)
+    } catch (e) {
+      console.error('Failed to load gigs:', e)
+    } finally {
+      this.loading = false
+    }
   },
 
   computed: {

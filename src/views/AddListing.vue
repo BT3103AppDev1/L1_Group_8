@@ -65,7 +65,7 @@
 
 <script>
 import { ref, computed } from 'vue'
-import { db, storage, auth } from "../firebase.js";
+import { db, auth } from "../firebase.js";
 import { addDoc, collection } from "firebase/firestore";
 import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage"
 import defaultPic from '@/assets/listing_pics/default_list_pic.jpg'
@@ -129,23 +129,22 @@ export default {
             } 
 
             // if (this.description && (this.wordCount < 10 || this.wordCount >800)) {
-            //     alert("Please stay within the word count of 10 to 800 words! You are currently at: ${this.wordCount}")
-            // }
+            //      alert("Please stay within the word count of 10 to 800 words! You are currently at: ${this.wordCount}")
+            //  }
 
             if (!this.payment_mode || !this.listing_category || !this.location_text) {
                 alert("Please fill in all the dropdown boxes!")
             } else
             try {
             await addDoc(collection(db, "listings"), {
-                // lister_id: this.lister_id, -> will need to check with xinyan later on the id part
-                listing_category: this.listing_category,
+                lister_id: 1, // randomly generaly first 
                 title: this.title,
                 description: this.description,
                 created_at: new Date(),
                 location_text: this.location_text,
                 picture_url: this.picture_url,
                 payment_mode: this.payment_mode,
-                listing_cateogry: this.listing_category,
+                listing_category: this.listing_category,
                 location_text: this.location_text,
                 status: "Awaiting",
             })
