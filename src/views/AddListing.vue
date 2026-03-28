@@ -91,7 +91,7 @@ export default {
     computed: {
         wordCount() {
             if (!this.description) return 0;
-            else return this.description.trim().length()
+            else return this.description.trim().split(/\s+/).length
 
         }
         
@@ -128,9 +128,10 @@ export default {
                 return;
             } 
 
-            // if (this.description && (this.wordCount < 10 || this.wordCount >800)) {
-            //      alert("Please stay within the word count of 10 to 800 words! You are currently at: ${this.wordCount}")
-            //  }
+            if (this.description && (this.wordCount < 10 || this.wordCount >800)) {
+                  alert(`Please stay within the word count of 10 to 800 words! You are currently at: ${this.wordCount} words`)
+                  return;
+              }
 
             if (!this.payment_mode || !this.listing_category || !this.location_text) {
                 alert("Please fill in all the dropdown boxes!")
