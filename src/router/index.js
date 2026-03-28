@@ -14,6 +14,7 @@ import MyGigsView from '@/views/MyGigsView.vue'
 import Leaderboard from '@/views/Leaderboard.vue'
 import Profile from '@/views/Profile.vue'
 import ListingDetailsView from '@/views/ListingDetailsView.vue'
+import EditListing from '@/views/EditListing.vue'
 
 const routes = [
     {
@@ -96,6 +97,11 @@ const routes = [
             showHeader: true,
             requiresAuth: true
         }   
+    },
+    {
+        path: '/edit-listing/:listing_id', //id will be according to the listing id 
+        name: 'EditListing',
+        component: EditListing
     },
     {
         path: '/my-listings',

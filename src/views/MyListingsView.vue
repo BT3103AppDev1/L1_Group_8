@@ -168,9 +168,9 @@
 
 <script>
 import ConfirmModal from '@/components/ConfirmModal.vue'
-import { db, auth } from '@/firebase.js'
+import { db } from '@/firebase.js'
 import { collection, query, where, getDocs } from 'firebase/firestore'
-import { onAuthStateChanged } from 'firebase/auth'
+import { getCurrentUser } from '@/auth.js'
 
 export default {
   name: 'MyListingsView',
@@ -197,37 +197,36 @@ export default {
   },
 
   async mounted() {
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) return
-      this.loading = true
-      try {
-        const q = query(collection(db, 'listings'), where('lister_id', '==', user.uid))
-        const snapshot = await getDocs(q)
-        const awaiting = [], ongoing = [], completed = []
-        snapshot.forEach(doc => {
-          const d = doc.data()
-          const listing = {
-            id: doc.id,
-            title: d.title,
-            category: d.listing_category,
-            location: d.location_text,
-            createdAt: d.created_at?.toDate().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) ?? '',
-            applicants: d.applicants ?? [],
-            provider: d.provider ?? null,
-            ratingGiven: d.rating_given ?? null,
-          }
-          const status = (d.status ?? '').trim().toLowerCase()
-          if (status === 'ongoing') ongoing.push(listing)
-          else if (status === 'completed') completed.push(listing)
-          else awaiting.push(listing)
-        })
-        this.listings = { awaiting, ongoing, completed }
-      } catch (e) {
-        console.error('Failed to load listings:', e)
-      } finally {
-        this.loading = false
-      }
-    })
+    const user = getCurrentUser()
+    if (!user) return
+    this.loading = true
+    try {
+      const q = query(collection(db, 'listings'), where('lister_id', '==', user.uid))
+      const snapshot = await getDocs(q)
+      const awaiting = [], ongoing = [], completed = []
+      snapshot.forEach(doc => {
+        const d = doc.data()
+        const listing = {
+          id: doc.id,
+          title: d.title,
+          category: d.listing_category,
+          location: d.location_text,
+          createdAt: d.created_at?.toDate().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) ?? '',
+          applicants: d.applicants ?? [],
+          provider: d.provider ?? null,
+          ratingGiven: d.rating_given ?? null,
+        }
+        const status = (d.status ?? '').trim().toLowerCase()
+        if (status === 'ongoing') ongoing.push(listing)
+        else if (status === 'completed') completed.push(listing)
+        else awaiting.push(listing)
+      })
+      this.listings = { awaiting, ongoing, completed }
+    } catch (e) {
+      console.error('Failed to load listings:', e)
+    } finally {
+      this.loading = false
+    }
   },
 
   computed: {

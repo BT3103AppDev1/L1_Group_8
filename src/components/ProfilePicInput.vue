@@ -38,18 +38,24 @@
         <p class="input-info file-requirements">
             Supported file types: jpg, jpeg, png, heic, heif. Maximum file size: 5MB.
         </p>
+
+        <crop-modal :showModal="showCropModal" :imageSrc="rawImageSrc" 
+            @update:showModal="onCropModalClose" @crop-done="onCropDone"/>
     </div>
 </template>
 
 <script>
 import defaultProfilePic from '@/assets/default-profile-pic.png';
+import CropModal from './CropModal.vue';
+
 const ALLOWED_EXTENSIONS = /\.(jpg|jpeg|png|heic|heif)$/i;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/heic", "image/heif"];
 const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
-const OUTPUT_SIZE = 400; // 400 × 400 px
 
 export default {
     name: "ProfilePictureInput",
+
+    components: { CropModal },
 
     props: {
         initialUrl: {
@@ -72,6 +78,8 @@ export default {
             // ready: file selected and valid, blob ready for parent to upload on submit
             blob: null,
             defaultProfilePic,
+            showCropModal: false,
+            rawImageSrc: "",
         };
     },
 
@@ -97,72 +105,45 @@ export default {
             this.status = "idle";
         },
 
-        async onFileSelected(event) {
+        onFileSelected(event) {
             const file = event.target.files?.[0];
-            if (!file) return;
+            if (!file) {
+                return;
+            }
 
             if (!ALLOWED_EXTENSIONS.test(file.name) || !ALLOWED_TYPES.includes(file.type)) {
                 alert("Invalid file type. Please upload a jpg, jpeg, png, heic, or heif file.");
-
                 return;
             }
+
             if (file.size > MAX_SIZE_BYTES) {
                 alert("File is too large. Maximum allowed size is 5 MB.");
                 return;
             }
 
-            try {
-                const { blob, dataUrl } = await this.processImage(file);
-                this.profilePicUrl = dataUrl;
-                this.blob = blob;
-                this.status = "ready";
-            } catch {
-                alert("Failed to upload photo. Please try again.");
+            this.rawImageSrc = URL.createObjectURL(file);
+            this.showCropModal = true;
+        },
+
+        onCropModalClose(val) {
+            // opening handled by onFileSelected, so just need to clean up when closing
+            if (!val) {
+                this.showCropModal = false;
+                if (this.rawImageSrc) {
+                    URL.revokeObjectURL(this.rawImageSrc);
+                    this.rawImageSrc = "";
+                }
             }
         },
 
-        processImage(file) {
-            return new Promise((resolve, reject) => {
-                const image = new Image();
-                const objectUrl = URL.createObjectURL(file);
-
-                image.onload = () => {
-                    URL.revokeObjectURL(objectUrl);
-
-                    const { naturalWidth: w, naturalHeight: h } = image;
-                    const minSide = Math.min(w, h);
-                    const x = (w - minSide) / 2;
-                    const y = (h - minSide) / 2;
-
-                    const canvas = document.createElement("canvas");
-                    canvas.width = OUTPUT_SIZE;
-                    canvas.height = OUTPUT_SIZE;
-                    const context = canvas.getContext("2d");
-                    context.drawImage(image, x, y, minSide, minSide, 0, 0, OUTPUT_SIZE, OUTPUT_SIZE);
-
-                    canvas.toBlob(
-                        (blob) => {
-                            if (!blob) { 
-                                reject(new Error("Canvas toBlob failed")); 
-                                return; 
-                            }
-                            const reader = new FileReader();
-                            reader.onload = (e) => resolve({ blob, dataUrl: e.target.result });
-                            reader.onerror = reject;
-                            reader.readAsDataURL(blob);
-                        },
-                        "image/jpeg",
-                        0.85
-                    );
-                };
-
-                image.onerror = reject;
-                image.src = objectUrl;
-            });
-        },
-
-        getBlob() {
-            return this.blob;
+        onCropDone({ blob, dataUrl }) {
+            if (this.rawImageSrc) {
+                URL.revokeObjectURL(this.rawImageSrc);
+                this.rawImageSrc = "";
+            }
+            this.profilePicUrl = dataUrl;
+            this.blob = blob;
+            this.status = "ready";
         },
 
         emitStatus() {
