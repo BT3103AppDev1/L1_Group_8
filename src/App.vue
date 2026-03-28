@@ -61,6 +61,17 @@ export default {
           if (doc.exists) {
             const data = doc.data();
             this.profilePicUrl = data.profilePicUrl || null;
+
+            const route = this.$route.path;
+            if (!data.email_verified && route !== '/email-verification') {
+              this.$router.replace('/email-verification');
+            } else if (!data.granted_consent && route !== '/consent') {
+              this.$router.replace('/consent');
+            } else if (!data.onboarded && route !== '/onboarding') {
+              this.$router.replace('/onboarding');
+            } else if (route === '/email-verification' || route === '/consent' || route === '/onboarding') {
+              this.$router.replace('/');
+            }
           } else {
             this.profilePicUrl = null;
           }
