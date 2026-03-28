@@ -32,7 +32,7 @@ import ProfilePictureInput from '@/components/ProfilePicInput.vue';
 import ContactMethodsInput from '@/components/ContactMethodsInput.vue';
 import { getCurrentUser } from '@/auth.js';
 import { db } from '@/firebase.js';
-import { setDoc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import axios from 'axios';
 
 export default {
@@ -108,11 +108,16 @@ export default {
             this.isSubmitting = true;
 
             try {
+                /* TODO: remove comment when auth is available
                 const user = getCurrentUser();
                 if (!user) {
                     throw new Error("No user found!");
                 }
                 const uid = user.uid;
+                */
+
+                // Simulate user ID for testing without auth
+                const uid = "zrxX7Bt3kZSaPYpyBuaokbJz47i1";
 
                 let profilePicUrl = null;
                 if (this.profilePicBlob) {
