@@ -181,14 +181,6 @@ body {
   box-shadow: var(--card-shadow);
 }
 
-.input-field--valid {
-  border-color: var(--success) !important;
-}
-
-.input-field--valid:focus {
-  box-shadow: var(--card-shadow);
-}
-
 .input-info {
   font-size: 0.875rem;
   color: var(--gray3);

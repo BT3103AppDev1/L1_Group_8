@@ -11,7 +11,6 @@
             class="input-field"
             :class="{
                 'input-field--invalid': status === 'invalid',
-                'input-field--valid': status === 'valid',
             }"
             autocomplete="off"
             maxlength="20"
@@ -176,3 +175,9 @@ export default {
     },
 };
 </script>
+
+<style scoped>
+.input-info--checking {
+  min-height: 3em;
+}
+</style>

@@ -1,7 +1,7 @@
 <template>
     <div class="container">
         <div class="listing-card">
-            <h1 style="text-align: center">Create New Listing</h1>
+            <h1 style="text-align: center">Edit Listing</h1>
 
             <!-- insert photo section -->
             <div class="photo">
@@ -55,7 +55,7 @@
 
             <!-- button -->
             <div class="button-design">
-            <button @click="createlisting" class="upload-button">UPLOAD</button>
+            <button @click="updatelisting" class="update-button">UPDATE</button>
             </div>
         </div>
     </div>
@@ -66,15 +66,17 @@
 <script>
 import { ref, computed } from 'vue'
 import { db, auth } from "../firebase.js";
-import { addDoc, collection } from "firebase/firestore";
-import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage"
+import { addDoc, collection, getDoc, updateDoc } from "firebase/firestore";
+// import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage"
 import defaultPic from '@/assets/listing_pics/default_list_pic.jpg'
+import { AvatarFallback } from 'radix-vue';
 
 
 export default {
-    name: 'AddListing',
+    name: 'EditListing',
     data(){
         return {
+            listing_id: null, //store ID 
             listing_pic: defaultPic, //only for display
             selectedlistpic: null, 
             picture_url: "", //go into firestore
@@ -97,7 +99,84 @@ export default {
         
     },
 
+    // get rdy to get the old data
+    async mounted() {
+        this.listing_id = this.$route.params.listing_id; //get listing_id from url
+        console.log(listing_id);
+
+        if (!this.listing_id) { //just in case no listing with this id
+            alert("Listing unavailable");
+            this.$router.push('/my-listings') //just redirect them back to my listings
+            return
+        };
+
+        await this.getListingInfo(); //get old listing data
+    },
+
     methods: {
+        async getListingInfo() {
+            try { 
+                const doclistRef = doc(db, "listings", this.listing_id);
+                const docgetlist = await getDoc(doclistRef);
+
+                if (docgetlist.exists()) {
+                    const data = docgetlist.data();
+                    this.title = data.title;
+                    this.description = data.description;
+                    this.payment_mode = data.payment_mode,
+                    this.listing_category = data.listing_category,
+                    this.location_text= data.location_text,
+                    this.listing_pic = data.picture_url //this one i got to edit after that following xinyan's stroage for the pics
+                }
+
+            }
+            catch(error) {
+                console.error("Error", error)
+                alert("No info collected")
+            }
+        },
+
+        async updatelisting() { //to save the changes made 
+            this.submitted = true;
+
+            if (!this.title || !this.description) {
+                alert("Please fill in the title and description!")
+                return;
+            } 
+
+            //this word count one i still got to work out
+            // if (this.description && (this.wordCount < 10 || this.wordCount >800)) {
+            //      alert("Please stay within the word count of 10 to 800 words! You are currently at: ${this.wordCount}")
+            //  }
+
+            if (!this.payment_mode || !this.listing_category || !this.location_text) {
+                alert("Please fill in all the dropdown boxes!")
+            }
+            
+            try {
+                const doclistRef = doc(db, "listings", this.listing_id);
+                await updateDoc(doclistRef, {
+                    title: this.title,
+                    description: this.description,
+                    payment_mode: this.payment_mode,
+                    listing_category: this.listing_category,
+                    location_text: this.location_text,
+                    listing_pic: data.picture_url,
+                    created_at: new Date() //just update the timing
+
+
+                });
+                alert("Successful Update!")
+                this.$router.push('/my-listings') //send person back to their listings pg 
+            } catch(error) {
+                console.error("Error", error)
+                alert("Unable to update")
+            }
+
+            
+        },
+
+
         async uploadlistingpic(event) {
             const file = event.target.files[0]; //just take first one in case user select too many
             if (!file) return;
@@ -121,52 +200,6 @@ export default {
             return await getDownloadURL(storageRef);
 
         },
-
-        async createlisting() {
-            if (!this.title || !this.description) {
-                alert("Please fill in the title and description!")
-                return;
-            } 
-
-            // if (this.description && (this.wordCount < 10 || this.wordCount >800)) {
-            //      alert("Please stay within the word count of 10 to 800 words! You are currently at: ${this.wordCount}")
-            //  }
-
-            if (!this.payment_mode || !this.listing_category || !this.location_text) {
-                alert("Please fill in all the dropdown boxes!")
-            } else
-            try {
-            await addDoc(collection(db, "listings"), {
-                lister_id: 1, // randomly generaly first 
-                title: this.title,
-                description: this.description,
-                created_at: new Date(),
-                location_text: this.location_text,
-                picture_url: this.picture_url,
-                payment_mode: this.payment_mode,
-                listing_category: this.listing_category,
-                location_text: this.location_text,
-                status: "Awaiting",
-            })
-
-            // reset everything after upload
-            alert("Successful Upload!")
-            this.selectedlistpic=null;
-            this.listing_pic= defaultPic;
-            this.title = "";
-            this.description = "";
-            this.payment_mode = "";
-            this.listing_category = "";
-            this.location_text = "";
-
-            //
-            document.querySelector('input[type="file"]').value = ""; //empty the choose file again
-    
-            } catch(error) {
-        console.log("Error", error)
-        alert("Unsuccessful Upload...")
-            }
-    }
     }
 }
 </script>

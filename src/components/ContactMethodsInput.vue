@@ -110,7 +110,6 @@
                     class="input-field telegram-input"
                     :class="{
                         'input-field--invalid': telegramStatus === 'invalid',
-                        'input-field--valid': telegramStatus === 'valid',
                     }"
                     :disabled="isSubmitting"
                     autocomplete="off"
@@ -311,6 +310,9 @@ export default {
         // call by parent to check if form is valid before submit 
         triggerValidation() {
             this.triggeredValidation = true;
+
+            this.emitChange(); // ensure parent has the latest values 
+
             if (!this.hasContactMethods) {
                 return false;
             }
