@@ -65,7 +65,7 @@
 
 <script>
 import { ref, computed } from 'vue'
-import { db, storage, auth } from "../firebase.js";
+import { db, auth } from "../firebase.js";
 import { addDoc, collection } from "firebase/firestore";
 import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage"
 import defaultPic from '@/assets/listing_pics/default_list_pic.jpg'
