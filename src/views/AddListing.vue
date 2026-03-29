@@ -147,6 +147,7 @@ export default {
                 listing_category: this.listing_category,
                 location_text: this.location_text,
                 status: "Awaiting",
+                count: 0 //Initialised count here
             })
 
             // reset everything after upload
