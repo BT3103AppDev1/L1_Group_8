@@ -246,6 +246,7 @@ export default {
 </script>
 
 
+
 <style scoped>
 .container {
     display: flex;
@@ -253,6 +254,31 @@ export default {
     align-items: center;
 
 }
+
+.photo {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto 10px auto;
+    overflow: hidden;
+    border-radius: 10px;
+
+}
+
+.cropper-img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: contain;
+}
+
+.cropper-actions {
+    margin: 10px 0;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+
 .listing-card {
     width: 600px;
     border-radius: 10px;
