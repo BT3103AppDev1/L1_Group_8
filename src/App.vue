@@ -94,7 +94,7 @@ export default {
 
 <style scoped>
 .main-content-with-header {
-  margin-top: 5rem; /* height of header */
+  margin-top: 4.5rem; /* height of header */
   padding: 1rem max(2rem, 7vw);
   flex: 1;
 }
