@@ -55,8 +55,6 @@
                 <span v-else>Sign In</span>
             </button>
 
-<<<<<<< Updated upstream
-=======
             <div class="divider-row">
                 <hr class="divider" /><span class="divider-label">or</span><hr class="divider" />
             </div>
@@ -71,7 +69,6 @@
                 Sign in with Google
             </button>
 
->>>>>>> Stashed changes
             <p class="switch-text">
                 Don't have an account?
                 <button type="button" class="text-link" @click="switchMode('signup')">Sign Up</button>
@@ -143,8 +140,6 @@
                 <span v-else>Create Account</span>
             </button>
 
-<<<<<<< Updated upstream
-=======
             <div class="divider-row">
                 <hr class="divider" /><span class="divider-label">or</span><hr class="divider" />
             </div>
@@ -159,7 +154,6 @@
                 Sign up with Google
             </button>
 
->>>>>>> Stashed changes
             <p class="switch-text">
                 Already have an account?
                 <button type="button" class="text-link" @click="switchMode('signin')">Sign In</button>
@@ -173,15 +167,10 @@ import {
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
     sendEmailVerification,
-<<<<<<< Updated upstream
-} from 'firebase/auth';
-import { doc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
-=======
     signInWithPopup,
     GoogleAuthProvider,
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
->>>>>>> Stashed changes
 import { auth, db } from '@/firebase.js';
 import PublicPageLayout from '@/components/PublicPageLayout.vue';
 
@@ -303,8 +292,6 @@ export default {
             return valid;
         },
 
-<<<<<<< Updated upstream
-=======
         async handleGoogleSignIn() {
             this.signIn.generalError = '';
             this.signIn.loading = true;
@@ -333,7 +320,6 @@ export default {
             }
         },
 
->>>>>>> Stashed changes
         async handleSignUp() {
             if (!this.validateSignUp()) return;
             this.signUp.loading = true;
@@ -481,8 +467,6 @@ export default {
     text-decoration: underline;
     cursor: pointer;
 }
-<<<<<<< Updated upstream
-=======
 
 .divider-row {
     display: flex;
@@ -491,7 +475,7 @@ export default {
     margin: 0.25rem 0;
 }
 
-.divider-row .divider {
+.divider {
     flex: 1;
     border: none;
     border-top: 1px solid rgba(0, 0, 0, 0.12);
@@ -499,30 +483,30 @@ export default {
 
 .divider-label {
     font-size: 0.8rem;
-    color: var(--gray4);
+    color: var(--gray3);
 }
 
 .btn-google {
-    width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1rem;
+    gap: 0.6rem;
+    width: 100%;
+    padding: 0.7rem 0;
     background: #fff;
-    border: 1.5px solid #dadce0;
+    border: 1px solid rgba(0, 0, 0, 0.2);
     border-radius: var(--radius);
-    font-size: 0.9375rem;
-    font-weight: 600;
+    font-size: 0.95rem;
     font-family: inherit;
-    color: var(--black2);
+    font-weight: 500;
+    color: #3c4043;
     cursor: pointer;
     transition: background 0.15s, box-shadow 0.15s;
 }
 
-.btn-google:hover {
-    background: #f8f9fa;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+.btn-google:hover:not(:disabled) {
+    background: #f8f8f8;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
 }
 
 .btn-google:disabled {
@@ -531,9 +515,7 @@ export default {
 }
 
 .google-icon {
-    width: 20px;
-    height: 20px;
-    flex-shrink: 0;
+    width: 1.1rem;
+    height: 1.1rem;
 }
->>>>>>> Stashed changes
 </style>

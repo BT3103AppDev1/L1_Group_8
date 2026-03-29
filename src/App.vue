@@ -50,14 +50,10 @@ export default {
       if (user) {
         // user is signed in
 
-        /* // TODO: remove comment when auth is available
-        const userDocRef = doc(db, "users", user.uid); */
-
-        // Simulate user ID for testing without auth
-        const userDocRef = doc(db, "users", "mockUserId");
+        const userDocRef = doc(db, "users", user.uid);
 
         this._firestoreUnsubscribe = onSnapshot(userDocRef, (doc) => {
-          if (doc.exists) {
+          if (doc.exists()) {
             const data = doc.data();
             this.profilePicUrl = data.profilePicUrl || null;
 

@@ -1,3 +1,4 @@
+import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase.js';
 
 // TODO: remove hardcode when auth is live
