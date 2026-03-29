@@ -1,3 +1,4 @@
+import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase.js';
 
 let currentUser = auth.currentUser;
