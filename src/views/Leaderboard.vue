@@ -46,7 +46,7 @@
                         v-for="(user, index) in rankedUser" 
                         :key="user.rank"
                         class="leaderboardTableRow" 
-                        :class="{ isCurrentUser: user.isCurrentUser, isEvenRank: index % 2 !== 0 }"
+                        :class="{ isCurrentUser: user.isCurrentUser, isEvenRank: index % 2 !== 0 && !user.isCurrentUser }"
                         :ref="user.isCurrentUser ? 'currentUserRow' : undefined">
 
                         <span class="colRank">{{ ordinal(user.rank) }}</span>
@@ -61,8 +61,10 @@
 
             <div v-if="showUserBar" class="currentUserBar">
                 <span class="myRank">{{ currentUserRank }}</span>
-                <span class="profilePic currentUserProfilePic"></span>
-                <span class="myName">{{ currentUsername }}</span>
+                <span class="myName">
+                    <span class="profilePic currentUserProfilePic"></span>
+                    {{ currentUsername }}
+                </span>
                 <span class="myPoints">{{ currentUserPoints }}</span>
             </div>
         </div>
@@ -204,18 +206,25 @@ export default {
                     uid,
                     username: usersMap[uid]?.username || "Unknown User",
                     totalPoints: pointsMap[uid],
-                })).sort((a, b) => b.totalPoints - a.totalPoints);
+                })).sort((a, b) => {
+                    if (b.totalPoints !== a.totalPoints) return b.totalPoints - a.totalPoints;
+                    return a.username.localeCompare(b.username);
+                });
+
 
                 const displayCount = sorted.length <= DISPLAY_LIMIT ? sorted.length : DISPLAY_LIMIT;
                 const displayList = sorted.slice(0, displayCount);
 
-                this.rankedUser = displayList.map((u, i) => ( {
-                    rank: i + 1,
-                    uid: u.uid,
-                    username: u.username,
-                    totalPoints: u.totalPoints,
-                    isCurrentUser: u.uid === currentUid,
-                }));
+                this.rankedUser = displayList.map((u, i) => {
+                    const rank = displayList.filter(other => other.totalPoints > u.totalPoints).length + 1;
+                    return {
+                        rank,
+                        uid: u.uid,
+                        username: u.username,
+                        totalPoints: u.totalPoints,
+                        isCurrentUser: u.uid === currentUid,
+                    }
+                })
 
                 const currentUserPosition = sorted.findIndex(u => u.uid === currentUid);
                 const isInDisplayList = currentUserPosition !== -1 && currentUserPosition < displayCount;
@@ -411,9 +420,9 @@ export default {
 
     .currentUserBar {
         background-color: #EF7C00;
-        justify-content: space-between;
         align-items: center;
-        padding: 10px;
+        justify-content: space-between;
+        padding: 10px 16px;
         display: flex;
         flex-shrink: 0;
     }
@@ -444,7 +453,7 @@ export default {
         justify-content: space-between;
         border: none;
         flex-shrink: 0;
-        padding: 10px;
+        padding: 10px 16px;
     }
 
     .headerRank, .headerName, .headerPoints {
@@ -456,7 +465,7 @@ export default {
     .leaderboardTableRow {
         display: flex;
         align-items: center;
-        padding: 10px;
+        padding: 10px 16px;
         background-color: white;
         justify-content: space-between;
     }
@@ -471,13 +480,20 @@ export default {
         background-color: #EF7C00;
     }
 
+    .leaderboardTableRow.isCurrentUser .colRank,
+    .leaderboardTableRow.isCurrentUser .username,
+    .leaderboardTableRow.isCurrentUser .colPoints {
+        color: white;
+        font-weight: bold;
+    }
+
     .leaderboardTableRow.isEvenRank {
         background-color: #E0E0E0;
     }
 
     .colRank, .username, .colPoints {
         font-size: 16px;
-        padding: 10px;
+        padding: 10px 0;
         color: black;
     }
 </style>

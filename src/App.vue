@@ -16,7 +16,7 @@
 <script>
 import TheFooter from '@/components/TheFooter.vue';
 import TheHeader from './components/TheHeader.vue';
-import { onAuthUserChanged } from './auth';
+import { onAuthUserChanged } from './auth.js';
 import { db } from '@/firebase.js';
 import { doc, onSnapshot } from 'firebase/firestore';
 import '@/assets/main.css';
@@ -38,7 +38,6 @@ export default {
   },
 
   created() {
-
     // Listen for auth state changes
     onAuthUserChanged((user) => {
       this.user = user;
@@ -49,7 +48,7 @@ export default {
       }
 
       if (user) {
-        // User is signed in
+        // user is signed in
 
         /* // TODO: remove comment when auth is available
         const userDocRef = doc(db, "users", user.uid); */
@@ -77,7 +76,6 @@ export default {
           }
         });
       } else {
-        // User is signed out
         this.profilePicUrl = null;
       }
     });
@@ -104,7 +102,7 @@ export default {
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-.fade-enter-from{
+.fade-enter-from {
   opacity: 0;
   transform: translateY(5px);
 }

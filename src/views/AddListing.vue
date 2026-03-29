@@ -73,7 +73,8 @@
 
 <script>
 import { ref, computed } from 'vue'
-import { db, auth } from "../firebase.js";
+import { db } from "../firebase.js";
+import { getCurrentUser } from '@/auth.js';
 import { addDoc, collection } from "firebase/firestore";
 import defaultPic from '@/assets/listing_pics/default_list_pic.jpg'
 import axios from 'axios';
@@ -235,7 +236,7 @@ export default {
                 const picture_url = await this.uploadToCloudinary(this.file_to_upload);
 
             await addDoc(collection(db, "listings"), {
-                lister_id: 1, // randomly generaly first 
+                lister_id: getCurrentUser()?.uid ?? null,
                 title: this.title,
                 description: this.description,
                 created_at: new Date(),

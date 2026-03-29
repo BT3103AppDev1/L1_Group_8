@@ -147,13 +147,13 @@ export default {
 
             try {
                 /* // TODO: remove comment after authentication is set up
-                const user = getCurrentUser();
+                const user = await getCurrentUser();
                 if (!user) {
                     throw new Error('User not authenticated');
                 }
                 */
 
-                // stimulate user.uid
+                // simulate user.uid
                 let user = {uid: "user1"};
 
                 await updateDoc(doc(db, 'users', user.uid), {
@@ -173,7 +173,7 @@ export default {
             this.isLoadingDecline = true;
 
             try {
-                const user = getCurrentUser();
+                const user = await getCurrentUser();
                 if (!user) {
                     throw new Error('User not authenticated');
                 }
