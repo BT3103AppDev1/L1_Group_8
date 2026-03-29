@@ -139,7 +139,7 @@ export default {
                 });
             }
             );
-        },
+        }, 
 
         //reference xinyan's cropper function
         // initCropper() {
