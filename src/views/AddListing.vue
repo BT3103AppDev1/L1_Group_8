@@ -65,9 +65,9 @@
 
 <script>
 import { ref, computed } from 'vue'
-import { db, auth } from "../firebase.js";
+import { db } from "../firebase.js";
+import { getCurrentUser } from '@/auth.js';
 import { addDoc, collection } from "firebase/firestore";
-import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage"
 import defaultPic from '@/assets/listing_pics/default_list_pic.jpg'
 
 
@@ -137,7 +137,7 @@ export default {
             } else
             try {
             await addDoc(collection(db, "listings"), {
-                lister_id: 1, // randomly generaly first 
+                lister_id: getCurrentUser()?.uid ?? null,
                 title: this.title,
                 description: this.description,
                 created_at: new Date(),
