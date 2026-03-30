@@ -247,6 +247,7 @@ export default {
 
                 await addDoc(collection(db, "listings"), {
                 lister_id: getCurrentUser()?.uid ?? null, 
+                lister_name: getCurrentUser()?.displayName ?? "Unknown User",
                 title: this.title,
                 description: this.description,
                 created_at: new Date(),

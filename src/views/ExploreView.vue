@@ -56,8 +56,7 @@ onMounted(async () => {
       //Normalisee category to ensure it fit category button 
       category: data.listing_category?.trim(),
       //Make sure there is user table and then use the corresponding user_name
-      //This will be edited in the future when we have user profile page
-      listedBy: data.lister_id,
+      listedBy: data.lister_name ?? "Unknown User",
       //Update date format into something more readable
       postedOn: data.created_at?.toDate().toLocaleDateString("en-SG", {
         year: "numeric",
@@ -99,9 +98,9 @@ const filteredListings = computed(() => {
     //Can only show listings that have status "awaiting"
     const matchesStatus = item.status === "Awaiting"
     //Can only show listing that have title that matches search query 
-    const matchesSearch = 
-      item.title.toLowerCase().includes(search.value.toLowerCase()) ||
-      item.description.toLowerCase().includes(search.value.toLowerCase())
+    const matchesSearch =
+    (item.title ?? "").toLowerCase().includes(search.value.toLowerCase()) ||
+    (item.description ?? "").toLowerCase().includes(search.value.toLowerCase())
     //Can only show listing that have category that matches selected category, or if no category is selected, show all
     const matchesCategory =
       selectedCategory.value === null ||
