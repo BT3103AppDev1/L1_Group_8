@@ -112,9 +112,11 @@ export default {
 .header {
     width: 100%;
     position: fixed;
-    top: 0;
+    inset: 0;
     height: 4.5rem;
     padding-top: 0.5rem;
+    background-color: #fff;
+    z-index: 1000;
 }
 
 .header-content {
@@ -123,6 +125,7 @@ export default {
     align-items: center;
     padding: 0.5rem max(2rem, 7vw) 0.5rem max(2rem, 7vw);
     background-color: #fff;
+    z-index: 1000;
 }
 
 .logo-image {

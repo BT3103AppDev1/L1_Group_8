@@ -15,6 +15,7 @@ import Leaderboard from '@/views/Leaderboard.vue'
 import Profile from '@/views/Profile.vue'
 import ListingDetailsView from '@/views/ListingDetailsView.vue'
 import EditListing from '@/views/EditListing.vue'
+import EditProfile from '@/views/EditProfile.vue'
 
 const routes = [
     {
@@ -110,8 +111,11 @@ const routes = [
     {
         path: '/edit-profile',
         name: 'EditProfile',
-        component: Profile,
-        meta: { showHeader: true, requiresAuth: true }
+        component: EditProfile,
+        meta: {
+            showHeader: true,
+            requiresAuth: true
+        }
     },
     {
         path: '/listing/:id',
@@ -133,7 +137,15 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to) => {
+    // TODO: remove comment before deplyment
     const user = await getCurrentUser();
+    
+    /* // Stimulate not logged in
+    const user = false;
+    */
+
+    /* // Simulate logged in
+    const user = true; */
 
     if (to.meta.requiresAuth && !user) {
         return '/sign-in';

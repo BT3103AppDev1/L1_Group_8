@@ -23,7 +23,7 @@
 </template>
 
 <script>
-const CLOUDINARRY_CLOUD_NAME = "dwr4f7ae0";
+const CLOUDINARY_CLOUD_NAME = "dwr4f7ae0";
 const CLOUDINARY_UPLOAD_PRESET = "nusos-profile-pics";
 
 import PublicPageLayout from '@/components/PublicPageLayout.vue';
@@ -34,6 +34,7 @@ import { getCurrentUser } from '@/auth.js';
 import { db } from '@/firebase.js';
 import { doc, setDoc } from 'firebase/firestore';
 import axios from 'axios';
+import { v4 as uuidv4 } from 'uuid';
 
 export default {
     name: 'Onboarding',
@@ -75,12 +76,13 @@ export default {
 
         async uploadToCloudinary(blob, uid) {
             const formData = new FormData();
+            const publicId = `${uid}_${uuidv4()}`;
             formData.append("file", blob);
             formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-            formData.append("public_id", `${uid}`);
+            formData.append("public_id", publicId);
 
             const response = await axios.post(
-                `https://api.cloudinary.com/v1_1/${CLOUDINARRY_CLOUD_NAME}/image/upload`,
+                `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
                 formData,
             );
 
@@ -108,16 +110,15 @@ export default {
             this.isSubmitting = true;
 
             try {
-                /* TODO: remove comment when auth is available
-                const user = await getCurrentUser();
+                // TODO: remove comment when auth is available
+                const user = getCurrentUser();
                 if (!user) {
                     throw new Error("No user found!");
                 }
                 const uid = user.uid; 
-                */
 
-                // Simulate user ID for testing without auth
-                const uid = "zrxX7Bt3kZSaPYpyBuaokbJz47i1";
+                /* // Simulate user ID for testing without auth
+                const uid = "zrxX7Bt3kZSaPYpyBuaokbJz47i1"; */
 
                 let profilePicUrl = null;
                 if (this.profilePicBlob) {
@@ -126,7 +127,7 @@ export default {
 
                 await setDoc(doc(db, "users", uid), {
                     username: this.username,
-                    profilePicUrl: profilePicUrl,
+                    profile_pic_url: profilePicUrl,
                     country_code: this.contact.countryCode,
                     dial_code: this.contact.dialCode,
                     mobile_number: this.contact.mobile,

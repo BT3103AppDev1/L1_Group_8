@@ -50,7 +50,11 @@ export default {
       if (user) {
         // user is signed in
 
-        const userDocRef = doc(db, "users", user.uid);
+        // TODO: remove comment when auth is available
+        const userDocRef = doc(db, "users", user.uid); 
+
+        /*// Simulate user ID for testing without auth
+        const userDocRef = doc(db, "users", "mockUserId");*/
 
         this._firestoreUnsubscribe = onSnapshot(userDocRef, (doc) => {
           if (doc.exists()) {
@@ -88,7 +92,7 @@ export default {
 
 <style scoped>
 .main-content-with-header {
-  margin-top: 5rem; /* height of header */
+  margin-top: 4.5rem; /* height of header */
   padding: 1rem max(2rem, 7vw);
   flex: 1;
 }
