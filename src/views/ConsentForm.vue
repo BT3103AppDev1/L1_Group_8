@@ -146,15 +146,14 @@ export default {
             this.isLoadingAccept = true;
 
             try {
-                /* // TODO: remove comment after authentication is set up
+                // TODO: remove comment after authentication is set up
                 const user = getCurrentUser();
                 if (!user) {
                     throw new Error('User not authenticated');
                 }
-                */
 
-                // stimulate user.uid
-                let user = {uid: "user1"};
+                /* // stimulate user.uid
+                let user = {uid: "user1"}; */
 
                 await updateDoc(doc(db, 'users', user.uid), {
                     granted_consent: true,

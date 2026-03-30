@@ -110,16 +110,15 @@ export default {
             this.isSubmitting = true;
 
             try {
-                /* TODO: remove comment when auth is available
+                // TODO: remove comment when auth is available
                 const user = getCurrentUser();
                 if (!user) {
                     throw new Error("No user found!");
                 }
                 const uid = user.uid; 
-                */
 
-                // Simulate user ID for testing without auth
-                const uid = "zrxX7Bt3kZSaPYpyBuaokbJz47i1";
+                /* // Simulate user ID for testing without auth
+                const uid = "zrxX7Bt3kZSaPYpyBuaokbJz47i1"; */
 
                 let profilePicUrl = null;
                 if (this.profilePicBlob) {

@@ -101,7 +101,7 @@ export default {
     methods: {
         async loadProfile() {
             try {
-                /* TODO: remove comment when auth is available
+                // TODO: remove comment when auth is available
                 const user = await getCurrentUser();
                 if (!user) {
                     throw new Error("No user found!");
@@ -109,13 +109,12 @@ export default {
                 const providerData = user.providerData || [];
                 this.isEmailPasswordProvider = providerData.some(provider => provider.providerId === "password");
                 const uid = user.uid;
-                */
 
-                // Stimulate isEmailPasswordProvider for testing without auth
+                /* // Stimulate isEmailPasswordProvider for testing without auth
                 this.isEmailPasswordProvider = true;
 
                 // Simulate user ID for testing without auth
-                const uid = "zrxX7Bt3kZSaPYpyBuaokbJz47i1";
+                const uid = "zrxX7Bt3kZSaPYpyBuaokbJz47i1"; */
 
                 const userDocRef = doc(db, "users", uid);
                 const userDocSnap = await getDoc(userDocRef);

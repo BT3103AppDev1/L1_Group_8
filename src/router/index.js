@@ -186,16 +186,15 @@ const router = createRouter({
 
 // Navigation guard to check for authentication on routes that require it
 router.beforeEach(async (to) => {
-    /* // TODO: remove comment before deplyment
+    // TODO: remove comment before deplyment
     const user = await getCurrentUser();
-    */
     
     /* // Stimulate not logged in
     const user = false;
     */
 
-    // Simulate logged in
-    const user = true;
+    /* // Simulate logged in
+    const user = true; */
 
     if (to.meta.requiresAuth && !user) {
         return '/sign-in';
