@@ -6,10 +6,11 @@
         <div v-else class="edit-profile-content">
             <div class="profile-pic-section">
                 <ProfilePicInput ref="profilePicInput" @status-object="onProfilePicStatusChange" 
-                    :is-submitting="isSubmitting" :initial-url="initialProfilePicUrl"/>
+                    :is-submitting="isSubmitting" :initial-url="initialProfilePicUrl"
+                    :show-title="false" :profile-pic-size="'13vw'"/>
             </div>
 
-            <div id="form-section">
+            <div class="form-section">
                 <UsernameInput ref="usernameInput" @status-object="onUsernameStatusChange" 
                     :is-submitting="isSubmitting" :initial-username="initialUsername"/>
 
@@ -25,17 +26,18 @@
                     :initial-accept-whatsapp="initialAcceptWhatsApp"
                     :initial-telegram="initialTelegram"
                 />
-            </div>
-            <div class="btn-or-spinner">
-                <button v-if="!isSubmitting" type="button" class="btn btn-secondary submit-button" @click="handleSubmit">
-                    Save Changes
-                </button>
-                <VueSpinner v-else size="30" color="var(--secondary)" aria-label="Saving..." /> 
-            </div>
 
-            <button v-if="isEmailPasswordProvider" type="button" class="btn text-link" :disabled="isSubmitting" @click="handleResetPassword">
-                Reset Password
-            </button>
+                <div class="btn-or-spinner">
+                    <button v-if="!isSubmitting" type="button" class="btn btn-secondary submit-btn" @click="handleSubmit">
+                        Save Changes
+                    </button>
+                    <VueSpinner v-else size="40" color="var(--secondary)" aria-label="Saving..." /> 
+                </div>
+
+                <button v-if="isEmailPasswordProvider" type="button" class="btn text-link" :disabled="isSubmitting" @click="handleResetPassword">
+                    Reset Password
+                </button>
+            </div>
         </div>
     </div>
 </template>
@@ -60,7 +62,7 @@ export default {
     name: 'EditProfile',
 
     components: {
-        ProfilePictureInput,
+        ProfilePicInput,
         UsernameInput,
         ContactMethodsInput,
         VueSpinner,
@@ -99,14 +101,21 @@ export default {
     methods: {
         async loadProfile() {
             try {
+                /* TODO: remove comment when auth is available
                 const user = await getCurrentUser();
                 if (!user) {
                     throw new Error("No user found!");
                 }
                 const providerData = user.providerData || [];
                 this.isEmailPasswordProvider = providerData.some(provider => provider.providerId === "password");
-
                 const uid = user.uid;
+                */
+
+                // Stimulate isEmailPasswordProvider for testing without auth
+                this.isEmailPasswordProvider = true;
+
+                // Simulate user ID for testing without auth
+                const uid = "zrxX7Bt3kZSaPYpyBuaokbJz47i1";
 
                 const userDocRef = doc(db, "users", uid);
                 const userDocSnap = await getDoc(userDocRef);
@@ -181,11 +190,16 @@ export default {
             this.isSubmitting = true;
 
             try {
+                /*
                 const user = getCurrentUser();
                 if (!user) {
                     throw new Error("No user found!");
                 }
                 const uid = user.uid; 
+                */
+                
+                // Simulate user ID for testing without auth
+                const uid = "zrxX7Bt3kZSaPYpyBuaokbJz47i1";
 
                 let profilePicUrl = this.initialProfilePicUrl;
                 if (this.profilePicBlob) {
@@ -235,3 +249,72 @@ export default {
 }
 </script>
 
+<style scoped>
+.loading {
+    display: flex;
+    margin-top: 30vh;
+    justify-content: center;
+}
+
+.edit-profile-content {
+    display: flex;
+    justify-content: space-between;
+    gap: 4rem;
+    padding: 0 4rem;
+}
+
+.profile-pic-section {
+    display: flex;
+    justify-content: center;
+    align-self: flex-start;
+    margin-top: 15vh;
+}
+
+.form-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 50vw;
+}
+
+.btn-or-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    min-height: 2rem;
+}
+
+.btn {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    padding: 1rem 0;
+    width: 100%;
+}
+
+.btn:disabled {
+    background-color: var(--gray5);
+    border: var(--gray5);
+    color: var(--white);
+    cursor: not-allowed;
+}
+
+.text-link {
+    background: none;
+    border: none;
+    font-size: 1rem;
+    font-weight: bold;
+    color: var(--primary);
+    cursor: pointer;
+    text-align: center;
+}
+
+.text-link:hover:not(:disabled) {
+    color: var(--primary-hover);
+}
+
+.submit-btn {
+    font-size: 1rem;
+}
+</style>

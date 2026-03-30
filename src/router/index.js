@@ -15,6 +15,7 @@ import Leaderboard from '@/views/Leaderboard.vue'
 import Profile from '@/views/Profile.vue'
 import ListingDetailsView from '@/views/ListingDetailsView.vue'
 import EditListing from '@/views/EditListing.vue'
+import EditProfile from '@/views/EditProfile.vue'
 
 const routes = [
     {
@@ -155,7 +156,7 @@ const routes = [
     {
         path: '/edit-profile',
         name: 'EditProfile',
-        component: Profile,
+        component: EditProfile,
         meta: {
             showHeader: true,
             requiresAuth: true

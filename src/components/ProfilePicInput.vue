@@ -1,13 +1,13 @@
 <template>
     <div class="input-container">
-        <label class="input-label">
+        <label v-if="showTitle" class="input-label">
             Profile Picture
             <span class="input-label--optional">(Optional)</span>
         </label>
 
         <div class="profile-pic-container">
             <img :src="profilePicUrl || defaultProfilePic" alt="Profile picture preview" 
-                class="profile-pic-preview"/>
+                class="profile-pic-preview" :style="{ width: profilePicSize, height: profilePicSize }"/>
         </div>
 
         <div v-if="profilePicUrl" class="actions-if-uploaded">
@@ -66,6 +66,14 @@ export default {
             type: Boolean,
             default: false,
         },
+        showTitle: {
+            type: Boolean,
+            default: true,
+        },
+        profilePicSize: {
+            type: String,
+            default: "9vw",
+        }
     },
 
     emits: ["status-object"],
@@ -163,8 +171,6 @@ export default {
 }
 
 .profile-pic-preview {
-    width: 9vw;
-    height: 9vw;
     border-radius: 50%;
     object-fit: cover;
 }
@@ -211,5 +217,6 @@ export default {
 
 .file-requirements {
     min-height: 0;
+    text-align: center;
 }
 </style>

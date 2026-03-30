@@ -194,10 +194,7 @@ body {
   line-height: 1.5;
   letter-spacing: 0.02em;
   margin-top: 0.125rem;
-}
-
-.input-info--long {
-  min-height: 3em;
+  max-width: 100%;
 }
 
 .input-info--invalid {
