@@ -55,7 +55,6 @@ onMounted(async () => {
       description: data.description?.trim(),
       //Normalisee category to ensure it fit category button 
       category: data.listing_category?.trim(),
-      //This one must change because I need the legitimate user with user id 1
       //Make sure there is user table and then use the corresponding user_name
       listedBy: data.lister_id,
       //Update date format into something more readable
