@@ -56,6 +56,7 @@ onMounted(async () => {
       //Normalisee category to ensure it fit category button 
       category: data.listing_category?.trim(),
       //Make sure there is user table and then use the corresponding user_name
+      //This will be edited in the future when we have user profile page
       listedBy: data.lister_id,
       //Update date format into something more readable
       postedOn: data.created_at?.toDate().toLocaleDateString("en-SG", {
