@@ -87,6 +87,7 @@ export default {
     display: flex;
     align-items: flex-start;
     justify-content: flex-end;
+    min-height: 100%;
 }
 
 .right-card {
@@ -95,5 +96,9 @@ export default {
     padding: 2.75rem;
     box-shadow: var(--card-shadow);
     width: 40vw;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 </style>
