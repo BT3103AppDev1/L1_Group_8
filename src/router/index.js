@@ -149,9 +149,7 @@ router.beforeEach(async (to) => {
 
     if (to.meta.requiresAuth && !user) {
         return '/sign-in';
-    } else if (!to.meta.requiresAuth && user) {
-        return '/';
-    }
+    } 
 
     return true;
 })
