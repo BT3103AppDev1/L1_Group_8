@@ -74,7 +74,7 @@ export default {
             this.$router.replace({ name: 'SignIn' });
             return;
         }
-        this.userEmail = user.email || '';
+        this.userEmail = user.email || ''; 
         this.startPolling();
     },
 

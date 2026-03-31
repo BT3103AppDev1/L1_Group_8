@@ -80,6 +80,7 @@ import defaultPic from '@/assets/listing_pics/default_list_pic.jpg'
 import axios from 'axios';
 import Cropper from "cropperjs";
 import "cropperjs/dist/cropper.min.css";
+import { getAuth } from "firebase/auth";
 
 const CLOUDINARRY_CLOUD_NAME = "dwr4f7ae0";
 const CLOUDINARY_UPLOAD_PRESET = "nusos-listing-pics";
@@ -139,7 +140,7 @@ export default {
                 });
             }
             );
-        },
+        }, 
 
         //reference xinyan's cropper function
         // initCropper() {
@@ -218,25 +219,35 @@ export default {
         },
 
         async createlisting() {
-            if (!this.title || !this.description) {
-                alert("Please fill in the title and description!")
-                return;
-            } 
+            // Prevent double submission
+            if (this.submitting) return;
+            this.submitting = true;
 
-            if (this.description && (this.wordCount < 10 || this.wordCount >800)) {
-                  alert(`Please stay within the word count of 10 to 800 words! You are currently at: ${this.wordCount} words`)
-                  return;
-              }
+            // Validate required fields
+            if (!this.title || !this.description) {
+                alert("Please fill in the title and description!");
+                this.submitting = false;
+                return;
+            }
+
+            if (this.description && (this.wordCount < 10 || this.wordCount > 800)) {
+                alert(`Please stay within 10 to 800 words! You are currently at: ${this.wordCount} words`);
+                this.submitting = false;
+                return;
+            }
 
             if (!this.payment_mode || !this.listing_category || !this.location_text) {
-                alert("Please fill in all the dropdown boxes!")
-            } else
+                alert("Please fill in all the dropdown boxes!");
+                this.submitting = false;
+                return;
+            }
 
             try {
                 const picture_url = await this.uploadToCloudinary(this.file_to_upload);
 
-            await addDoc(collection(db, "listings"), {
-                lister_id: getCurrentUser()?.uid ?? null,
+                await addDoc(collection(db, "listings"), {
+                lister_id: getCurrentUser()?.uid ?? null, 
+                lister_name: getCurrentUser()?.displayName ?? "Unknown User",
                 title: this.title,
                 description: this.description,
                 created_at: new Date(),
@@ -244,28 +255,31 @@ export default {
                 picture_url,
                 payment_mode: this.payment_mode,
                 listing_category: this.listing_category,
-                location_text: this.location_text,
                 status: "Awaiting",
-            })
+                count: 0
+                });
 
-            // reset everything after upload
-            alert("Successful Upload!")
-            this.file_to_upload=null;
-            this.listing_pic= defaultPic;
-            this.title = "";
-            this.description = "";
-            this.payment_mode = "";
-            this.listing_category = "";
-            this.location_text = "";
+                alert("Successful Upload!");
 
-            //
-            document.querySelector('input[type="file"]').value = ""; //empty the choose file again
-    
-            } catch(error) {
-        console.log("Error", error)
-        alert("Unsuccessful Upload...")
+                // Reset form AFTER successful upload
+                this.file_to_upload = null;
+                this.listing_pic = defaultPic;
+                this.title = "";
+                this.description = "";
+                this.payment_mode = "";
+                this.listing_category = "";
+                this.location_text = "";
+
+                const input = document.querySelector('input[type=\"file\"]');
+                if (input) input.value = "";
+
+            } catch (error) {
+                console.log("Error", error);
+                alert("Unsuccessful Upload...");
             }
-    }
+            // Unlock submission button
+            this.submitting = false;
+            }
     }
 }
 </script>

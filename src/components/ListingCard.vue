@@ -8,6 +8,7 @@
     <span class="listing-category" :class="categoryClass(listing.category)">
       {{ listing.category }}
     </span>
+
     <!-- Info group -->
     <div class="listing-info-group">
       <p class="listing-info"><strong>Listed By:</strong> {{ listing.listedBy }}</p>
@@ -22,24 +23,42 @@
         </span>
         {{ listing.location }}
       </p>
+
       <p class="listing-info"><strong>Status:</strong> {{ listing.status }}</p>
     </div>
+
     <!-- Button -->
-    <button class="listing-btn" @click="$router.push(`/listing/${listing.id}`)">
+    <button class="listing-btn" @click="viewListing">
       View Listing Details
     </button>
-
 
   </div>
 </template>
 
 <script setup>
-defineProps({
+import { doc, updateDoc, increment } from "firebase/firestore"
+import { db } from "@/firebase"
+import { useRouter } from "vue-router"
+
+const router = useRouter()
+
+const props = defineProps({
   listing: {
     type: Object,
     required: true
   }
 })
+
+/* Increment count + navigate */
+const viewListing = async () => {
+  const ref = doc(db, "listings", props.listing.id)
+
+  await updateDoc(ref, {
+    count: increment(1)
+  })
+
+  router.push(`/listing/${props.listing.id}`)
+}
 
 const categoryClass = (cat) => {
   if (cat === "Education") return "education"
@@ -61,7 +80,7 @@ const categoryClass = (cat) => {
   flex-direction: column;
   gap: 0.55rem;
   font-size: 1rem;
-  overflow: hidden; 
+  overflow: hidden;
 }
 
 /* Title */

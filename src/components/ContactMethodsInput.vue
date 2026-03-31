@@ -4,11 +4,11 @@
             Contact Methods *
         </h4>
         <hr class="divider">
-        <p v-if="displayHelper" class="input-info input-info--long" style="margin-top: 0; margin-bottom: 12px">
+        <p v-if="displayHelper" class="input-info" style="margin-top: 0; margin-bottom: 12px">
             Please provide at least one contact method for communication during
             service exchange.
         </p>
-        <p v-else class="input-info input-info--invalid input-info--long" aria-live="polite">
+        <p v-else class="input-info input-info--invalid" aria-live="polite">
             Either mobile number or Telegram handle must be provided!
         </p>
 

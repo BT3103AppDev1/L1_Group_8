@@ -19,17 +19,17 @@
             :disabled="isSubmitting"
         />
 
-        <p v-if="status === 'invalid'" class="input-info input-info--invalid input-info--long"
+        <p v-if="status === 'invalid'" class="input-info input-info--invalid"
             aria-live="polite">
             {{ errorMessage }}
         </p>
-        <p v-else-if="status === 'valid'" class="input-info input-info--valid input-info--long"
+        <p v-else-if="status === 'valid'" class="input-info input-info--valid"
             aria-live="polite">Valid</p>
         <div v-else-if="status === 'checking'" class="input-info--checking" 
             role="status" aria-live="polite" aria-label="Checking username validity">
             <VueSpinnerDots size="24" color="var(--secondary)"/>
         </div>
-        <p v-else class="input-info input-info--long">
+        <p v-else class="input-info">
             3–20 characters. Use letters, numbers, _ or - only. Cannot start or end
             with _ or -. No spaces or other special characters.
         </p>
@@ -49,7 +49,7 @@ export default {
     },
 
     props: {
-        initialValue: {
+        initialUsername: {
             type: String,
             default: "",
         },
@@ -63,8 +63,8 @@ export default {
 
     data() {
         return {
-            localValue: this.initialValue,
-            status: this.initialValue ? "valid" : "idle", // idle or checking or valid or invalid
+            localValue: this.initialUsername,
+            status: this.initialUsername ? "valid" : "idle", // idle or checking or valid or invalid
             errorMessage: "",
             debounceTimer: null,
         };
