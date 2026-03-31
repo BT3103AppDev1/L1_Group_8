@@ -116,7 +116,7 @@ export default {
     height: 4.5rem;
     padding-top: 0.5rem;
     background-color: #fff;
-    z-index: 1000;
+    z-index: 999;
 }
 
 .header-content {
@@ -125,7 +125,7 @@ export default {
     align-items: center;
     padding: 0.5rem max(2rem, 7vw) 0.5rem max(2rem, 7vw);
     background-color: #fff;
-    z-index: 1000;
+    z-index: 999;
 }
 
 .logo-image {

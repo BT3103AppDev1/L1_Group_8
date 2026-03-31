@@ -162,7 +162,7 @@ export default {
                 this.$router.replace('/onboarding');
             } catch (error) {
                 console.error('Error updating consent status:', error);
-                alert("Something went wrong. Please try again.");
+                alert("Something went wrong while updating consent status. Please try again.");
             } finally {
                 this.isLoadingAccept = false;
             }
@@ -202,7 +202,7 @@ export default {
                 this.$router.replace('/sign-up');
             } catch (error) {
                 console.error('Error deleting account:', error);
-                alert("Something went wrong. Please try again.");
+                alert("Something went wrong while deleting your account. Please try again.");
             } finally {
                 this.isLoadingDecline = false;
                 this.showDeclineModal = false;

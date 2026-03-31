@@ -16,7 +16,7 @@
 <script>
 import TheFooter from '@/components/TheFooter.vue';
 import TheHeader from './components/TheHeader.vue';
-import { onAuthUserChanged } from './auth.js';
+import { getCurrentUser, onAuthUserChanged } from './auth.js';
 import { db } from '@/firebase.js';
 import { doc, onSnapshot } from 'firebase/firestore';
 import '@/assets/main.css';
