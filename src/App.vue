@@ -77,6 +77,9 @@ export default {
         });
       } else {
         this.profilePicUrl = null;
+        if (this.$route.meta.requiresAuth) {
+          this.$router.replace('/sign-in');
+        }
       }
     });
   },
