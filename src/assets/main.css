@@ -37,7 +37,14 @@ input, textarea, [contenteditable] {
   caret-color: auto;
 }
 
+html {
+  margin: 0;
+  padding: 0;
+}
+
 body {
+  margin: 0;
+  padding: 0;
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; 
   background: var(--bg);
   color: #1D1D1D;
@@ -187,10 +194,7 @@ body {
   line-height: 1.5;
   letter-spacing: 0.02em;
   margin-top: 0.125rem;
-}
-
-.input-info--long {
-  min-height: 3em;
+  max-width: 100%;
 }
 
 .input-info--invalid {

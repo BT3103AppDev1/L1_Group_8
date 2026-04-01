@@ -45,8 +45,7 @@
             <div v-if="signIn.generalError" class="general-error">
                 {{ signIn.generalError }}
                 <span v-if="signIn.promptSignUp">
-                    New here?
-                    <button type="button" class="text-link" @click="switchMode('signup')">Sign Up</button>
+                    If you are new to NUSOS, please sign up first.
                 </span>
             </div>
 
@@ -429,10 +428,7 @@ export default {
 }
 
 .general-error {
-    background: rgba(220, 53, 69, 0.08);
-    border: 1px solid rgba(220, 53, 69, 0.22);
-    border-radius: var(--radius);
-    padding: 0.5rem 0.75rem;
+    font-weight: bold;
     font-size: 0.875rem;
     color: var(--error);
 }

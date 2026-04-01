@@ -92,28 +92,28 @@
             Consent is required to use this web application. If you decline the User Consent 
             Form, you will not be able to proceed with onboarding or use the application.
         </p>
-    </PublicPageLayout>
-    
-    <!-- decline confirmation modal -->
-    <confirmation-modal v-model:showModal="showDeclineModal" title="Are you sure you want to decline?">
-        Your personal data is necessary for NUSOS to function.
-        If you choose to decline, your account will be 
-        <strong>permanently deleted immediately</strong>. 
-        This action cannot be undone.
 
-        <template #buttons>
-            <button class="btn cancel-btn modal-btn" 
-                :disabled="isLoadingDecline" @click="showDeclineModal = false">
-                    Cancel
-            </button>
-            <div class="btn-or-spinner">
-                <button class="btn btn-danger modal-btn" v-if="!isLoadingDecline" @click="handleDecline">
-                    Confirm Decline
+        <!-- decline confirmation modal -->
+        <confirmation-modal v-model:showModal="showDeclineModal" title="Are you sure you want to decline?">
+            Your personal data is necessary for NUSOS to function.
+            If you choose to decline, your account will be 
+            <strong>permanently deleted immediately</strong>. 
+            This action cannot be undone.
+
+            <template #buttons>
+                <button class="btn cancel-btn modal-btn" 
+                    :disabled="isLoadingDecline" @click="showDeclineModal = false">
+                        Cancel
                 </button>
-                <VueSpinner v-else size="30" color="var(--secondary)" aria-label="Loading..." />
-            </div>
-        </template>
-    </confirmation-modal>
+                <div class="btn-or-spinner">
+                    <button class="btn btn-danger modal-btn" v-if="!isLoadingDecline" @click="handleDecline">
+                        Confirm Decline
+                    </button>
+                    <VueSpinner v-else size="30" color="var(--secondary)" aria-label="Loading..." />
+                </div>
+            </template>
+        </confirmation-modal>
+    </PublicPageLayout>
 </template>
 
 <script>
@@ -146,15 +146,14 @@ export default {
             this.isLoadingAccept = true;
 
             try {
-                /* // TODO: remove comment after authentication is set up
+                // TODO: remove comment after authentication is set up
                 const user = await getCurrentUser();
                 if (!user) {
                     throw new Error('User not authenticated');
                 }
-                */
 
-                // simulate user.uid
-                let user = {uid: "user1"};
+                /* // stimulate user.uid
+                let user = {uid: "user1"}; */
 
                 await updateDoc(doc(db, 'users', user.uid), {
                     granted_consent: true,
@@ -163,7 +162,7 @@ export default {
                 this.$router.replace('/onboarding');
             } catch (error) {
                 console.error('Error updating consent status:', error);
-                alert("Something went wrong. Please try again.");
+                alert("Something went wrong while updating consent status. Please try again.");
             } finally {
                 this.isLoadingAccept = false;
             }
@@ -203,7 +202,7 @@ export default {
                 this.$router.replace('/sign-up');
             } catch (error) {
                 console.error('Error deleting account:', error);
-                alert("Something went wrong. Please try again.");
+                alert("Something went wrong while deleting your account. Please try again.");
             } finally {
                 this.isLoadingDecline = false;
                 this.showDeclineModal = false;
