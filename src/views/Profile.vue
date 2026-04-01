@@ -12,6 +12,10 @@
             </button>
         </div>
 
+        <div class="reward-section">
+            <RewardCard/>
+        </div>
+
         <!-- sign out confirmation modal -->
         <confirmation-modal v-model:showModal="showSignOutModal" title="Sign out?">
             Are you sure you want to sign out?
@@ -39,6 +43,7 @@ import ConfirmationModal from '@/components/ConfirmationModal.vue';
 import { VueSpinner } from 'vue3-spinners';
 import { auth } from '@/firebase.js';
 import { signOut } from 'firebase/auth';
+import RewardCard from '@/components/RewardCard.vue';
 
 export default {
     name: 'Profile',
@@ -47,6 +52,7 @@ export default {
         SquarePen,  
         ConfirmationModal,
         VueSpinner,
+        RewardCard,
     },
     data() {
         return {
