@@ -12,7 +12,6 @@
             </div>
             <!-- image/jpg, image/jpeg, image/png, image/heic, image/heif -> actly im thinking if its better to not let them select unsupported photos from the get go is better -->
 
-            
             <div class="cropper-actions" v-if="file_to_upload">
                 <button @click="onSave">Save</button>
                 <button @click="onRemove">Remove</button>
@@ -72,219 +71,219 @@
 
 
 <script>
-import { ref, computed } from 'vue'
 import { db } from "../firebase.js";
 import { getCurrentUser } from '@/auth.js';
-import { addDoc, collection } from "firebase/firestore";
-import defaultPic from '@/assets/listing_pics/default_list_pic.jpg'
+import { addDoc, collection, getDoc, doc } from "firebase/firestore";
+import defaultPic from '@/assets/listing_pics/default_list_pic.jpg';
 import axios from 'axios';
 import Cropper from "cropperjs";
 import "cropperjs/dist/cropper.min.css";
-import { getAuth } from "firebase/auth";
 
-const CLOUDINARRY_CLOUD_NAME = "dwr4f7ae0";
+const CLOUDINARY_CLOUD_NAME = "dwr4f7ae0";
 const CLOUDINARY_UPLOAD_PRESET = "nusos-listing-pics";
 
-
 export default {
-    name: 'AddListing',
-    data(){
-        return {
-            listing_pic: defaultPic, //only for display
-            file_to_upload: null, 
-            cropper: null,
-            title: "",
-            description: "",
-            payment_mode: "",
-            listing_category: "",
-            location_text: "",
-            submitted: false,
-            // successupload: false,
-        }
+  name: 'AddListing',
+
+  data() {
+    return {
+      listing_pic: defaultPic,   //preview image url
+      file_to_upload: null,       //acttual file being uploaded to cloudinary
+      cropper: null,               //cropper instance
+      //All of the form fields
+      title: "",
+      description: "",
+      payment_mode: "",
+      listing_category: "",
+      location_text: "",
+      //submission state
+      submitted: false,
+      submitting: false,     
+      //cropper helpers using in destroyCropper function to reset states    
+      cropperReady: false,      
+      isSaving: false,           
+    };
+  },
+
+  computed: {
+    //Word Count Functon for description field
+    wordCount() {
+      if (!this.description) return 0;
+      return this.description.trim().split(/\s+/).length;
+    },
+  },
+
+  methods: {
+    //Handle Image Selection
+    async uploadlistingpic(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const approvedFormats = ["image/jpg", "image/jpeg", "image/png", "image/heic", "image/heif"];
+      if (!approvedFormats.includes(file.type)) {
+        alert('Please only upload approved file formats!');
+        return;
+      }
+
+      this.file_to_upload = file;
+      this.listing_pic = URL.createObjectURL(file);
+
+      //Intialised the Cropper after DOM updated with the new image
+      this.$nextTick(() => {
+        if (this.cropper) this.cropper.destroy();
+        this.cropper = new Cropper(this.$refs.cropperImg, {
+          aspectRatio: 4 / 3,
+          viewMode: 1,
+          dragMode: "move",
+          autoCropArea: 1,
+          cropBoxMovable: false,
+          cropBoxResizable: false,
+          toggleDragModeOnDblclick: false,
+        });
+      });
     },
 
-    computed: {
-        wordCount() {
-            if (!this.description) return 0;
-            else return this.description.trim().split(/\s+/).length
-
-        }
-        
+    //Destroying the Cropper instance 
+    destroyCropper() {
+      if (this.cropper) {
+        this.cropper.destroy();
+        this.cropper = null;
+      }
+      this.cropperReady = false;
+      this.isSaving = false;
     },
 
-    methods: {
-        //select file and preview
-        async uploadlistingpic(event) {
-            const file = event.target.files[0]; //just take first one in case user select too many
-            if (!file) return;
+    //Remove the selected image 
+    onRemove() {
+      this.listing_pic = defaultPic;
+      this.file_to_upload = null;
+      if (this.cropper) this.cropper.destroy();
+      this.cropper = null;
 
-            const approvedFormats = ["image/jpg", "image/jpeg", "image/png", "image/heic", "image/heif"];
-            if (!approvedFormats.includes(file.type)) {
-                alert('Please only upload approved file formats!')
-                return;
-            }
+      const input = document.querySelector('input[type="file"]');
+      if (input) input.value = '';
+    },
 
-            this.file_to_upload = file;
-            this.listing_pic = URL.createObjectURL(file); 
+    //Save Cropped Image and prepare for upload
+    async onSave() {
+      if (!this.cropper) return;
 
-            this.$nextTick( () => {
-                if (this.cropper) this.cropper.destroy();
-                this.cropper = new Cropper(this.$refs.cropperImg, {
-                aspectRatio: 4 / 3,
-                viewMode: 1,
-                dragMode: "move",
-                autoCropArea: 1,
-                cropBoxMovable: false,
-                cropBoxResizable: false,
-                toggleDragModeOnDblclick: false,
-                });
-            }
-            );
-        }, 
+      const canvas = this.cropper.getCroppedCanvas({
+        width: 800,
+        height: 600,
+      });
 
-        //reference xinyan's cropper function
-        // initCropper() {
-        //     this.cropperReady = false;
-        //     this.isSaving = false;
-        //     if (this.cropper) {
-        //         this.destroyCropper();
-        //     }
+      const blob = await new Promise((resolve) =>
+        canvas.toBlob(resolve, "image/jpeg", 0.9)
+      );
 
-        //     this.cropper = new Cropper(this.$refs.cropperImg, {
-        //         aspectRatio: 4 / 3,
-        //         viewMode: 1,
-        //         dragMode: "move",
-        //         autoCropArea: 1,
-        //         cropBoxMovable: false,
-        //         cropBoxResizable: false,
-        //         toggleDragModeOnDblclick: false,
-        //         ready: () => { this.cropperReady = true; },
-        //     });
-        // },
+      this.listing_pic = URL.createObjectURL(blob);
+      this.file_to_upload = blob;
+      this.destroyCropper();
+      this.cropper = null;
+    },
 
-        destroyCropper() {
-            if (this.cropper) {
-                this.cropper.destroy();
-                this.cropper = null;
-            }
-            this.cropperReady = false;
-            this.isSaving = false;
-        },
+    // upload to Cloudinary
+    async uploadToCloudinary(blob, uid) {
+      const formData = new FormData();
+      formData.append("file", blob);
+      formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+      //Changed this becauase we want to be able to track the listing pics in cloudinary with the uid and timestamp for easier management
+      formData.append("public_id", `listing-pics-${uid}-${Date.now()}`);
 
-        onRemove() {
-            this.listing_pic = defaultPic; //to revert back to defuault
-            this.file_to_upload=null;
-            if (this.cropper) this.cropper.destroy();
-            this.cropper = null;
+      const response = await axios.post(
+        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+        formData,
+      );
 
-            const input = document.querySelector('input[type="file"]');
-            if (input) input.value = '';
-        },
+      if (response.status !== 200) {
+        throw new Error("Cloudinary upload failed");
+      }
 
-        async onSave() {
-            if (!this.cropper) return;
-            
-            const canvas = this.cropper.getCroppedCanvas({
-                width: 800,
-                height: 600,
-            });
+      const data = response.data;
+      return data.secure_url;
+    },
 
-            const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.9));
-            this.listing_pic = URL.createObjectURL(blob);
-            this.file_to_upload = blob;
-            this.destroyCropper();
-            this.cropper = null;
+    //Create Listing Function 
+    async createlisting() {
+      // Prevent double submission
+      if (this.submitting) return;
+      this.submitting = true;
 
-        },
-    
+      // Validate required fields
+      if (!this.title || !this.description) {
+        alert("Please fill in the title and description!");
+        this.submitting = false;
+        return;
+      }
 
-        // upload to cloudinary (ref xinyan's onboarding)
-        async uploadToCloudinary(blob, uid) {
-            const formData = new FormData();
-            formData.append("file", blob);
-            formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-            formData.append("public_id", `listing-pics${uid}`);
+      // Validate description existence and word count
+      //Word Count between 10 and 800 words
+      if (this.description && (this.wordCount < 10 || this.wordCount > 800)) {
+        alert(`Please stay within 10 to 800 words! You are currently at: ${this.wordCount} words`);
+        this.submitting = false;
+        return;
+      }
 
-            const response = await axios.post(
-                `https://api.cloudinary.com/v1_1/${CLOUDINARRY_CLOUD_NAME}/image/upload`,
-                formData,
-            );
+      // Validate dropdown selections
+      if (!this.payment_mode || !this.listing_category || !this.location_text) {
+        alert("Please fill in all the dropdown boxes!");
+        this.submitting = false;
+        return;
+      }
+    // Proceed with upload if all validations pass
+      try {
+        //Get the current user's uid for the listing
+        const user = await getCurrentUser();
+        if (!user) throw new Error("User not logged in");
 
-            if (response.status !== 200) {
-                throw new Error("Cloudinary upload failed");
-            }
+        // Load the username from Firestore
+        const userDoc = (await getDoc(doc(db, "users", user.uid))).data();
+        const username = userDoc?.username ?? "Unknown User";
 
-            const data = response.data;
-            return data.secure_url; 
-        },
+        //Get the picture_url ready for upload to Firestore. If there is no picture selected, it will be nulll
+        const picture_url = this.file_to_upload
+        ? await this.uploadToCloudinary(this.file_to_upload, user.uid)
+        : null;
 
-        async createlisting() {
-            // Prevent double submission
-            if (this.submitting) return;
-            this.submitting = true;
+        console.log("This is the url:", picture_url);
 
-            // Validate required fields
-            if (!this.title || !this.description) {
-                alert("Please fill in the title and description!");
-                this.submitting = false;
-                return;
-            }
+        await addDoc(collection(db, "listings"), {
+          lister_id: user.uid,
+          lister_name: username,
+          title: this.title,
+          description: this.description,
+          created_at: new Date(),
+          location_text: this.location_text,
+          picture_url: picture_url,
+          payment_mode: this.payment_mode,
+          listing_category: this.listing_category,
+          status: "Awaiting",
+          count: 0,
+        });
+        alert("Successful Upload!");
 
-            if (this.description && (this.wordCount < 10 || this.wordCount > 800)) {
-                alert(`Please stay within 10 to 800 words! You are currently at: ${this.wordCount} words`);
-                this.submitting = false;
-                return;
-            }
+        // Reset form AFTER successful upload
+        this.file_to_upload = null;
+        this.listing_pic = defaultPic;
+        this.title = "";
+        this.description = "";
+        this.payment_mode = "";
+        this.listing_category = "";
+        this.location_text = "";
 
-            if (!this.payment_mode || !this.listing_category || !this.location_text) {
-                alert("Please fill in all the dropdown boxes!");
-                this.submitting = false;
-                return;
-            }
+        const input = document.querySelector('input[type="file"]');
+        if (input) input.value = "";
 
-            try {
-                const user = await getCurrentUser();
-                const picture_url = await this.uploadToCloudinary(this.file_to_upload);
-
-                await addDoc(collection(db, "listings"), {
-                lister_id: user?.uid ?? null,
-                lister_name: user?.displayName ?? "Unknown User",
-                title: this.title,
-                description: this.description,
-                created_at: new Date(),
-                location_text: this.location_text,
-                picture_url,
-                payment_mode: this.payment_mode,
-                listing_category: this.listing_category,
-                status: "Awaiting",
-                count: 0
-                });
-
-                alert("Successful Upload!");
-
-                // Reset form AFTER successful upload
-                this.file_to_upload = null;
-                this.listing_pic = defaultPic;
-                this.title = "";
-                this.description = "";
-                this.payment_mode = "";
-                this.listing_category = "";
-                this.location_text = "";
-
-                const input = document.querySelector('input[type=\"file\"]');
-                if (input) input.value = "";
-
-            } catch (error) {
-                console.log("Error", error);
-                alert("Unsuccessful Upload...");
-            }
-            // Unlock submission button
-            this.submitting = false;
-            }
-    }
-}
+      } catch (error) {
+        console.log("Error", error);
+        alert("Unsuccessful Upload...");
+      } 
+      this.submitting = false;
+    },
+  },
+};
 </script>
-
 
 <style scoped>
 .container {
