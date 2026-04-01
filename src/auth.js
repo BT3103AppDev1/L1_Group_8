@@ -11,7 +11,6 @@ onAuthStateChanged(auth, (user) => {
   listeners.forEach(listener => listener(user));
 });
 
-
 async function getCurrentUser() {
   await auth.authStateReady();
   return currentUser;
@@ -21,5 +20,4 @@ function onAuthUserChanged(callback) {
   listeners.push(callback);
   callback(currentUser);
 }
-
 export { getCurrentUser, onAuthUserChanged };
