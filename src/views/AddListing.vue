@@ -243,11 +243,12 @@ export default {
             }
 
             try {
+                const user = await getCurrentUser();
                 const picture_url = await this.uploadToCloudinary(this.file_to_upload);
 
                 await addDoc(collection(db, "listings"), {
-                lister_id: getCurrentUser()?.uid ?? null, 
-                lister_name: getCurrentUser()?.displayName ?? "Unknown User",
+                lister_id: user?.uid ?? null,
+                lister_name: user?.displayName ?? "Unknown User",
                 title: this.title,
                 description: this.description,
                 created_at: new Date(),
