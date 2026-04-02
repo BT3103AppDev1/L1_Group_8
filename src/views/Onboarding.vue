@@ -111,7 +111,7 @@ export default {
 
             try {
                 // TODO: remove comment when auth is available
-                const user = getCurrentUser();
+                const user = await getCurrentUser();
                 if (!user) {
                     throw new Error("No user found!");
                 }
