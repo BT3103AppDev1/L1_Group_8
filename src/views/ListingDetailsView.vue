@@ -136,3 +136,30 @@ onMounted(async () => {
     }
 })
 </script>
+
+<style scoped>
+/* Make sure that it is split into 2 columns */
+.layout {
+  display: flex;
+  flex-direction: row;
+  gap: 20px; 
+}
+
+/* Left column takes up slightly more */
+.left-column {
+  flex: 1.5;
+}
+
+/* Right column takes less space */
+.right-column {
+  flex: 1;
+}
+
+/* Make images behave nicely */
+.listing-image,
+.profile-picture {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+</style>
