@@ -20,7 +20,7 @@
     const router = useRouter();
 
     const viewRewardDetail = async () => {
-        router.push(`/reward/${reward.id}`)
+        router.push()
     }
 </script>
 
@@ -32,9 +32,11 @@
         box-shadow: var(--card-shadow);
         display: flex;
         flex-direction: column;
+        width: 240px;
         gap: 0.55rem;
         overflow: hidden;
-        min-height: 260px;
+        min-height: 240px;
+        margin: 10px 0px 0px 0px;
     }
 
     .reward-content {

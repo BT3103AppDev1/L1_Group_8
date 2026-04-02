@@ -6,14 +6,11 @@
                 <SquarePen :size="28" color="var(--secondary)"/>
             </router-link>
         </div>
+
         <div v-if="isPrivateProfile" class="sign-out-section">
             <button class="btn btn-danger" @click="showSignOutModal = true">
                 Sign Out
             </button>
-        </div>
-
-        <div class="reward-section">
-            <RewardCard/>
         </div>
 
         <!-- sign out confirmation modal -->
@@ -44,6 +41,7 @@ import { VueSpinner } from 'vue3-spinners';
 import { auth } from '@/firebase.js';
 import { signOut } from 'firebase/auth';
 import RewardCard from '@/components/RewardCard.vue';
+import RewardDetails from './RewardDetails.vue';
 
 export default {
     name: 'Profile',
@@ -53,6 +51,7 @@ export default {
         ConfirmationModal,
         VueSpinner,
         RewardCard,
+        RewardDetails,
     },
     data() {
         return {
