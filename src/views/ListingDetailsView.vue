@@ -1,19 +1,60 @@
 <template>
-    <h1> Listing Details </h1>
-    <p>{{ listing?.title }}</p>
-    <p>{{ listing?.description }}</p>
-    <p>{{ listing?.category }}</p>
-    <p>{{ listing?.location }}</p>
-    <p>{{ listing?.status }}</p>
-    <p>{{ listing?.lister_name }}</p>
-    <p>{{ listing?.postedOn }}</p>
-    <p> {{ listing?.photoURL }}</p>
-    <p>{{ listing?.profile_picture }}</p>
-    <p>{{ listing?.dial_code }}</p>
-    <p>{{ listing?.phone_number }}</p>  
-    <p>{{ listing?.telegram_handle }}</p>
+    <div class="listing-details-container">
+        <h1>Listing Details</h1>
+        <!-- Main Layout with the left and right sections-->
+        <div class="layout">
+            <!--Left Column-->
+            <div class="left-column">
+                <div class="image-section">
+                    <img :src="listing?.photoURL" alt="Listing Image" class="listing-image"/>
+                </div>
+                <div class="category">
+                    <p>{{ listing?.category }}</p>
+                </div>
+                <div class="title">
+                    <h2>{{ listing?.title }}</h2>
+                </div>
+                <!--Meta Section-->
+                <div class="meta-section">
+                    <p>
+                        Posted by {{ listing?.lister_name }} •
+                        {{ listing?.postedOn }} •
+                        {{ listing?.location }}
+                    </p>
+                </div>
+                <hr>
+                <div class="description">
+                    <h3>Description</h3>
+                    <p>{{ listing?.description }}</p>
+                </div>
+                <div class="payment-section">
+                    <h3>Payment Mode</h3>
+                    <p>{{ listing?.payment_mode }}</p>
+                </div>
+                <div class="status-section">
+                    <h3>Service Status</h3>
+                    <p>{{ listing?.status }}</p>
+                </div> 
+            </div>
+            <!-- Right Column -->
+            <div class="right-column">
+                <div class="lister-info">
+                    <h3>Lister Information</h3>
+                    <div class="lister-profile">
+                        <img :src="listing?.profile_picture" alt="Profile Picture" class="profile-picture"/>
+                        <p>{{ listing?.lister_name }}</p>
+                    </div>
+                </div>
+                <hr>
+                <div class="contact-info">
+                    <h3>Contact Information</h3>
+                    <p><strong>Phone:</strong> {{ listing?.dial_code }} {{ listing?.phone_number }}</p>
+                    <p><strong>Telegram:</strong> {{ listing?.telegram_handle }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
 </template>
-
 
 
 <script setup>
@@ -73,6 +114,7 @@ onMounted(async () => {
         location: listingData.location_text,
         status: listingData.status?.trim(),
         photoURL: listingData.picture_url || defaultImage,
+        payment_mode: listingData.payment_mode?.trim() || "N/A",
 
         // Format created_at into readable date
         postedOn: listingData.created_at
