@@ -16,6 +16,8 @@ import Profile from '@/views/Profile.vue'
 import ListingDetailsView from '@/views/ListingDetailsView.vue'
 import EditListing from '@/views/EditListing.vue'
 import EditProfile from '@/views/EditProfile.vue'
+import RatingHistory from '@/views/RatingHistory.vue'
+import PointsHistory from '@/views/PointsHistory.vue'
 
 const routes = [
     {
@@ -121,6 +123,18 @@ const routes = [
         path: '/listing/:id',
         name: 'ListingDetails',
         component: ListingDetailsView,
+        meta: { showHeader: true, requiresAuth: true }
+    },
+    {
+        path: '/rating-history',
+        name: 'RatingHistory',
+        component: RatingHistory,
+        meta: { showHeader: true, requiresAuth: true }
+    },
+    {
+        path: '/points-history',
+        name: 'PointsHistory',
+        component: PointsHistory,
         meta: { showHeader: true, requiresAuth: true }
     },
     // Catch-all route for 404 Not Found
