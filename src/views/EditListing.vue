@@ -74,19 +74,20 @@
 import { ref, computed } from 'vue'
 import { db } from "../firebase.js";
 import { getCurrentUser } from '@/auth.js';
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc, collection, doc, getDoc, updateDoc } from "firebase/firestore";
 import defaultPic from '@/assets/listing_pics/default_list_pic.jpg'
 import axios from 'axios';
 import Cropper from "cropperjs";
 import "cropperjs/dist/cropper.min.css";
 
-const CLOUDINARRY_CLOUD_NAME = "dwr4f7ae0";
+const CLOUDINARY_CLOUD_NAME = "dwr4f7ae0";
 const CLOUDINARY_UPLOAD_PRESET = "nusos-listing-pics";
 
 export default {
     name: 'EditListing',
     data(){
         return {
+            listing_id: null,
             listing_pic: defaultPic, //only for display
             file_to_upload: null, 
             cropper: null,
@@ -96,7 +97,10 @@ export default {
             listing_category: "",
             location_text: "",
             submitted: false,
-            // successupload: false,
+            submitting: false,
+            //cropper helpers using in destroyCropper function to reset states    
+            cropperReady: false, 
+            isSaving: false,
         }
     },
 
@@ -112,7 +116,7 @@ export default {
     // get rdy to get the old data
     async mounted() {
         this.listing_id = this.$route.params.listing_id; //get listing_id from url
-        console.log(listing_id);
+        console.log(this.listing_id);
 
         if (!this.listing_id) { //just in case no listing with this id
             alert("Listing unavailable");
@@ -229,7 +233,7 @@ export default {
             formData.append("public_id", `listing-pics${uid}`);
 
             const response = await axios.post(
-                `https://api.cloudinary.com/v1_1/${CLOUDINARRY_CLOUD_NAME}/image/upload`,
+                `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
                 formData,
             );
 
