@@ -11,7 +11,7 @@
 
     <!-- Info group -->
     <div class="listing-info-group">
-      <p class="listing-info"><strong>Listed By:</strong> {{ listing.listedBy }}</p>
+      <p class="listing-info"><strong>Listed By:</strong> {{ listing.lister_name }}</p>
       <p class="listing-info"><strong>Posted On:</strong> {{ listing.postedOn }}</p>
 
       <!-- Location with blue icon -->
@@ -81,6 +81,9 @@ const categoryClass = (cat) => {
   gap: 0.55rem;
   font-size: 1rem;
   overflow: hidden;
+
+  /* NEW: ensures all cards align in the grid */
+  min-height: 260px;
 }
 
 /* Title */
@@ -89,6 +92,12 @@ const categoryClass = (cat) => {
   font-weight: 700;
   color: var(--black2);
   margin-bottom: 0.2rem;
+
+  /* NEW: prevents long titles from stretching card height */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 /* Category tag */
@@ -120,13 +129,10 @@ const categoryClass = (cat) => {
   line-height: 1.35;
 }
 
-/* Button — clean full-width footer */
+/* Button — now stable and aligned */
 .listing-btn {
-  margin-top: 1rem;
-  margin-left: -1.4rem;
-  margin-right: -1.4rem;
-  margin-bottom: -1.2rem;
-  width: calc(100% + 2.8rem);
+  margin-top: auto; 
+  width: 100%;
   padding: 14px 0;
   font-size: 1rem;
   font-weight: 600;
@@ -135,7 +141,7 @@ const categoryClass = (cat) => {
   border: none;
   cursor: pointer;
   transition: 0.15s ease;
-  border-radius: 0 0 var(--radius) var(--radius);
+  border-radius: var(--radius) var(--radius) var(--radius) var(--radius);
 }
 
 .listing-btn:hover {

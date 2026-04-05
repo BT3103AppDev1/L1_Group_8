@@ -175,10 +175,11 @@ export default {
             this.loading = true;
             this.rankedUser = [];
             this.currentUserStatus = null;
+            const currentUid = auth.currentUser?.uid ?? null;
+
 
             try {
                 const { start, end } = getMonthRange(this.monthOffset);
-                const currentUid = 'user023'
 
                 const ratingsSnap = await getDocs(query(collection(db, 'ratings'), where('rated_at', '>=', Timestamp.fromDate(start)), where('rated_at', '<', Timestamp.fromDate(end))));
 
@@ -211,7 +212,6 @@ export default {
                     return a.username.localeCompare(b.username);
                 });
 
-
                 const displayCount = sorted.length <= DISPLAY_LIMIT ? sorted.length : DISPLAY_LIMIT;
                 const displayList = sorted.slice(0, displayCount);
 
@@ -231,8 +231,10 @@ export default {
 
                 if (currentUid && !isInDisplayList) {
                     if (currentUserPosition === -1) {
+                        //if users have no rating/ 0 points, they are not ranked
                         this.currentUserStatus = { rank: "N/A", points: 0 };
                     } else {
+                        //if users have rating but not top 20, show percentile
                         const pct = Math.round(((currentUserPosition + 1) / sorted.length) * 100);
                         this.currentUserStatus = {
                             rank: `${pct} %`,

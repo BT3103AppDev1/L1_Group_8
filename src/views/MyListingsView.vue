@@ -67,9 +67,10 @@
 
             <div v-else class="applicant-list">
               <div v-for="a in listing.applicants" :key="a.id" class="applicant-row">
-                <div class="avatar" :style="{ background: a.color }">{{ a.initials }}</div>
+                <img v-if="a.profilePic" :src="a.profilePic" class="avatar avatar-img" :alt="a.name" />
+                <div v-else class="avatar avatar-fallback">{{ a.name.slice(0,2).toUpperCase() }}</div>
                 <div class="applicant-info">
-                  <span class="applicant-name" @click="showToast('View profile: ' + a.name)">{{ a.name }}</span>
+                  <span class="applicant-name" @click="$router.push('/users/' + a.id)">{{ a.name }}</span>
                 </div>
                 <button class="btn btn-primary btn-sm" @click="openChoose(listing, a)">Choose This Provider</button>
               </div>
@@ -98,9 +99,10 @@
           <div class="applicants">
             <div class="applicants-head">Your Provider</div>
             <div class="applicant-row">
-              <div class="avatar" :style="{ background: listing.provider.color }">{{ listing.provider.initials }}</div>
+              <img v-if="listing.provider.profilePic" :src="listing.provider.profilePic" class="avatar avatar-img" :alt="listing.provider.name" />
+              <div v-else class="avatar avatar-fallback">{{ listing.provider.name.slice(0,2).toUpperCase() }}</div>
               <div class="applicant-info">
-                <span class="applicant-name" @click="showToast('View profile: ' + listing.provider.name)">
+                <span class="applicant-name" @click="$router.push('/users/' + listing.provider.id)">
                   {{ listing.provider.name }}
                 </span>
               </div>
@@ -138,9 +140,10 @@
           <div class="applicants">
             <div class="applicants-head">Your Provider</div>
             <div class="applicant-row">
-              <div class="avatar" :style="{ background: listing.provider.color ?? '#9CA3AF' }">{{ listing.provider.initials ?? listing.provider.name.slice(0,2).toUpperCase() }}</div>
+              <img v-if="listing.provider.profilePic" :src="listing.provider.profilePic" class="avatar avatar-img" :alt="listing.provider.name" />
+              <div v-else class="avatar avatar-fallback">{{ listing.provider.name.slice(0,2).toUpperCase() }}</div>
               <div class="applicant-info">
-                <span class="applicant-name">{{ listing.provider.name }}</span>
+                <span class="applicant-name" @click="$router.push('/users/' + listing.provider.id)">{{ listing.provider.name }}</span>
               </div>
             </div>
           </div>
@@ -169,7 +172,7 @@
 <script>
 import ConfirmModal from '@/components/ConfirmModal.vue'
 import { db } from '@/firebase.js'
-import { collection, query, where, getDocs } from 'firebase/firestore'
+import { collection, query, where, getDocs, getDoc, doc } from 'firebase/firestore'
 import { getCurrentUser } from '@/auth.js'
 
 export default {
@@ -201,19 +204,51 @@ export default {
     if (!user) return
     this.loading = true
     try {
-      const q = query(collection(db, 'listings'), where('lister_id', '==', user.uid))
+      const q = query(
+        collection(db, 'listings'),
+        where('lister_id', '==', user.uid)
+      )
       const snapshot = await getDocs(q)
       const awaiting = [], ongoing = [], completed = []
-      snapshot.forEach(doc => {
-        const d = doc.data()
+
+      // Collect all unique applicant UIDs across all listings
+      const allUids = new Set()
+      snapshot.forEach(docSnap => {
+        const d = docSnap.data()
+        ;(d.applicants ?? []).forEach(uid => allUids.add(uid))
+        if (d.provider_id) allUids.add(d.provider_id)
+      })
+
+      // Fetch user profiles in parallel
+      const userProfiles = {}
+      await Promise.all([...allUids].map(async uid => {
+        try {
+          const userSnap = await getDoc(doc(db, 'users', uid))
+          if (userSnap.exists()) {
+            const u = userSnap.data()
+            userProfiles[uid] = {
+              id: uid,
+              name: u.username ?? 'Unknown',
+              profilePic: u.profile_pic_url ?? null,
+            }
+          }
+        } catch (_) {}
+      }))
+
+      snapshot.forEach(docSnap => {
+        const d = docSnap.data()
+        const enrichedApplicants = (d.applicants ?? []).map(uid => userProfiles[uid] ?? { id: uid, name: uid, profilePic: null })
+        const providerProfile = d.provider_id ? (userProfiles[d.provider_id] ?? { id: d.provider_id, name: d.provider_id, profilePic: null }) : null
+
         const listing = {
-          id: doc.id,
+          id: docSnap.id,
           title: d.title,
           category: d.listing_category,
           location: d.location_text,
           createdAt: d.created_at?.toDate().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) ?? '',
-          applicants: d.applicants ?? [],
-          provider: d.provider ?? null,
+          createdAtRaw: d.created_at?.toDate() ?? new Date(0),
+          applicants: enrichedApplicants,
+          provider: providerProfile,
           ratingGiven: d.rating_given ?? null,
         }
         const status = (d.status ?? '').trim().toLowerCase()
@@ -221,7 +256,12 @@ export default {
         else if (status === 'completed') completed.push(listing)
         else awaiting.push(listing)
       })
-      this.listings = { awaiting, ongoing, completed }
+      const byDateDesc = (a, b) => b.createdAtRaw - a.createdAtRaw
+      this.listings = {
+        awaiting:  awaiting.sort(byDateDesc),
+        ongoing:   ongoing.sort(byDateDesc),
+        completed: completed.sort(byDateDesc),
+      }
     } catch (e) {
       console.error('Failed to load listings:', e)
     } finally {
@@ -427,12 +467,18 @@ export default {
 .avatar {
   width: 38px; height: 38px;
   border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+.avatar-img {
+  object-fit: cover;
+}
+.avatar-fallback {
+  background: #003D7C;
   color: #fff;
   font-weight: 700;
   font-size: 13px;
   display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
 }
 .applicant-info { flex: 1; }
 .applicant-name {
