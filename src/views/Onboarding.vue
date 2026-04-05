@@ -136,6 +136,16 @@ export default {
                     accept_whatsapp: this.contact.acceptWhatsApp,
                     telegram_handle: this.contact.telegram,
                     onboarded: true,
+                    total_points: 0,
+                    absolute_rank: null,
+                    percentage_rank: null,
+                    is_in_top_20: false,
+                    edu_avg_rating: null,
+                    edu_rating_count: 0,
+                    buddy_avg_rating: null,
+                    buddy_rating_count: 0,
+                    survival_avg_rating: null,
+                    survival_rating_count: 0,
                 }, { merge: true });
 
                 this.$router.replace("/");
