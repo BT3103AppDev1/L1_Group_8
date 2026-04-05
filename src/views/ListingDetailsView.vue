@@ -51,6 +51,20 @@
                     <p><strong>Phone:</strong> {{ listing?.dial_code }} {{ listing?.phone_number }}</p>
                     <p><strong>Telegram:</strong> {{ listing?.telegram_handle }}</p>
                 </div>
+                <hr>
+                <!-- Edit + Delete buttons (only for lister) -->
+                <div v-if="isLister" class="lister-actions">
+                    <p> This is your listing! Feel free to edit or delete it at any time.</p>
+                    <button @click="editListing">Edit Listing</button>
+                    <button @click="deleteListing">Delete Listing</button>
+                </div>
+                <!-- Help Button (only for non-lister when listing is awaiting) -->
+                <div v-if="canHelp" class="help-button">
+                    <button class="help-btn" @click="offerHelp">I can help :)</button>
+                    <p class="help-notice">
+                        By clicking "I can help", you will be expressing your interest to help the lister
+                    </p>
+                </div>
             </div>
         </div>
     </div>
@@ -62,7 +76,7 @@ import { ref, computed, onMounted } from 'vue'
 
 // Firebase Imports
 import { db } from '@/firebase'
-import { doc, getDoc } from 'firebase/firestore'
+import { doc, getDoc, deleteDoc } from 'firebase/firestore'
 import { getAuth } from 'firebase/auth'
 
 // Router Imports
@@ -76,6 +90,33 @@ const auth = getAuth()
 // Listing Data
 const listing = ref(null)
 const defaultImage = "@/assets/default-listing.jpg"
+
+//Computed Property to check if the current user is the lister of this listing
+const user = computed(() => auth.currentUser)
+const isLister = computed(() => {
+    return user.value && listing.value && user.value.uid === listing.value.lister_uid
+})
+const canHelp = computed(() => {
+    if (!user.value || !listing.value) return false
+    const isAwaiting = listing.value?.status?.toLowerCase() === "awaiting"
+    return !isLister.value && isAwaiting
+})
+
+//button handlers
+const editListing = () => {
+    router.push(`/edit-listing/${listing.value.id}`)
+}
+
+const deleteListing = async () => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this listing?")
+    if (!confirmDelete) return
+    await deleteDoc(doc(db, "listings", listing.value.id))
+    router.push("/explore")
+}
+
+const offerHelp = () => {
+    alert("You have offered to help! Contact the lister using the info provided.")
+}
 
 onMounted(async () => {
 

@@ -28,86 +28,97 @@
 import { ref, computed, onMounted } from 'vue'
 import ListingCard from '@/components/ListingCard.vue'
 
-//Firebase imports
+// Firebase imports
 import { db } from '@/firebase'
-import { collection, getDocs } from 'firebase/firestore'
+import { collection, getDocs, doc, getDoc } from 'firebase/firestore'
 
-//Intiialise reactive variables for search, category selection, and listings data
+// Reactive variables
 const search = ref('')
 const selectedCategory = ref(null)
 const categories = ['Education', 'Buddy', 'Survival']
 
-//Listings data from Firestore instead of previously dummy data
 const listings = ref([])
 
-//Fetch listings from Firestore
+// Fetch listings
 onMounted(async () => {
   const snapshot = await getDocs(collection(db, 'listings'))
+  const temp = []
 
-  listings.value = snapshot.docs.map(doc => {
-    const data = doc.data()
-    return {
-      id: doc.id,
-      //Normalise title for the search 
-      title: data.title?.trim(),
-      //For search purposes to fit functional requirements, 
-      // but this will not be displayed for users
-      description: data.description?.trim(),
-      //Normalisee category to ensure it fit category button 
-      category: data.listing_category?.trim(),
-      //Make sure there is user table and then use the corresponding user_name
-      lister_name: data.lister_name ?? "Unknown User",
-      //Update date format into something more readable
-      postedOn: data.created_at?.toDate().toLocaleDateString("en-SG", {
-        year: "numeric",
-        month: "short",
-        day: "numeric"
-      }),
-      //Raw timestamp for sorting purposes, but this will not be displayed for users
-      createdAt: data.created_at?.toDate(),
-      //Location 
-      location: data.location_text?.trim(),
-      //Status
-      status: data.status?.trim()
+  for (const d of snapshot.docs) {
+    const data = d.data()
+
+    // Fetch username from users/{lister_id}
+    let username = "Unknown User"
+    if (data.lister_id) {
+      const userSnap = await getDoc(doc(db, "users", data.lister_id))
+      if (userSnap.exists()) {
+        const userData = userSnap.data()
+        username = String(userData.username ?? "Unknown User").trim()
+      }
     }
-    //Sort the listings in descending order based on created_at. Most recent listing displayed first 
-  }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+
+    // Normalize created_at safely
+    let createdAt = null
+    if (data.created_at?.toDate) {
+      createdAt = data.created_at.toDate()
+    }
+
+    temp.push({
+      id: d.id,
+      title: String(data.title ?? "").trim(),
+      description: String(data.description ?? "").trim(),
+      category: String(data.listing_category ?? "").trim(),
+      lister_name: username,
+      postedOn: createdAt
+        ? createdAt.toLocaleDateString("en-SG", {
+            year: "numeric",
+            month: "short",
+            day: "numeric"
+          })
+        : "Unknown date",
+      createdAt: createdAt,
+      location: String(data.location_text ?? "").trim() || "No location provided",
+      status: String(data.status ?? "").trim()
+    })
+  }
+
+  // Safe sorting
+  listings.value = temp.sort((a, b) => {
+    const dateA = a.createdAt ? new Date(a.createdAt) : 0
+    const dateB = b.createdAt ? new Date(b.createdAt) : 0
+    return dateB - dateA
+  })
 })
 
-//Toggle category filter
-// If same category is clicked again, it will deselect the filter
+// Toggle category
 const toggleCategory = (cat) => {
   selectedCategory.value = selectedCategory.value === cat ? null : cat
 }
 
 const categoryClass = (cat) => {
-  if (selectedCategory.value === null) {
-    //No category selected, all buttons are coloured
-    return `cat-${cat.toLowerCase()}`   
-  }
-  //None of the categories are selected, all buttons are grey
-  if (selectedCategory.value === cat) {
-    return `cat-${cat.toLowerCase()}`   
-  }
-  return 'neutral'                      
+  if (selectedCategory.value === null) return `cat-${cat.toLowerCase()}`
+  if (selectedCategory.value === cat) return `cat-${cat.toLowerCase()}`
+  return 'neutral'
 }
 
-//Get the filtered listings based on search query and selected category
+// Filtering
 const filteredListings = computed(() => {
+  const searchTerm = search.value.toLowerCase()
+
   return listings.value.filter((item) => {
-    //Can only show listings that have status "awaiting"
-    const matchesStatus = item.status === "Awaiting"
-    //Can only show listing that have title that matches search query 
-    const matchesSearch =
-    (item.title ?? "").toLowerCase().includes(search.value.toLowerCase()) ||
-    (item.description ?? "").toLowerCase().includes(search.value.toLowerCase())
-    //Can only show listing that have category that matches selected category, or if no category is selected, show all
+    const statusStr = String(item.status ?? "").toLowerCase()
+    const titleStr = String(item.title ?? "").toLowerCase()
+    const descStr = String(item.description ?? "").toLowerCase()
+    const categoryStr = String(item.category ?? "").toLowerCase()
+    const selectedCatStr = String(selectedCategory.value ?? "").toLowerCase()
+
+    const matchesStatus = statusStr.includes("awaiting")
+    const matchesSearch = titleStr.includes(searchTerm) || descStr.includes(searchTerm)
     const matchesCategory =
-      selectedCategory.value === null ||
-      item.category === selectedCategory.value
+      selectedCategory.value === null || categoryStr === selectedCatStr
 
     return matchesStatus && matchesSearch && matchesCategory
-  }) 
+  })
 })
 </script>
 
