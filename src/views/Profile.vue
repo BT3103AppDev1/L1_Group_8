@@ -6,6 +6,7 @@
                 <SquarePen :size="28" color="var(--secondary)"/>
             </router-link>
         </div>
+
         <div v-if="isPrivateProfile" class="sign-out-section">
             <button class="btn btn-danger" @click="showSignOutModal = true">
                 Sign Out
