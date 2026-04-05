@@ -100,7 +100,7 @@ export default {
         return {
             listing_id: null,
             listing_pic: defaultPic, //only for display
-            file_to_upload: null, 
+            file_to_upload: null, //for upload only
             cropper: null,
             title: "",
             description: "",
@@ -150,7 +150,7 @@ export default {
                     this.payment_mode = data.payment_mode,
                     this.listing_category = data.listing_category,
                     this.location_text= data.location_text,
-                    this.listing_pic = data.picture_url //this one i got to edit after that following xinyan's stroage for the pics
+                    this.listing_pic = data.picture_url || defaultPic //this one i got to edit after that following xinyan's stroage for the pics
                 }
 
             }
@@ -183,7 +183,7 @@ export default {
                 if (this.file_to_upload) {
                     const uploadedUrl = await this.uploadToCloudinary(this.file_to_upload, user.uid);
                     if (uploadedUrl) picture_url = uploadedUrl;
-
+        
                 }
                 const doclistRef = doc(db, "listings", this.listing_id);
                 await updateDoc(doclistRef, {
@@ -192,7 +192,7 @@ export default {
                     payment_mode: this.payment_mode,
                     listing_category: this.listing_category,
                     location_text: this.location_text,
-                    picture_url, //new photo 
+                    picture_url: picture_url, //new photo 
                     created_at: new Date() //just update the timing
 
 
@@ -280,7 +280,7 @@ export default {
             const formData = new FormData();
             formData.append("file", blob);
             formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-            formData.append("public_id", `listing-pics${uid}`);
+            formData.append("public_id", `listing-pics${uid}`); //uodate with new time
 
             const response = await axios.post(
                 `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
