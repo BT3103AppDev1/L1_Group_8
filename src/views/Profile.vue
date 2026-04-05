@@ -19,7 +19,7 @@
                                 class="profile-pic"/>
                         </div>
                         <div class="profile-info">
-                            <h6 class="username">{{ profileData.username }}</h6>
+                            <h3 class="username">{{ profileData.username }}</h3>
                             <div v-if="profileData.mobile_number" class="contact-info">
                                 <div v-if="profileData.mobile_number" class="mobile-number">
                                     Mobile: {{ profileData.dial_code }} {{ profileData.mobile_number }}
@@ -119,7 +119,7 @@ import { VueSpinner } from 'vue3-spinners';
 import { db, auth } from '@/firebase.js';
 import { signOut } from 'firebase/auth';
 import { getCurrentUser } from '@/auth.js';
-import { doc, collection, query, where, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 
 export default {
     name: 'Profile',
@@ -272,7 +272,137 @@ export default {
 .profile-content {
     display: flex;
     gap: 2rem;
-    flex-wrap: wrap;
+    width: 100%;
+}
+
+.profile-left {
+    display: flex;
+    flex-direction: column;
+    gap: 5rem;
+    flex: 1;
+}
+
+.profile-info-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.profile-pic {
+    border-radius: 50%;
+    object-fit: cover;
+    width: 13vw;
+    height: 13vw;
+}
+
+.profile-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.username {
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
+.contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.mobile-number {
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.contact-preference {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.125rem;
+}
+
+.ratings-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.ratings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ratings-title, .points-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--primary);
+}
+
+.ratings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.ratings-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.rating-icon {
+    width: 3vw;
+    height: auto;
+}
+
+.rating-category {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.rating-value {
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.rating-count {
+    font-size: 1.25rem;
+}
+
+.vertical-divider {
+    margin: 0.5rem 2rem;
+    border: none;
+    width: 1px;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.points-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    flex: 1;
+}
+
+.points-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.points-text {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.points-value, .points-rank {
+    font-size: 1.5rem;
+    font-weight: bold;
 }
 
 .sign-out-section {
