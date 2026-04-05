@@ -160,7 +160,7 @@
 <script>
 import ConfirmModal from '@/components/ConfirmModal.vue'
 import { db } from '@/firebase.js'
-import { collection, query, where, getDocs } from 'firebase/firestore'
+import { collection, query, where, getDocs, doc, updateDoc, arrayRemove } from 'firebase/firestore'
 import { getCurrentUser } from '@/auth.js'
 
 export default {
@@ -178,6 +178,7 @@ export default {
       toast: { show: false, message: '' },
       modal: { show: false, icon: '', title: '', message: '', confirmLabel: 'Confirm', confirmClass: 'btn-primary', _fn: null },
       loading: false,
+      currentUserId: null,
 
       gigs: {
         awaiting:  [],
@@ -190,6 +191,7 @@ export default {
   async mounted() {
     const user = await getCurrentUser()
     if (!user) return
+    this.currentUserId = user.uid
     this.loading = true
     try {
       const listingsRef = collection(db, 'listings')
@@ -218,12 +220,14 @@ export default {
           title: d.title,
           location: d.location_text,
           postedOn: d.created_at?.toDate().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) ?? '',
+          createdAtRaw: d.created_at?.toDate() ?? new Date(0),
         }
       }
 
-      this.gigs.awaiting  = awaitingSnap.docs.map(mapGig)
-      this.gigs.ongoing   = ongoingSnap.docs.map(mapGig)
-      this.gigs.completed = completedSnap.docs.map(mapGig)
+      const byDateDesc = (a, b) => b.createdAtRaw - a.createdAtRaw
+      this.gigs.awaiting  = awaitingSnap.docs.map(mapGig).sort(byDateDesc)
+      this.gigs.ongoing   = ongoingSnap.docs.map(mapGig).sort(byDateDesc)
+      this.gigs.completed = completedSnap.docs.map(mapGig).sort(byDateDesc)
     } catch (e) {
       console.error('Failed to load gigs:', e)
     } finally {
@@ -263,9 +267,17 @@ export default {
         title: 'Withdraw application?',
         message: `You will lose your spot for "${gig.title}". You can re-apply later if the listing is still open.`,
         confirmLabel: 'Yes, withdraw', confirmClass: 'btn-danger',
-        _fn: () => {
-          this.gigs.awaiting = this.gigs.awaiting.filter(g => g.id !== gig.id)
-          this.showToast('Application withdrawn.')
+        _fn: async () => {
+          try {
+            await updateDoc(doc(db, 'listings', gig.id), {
+              applicants: arrayRemove(this.currentUserId),
+            })
+            this.gigs.awaiting = this.gigs.awaiting.filter(g => g.id !== gig.id)
+            this.showToast('Application withdrawn.')
+          } catch (e) {
+            console.error('Failed to withdraw:', e)
+            this.showToast('Something went wrong. Please try again.')
+          }
         },
       }
     },

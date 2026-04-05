@@ -11,7 +11,7 @@
 
     <!-- Info group -->
     <div class="listing-info-group">
-      <p class="listing-info"><strong>Listed By:</strong> {{ listing.listedBy }}</p>
+      <p class="listing-info"><strong>Listed By:</strong> {{ listing.lister_name }}</p>
       <p class="listing-info"><strong>Posted On:</strong> {{ listing.postedOn }}</p>
 
       <!-- Location with blue icon -->
