@@ -16,7 +16,7 @@ import Profile from '@/views/Profile.vue'
 import ListingDetailsView from '@/views/ListingDetailsView.vue'
 import EditListing from '@/views/EditListing.vue'
 import EditProfile from '@/views/EditProfile.vue'
-import RatingHistory from '@/views/RatingHistory.vue'
+import RatingsHistory from '@/views/RatingsHistory.vue'
 import PointsHistory from '@/views/PointsHistory.vue'
 
 const routes = [
@@ -126,14 +126,20 @@ const routes = [
         meta: { showHeader: true, requiresAuth: true }
     },
     {
-        path: '/rating-history',
-        name: 'RatingHistory',
-        component: RatingHistory,
+        path: '/my-ratings-history',
+        name: 'MyRatingsHistory',
+        component: RatingsHistory,
         meta: { showHeader: true, requiresAuth: true }
     },
     {
-        path: '/points-history',
-        name: 'PointsHistory',
+        path: '/users/:uid/ratings-history',
+        name: 'PublicRatingsHistory',
+        component: RatingsHistory,
+        meta: { showHeader: true, requiresAuth: true }
+    },
+    {
+        path: '/my-points-history',
+        name: 'MyPointsHistory',
         component: PointsHistory,
         meta: { showHeader: true, requiresAuth: true }
     },
