@@ -9,7 +9,7 @@
                     <img :src="listing?.photoURL" alt="Listing Image" class="listing-image"/>
                 </div>
                 <div class="category">
-                    <p>{{ listing?.category }}</p>
+                    <p :class="listing?.category?.toLowerCase()">{{ listing?.category }}</p>
                 </div>
                 <div class="title">
                     <h2>{{ listing?.title }}</h2>
@@ -33,8 +33,8 @@
                 </div>
                 <div class="status-section">
                     <h3>Service Status</h3>
-                    <p>{{ listing?.status }}</p>
-                </div> 
+                    <p :class="listing?.status?.toLowerCase()">{{ listing?.status }}</p>
+                </div>
             </div>
             <!-- Right Column -->
             <div class="right-column">
@@ -55,12 +55,12 @@
                 <!-- Edit + Delete buttons (only for lister) -->
                 <div v-if="isLister" class="lister-actions">
                     <p> This is your listing! Feel free to edit or delete it at any time.</p>
-                    <button @click="editListing">Edit Listing</button>
-                    <button @click="deleteListing">Delete Listing</button>
+                    <button class="btn btn-primary" @click="editListing">Edit Listing</button>
+                    <button class="btn btn-danger" @click="deleteListing">Delete Listing</button>
                 </div>
                 <!-- Help Button (only for non-lister when listing is awaiting) -->
                 <div v-if="canHelp" class="help-button">
-                    <button class="help-btn" @click="offerHelp">I can help :)</button>
+                    <button class="btn btn-secondary" @click="offerHelp">I can help :)</button>
                     <p class="help-notice">
                         By clicking "I can help", you will be expressing your interest to help the lister
                     </p>
@@ -179,28 +179,95 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* Make sure that it is split into 2 columns */
+
+.listing-details-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 12px;
+}
+
 .layout {
   display: flex;
-  flex-direction: row;
-  gap: 20px; 
+  gap: 32px;
+  align-items: flex-start;
 }
 
-/* Left column takes up slightly more */
 .left-column {
-  flex: 1.5;
+  flex: 4;
 }
 
-/* Right column takes less space */
 .right-column {
-  flex: 1;
+  flex: 1.5;
+  min-width: 380px;
+  background: var(--white);
+  padding: 28px;
+  border-radius: var(--radius);
+  box-shadow: var(--card-shadow);
+  border: 1px solid rgba(0,0,0,0.06);
 }
 
-/* Make images behave nicely */
-.listing-image,
-.profile-picture {
-  max-width: 100%;
-  height: auto;
-  display: block;
+.image-section {
+  max-height: 500px;
+  overflow: hidden;
+  border-radius: var(--radius);
 }
+
+.listing-image {
+  width: 100%;
+  height: 480px;
+  object-fit: center;
+}
+
+.category p {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+/* Category colors */
+.category p.education {
+  background-color: var(--primary);
+  color: var(--white);
+}
+
+.category p.buddy {
+  background-color: var(--info);
+  color: var(--white);
+}
+
+.category p.survival {
+  background-color: var(--success);
+  color: var(--white);
+}
+
+/* Meta section */
+.meta-section p {
+  color: var(--gray3);
+  font-size: 0.9rem;
+}
+
+/* Lister profile */
+.lister-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.profile-picture {
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Contact info */
+.contact-info p {
+  margin: 4px 0;
+}
+
+
 </style>
