@@ -7,6 +7,8 @@
             </router-link>
         </div>
 
+        <TheMyRewardSection />
+
         <div v-if="isPrivateProfile" class="sign-out-section">
             <button class="btn btn-danger" @click="showSignOutModal = true">
                 Sign Out
@@ -42,6 +44,7 @@ import { auth } from '@/firebase.js';
 import { signOut } from 'firebase/auth';
 import RewardCard from '@/components/RewardCard.vue';
 import RewardDetails from './RewardDetails.vue';
+import TheMyRewardSection from '@/components/TheMyRewardSection.vue';
 
 export default {
     name: 'Profile',
@@ -52,6 +55,7 @@ export default {
         VueSpinner,
         RewardCard,
         RewardDetails,
+        TheMyRewardSection
     },
     data() {
         return {
