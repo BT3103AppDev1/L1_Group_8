@@ -52,7 +52,7 @@ import ContactMethodsInput from '@/components/ContactMethodsInput.vue';
 import { VueSpinner } from 'vue3-spinners';
 import { getCurrentUser } from '@/auth.js';
 import { db } from '@/firebase.js';
-import { doc, getDoc, getDocs, query, updateDoc, writeBatch, where, collection } from 'firebase/firestore';
+import { doc, getDoc, getDocs, query, writeBatch, where, collection } from 'firebase/firestore';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '@/firebase.js';
 import axios from 'axios';
@@ -197,15 +197,10 @@ export default {
                     profilePicUrl = null; // User reverted to default 
                 }
 
-
-                const listingsQuery = query(collection(db, 'listings'), 
-                    where('lister_id', '==', this.uid));
-                const listingSnapshot = await getDocs(listingsQuery);
-
                 const batch = writeBatch(db);
 
                 const userDocRef = doc(db, "users", this.uid);
-                await updateDoc(userDocRef, {
+                batch.update(userDocRef, {
                     username: this.username,
                     profile_pic_url: profilePicUrl,
                     country_code: this.contact.countryCode,
@@ -217,12 +212,18 @@ export default {
                     telegram_handle: this.contact.telegram,
                 });
 
-                listingSnapshot.forEach((doc) => {
-                    const listingRef = doc.ref;
-                    batch.update(listingRef, {
-                        lister_name: this.username,
+                if (this.username !== this.initialUsername) {
+                    const listingsQuery = query(collection(db, 'listings'), 
+                        where('lister_id', '==', this.uid));
+                    const listingSnapshot = await getDocs(listingsQuery);
+
+                    listingSnapshot.forEach((listingDoc) => {
+                        const listingRef = listingDoc.ref;
+                        batch.update(listingRef, {
+                            lister_name: this.username,
+                        });
                     });
-                });
+                }
 
                 await batch.commit();
 
