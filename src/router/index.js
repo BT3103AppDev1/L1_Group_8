@@ -123,6 +123,12 @@ const routes = [
         component: ListingDetailsView,
         meta: { showHeader: true, requiresAuth: true }
     },
+    {
+        path: '/reward/:redemptionId',
+        name: 'RewardDetails',
+        component: () => import('@/views/RewardDetails.vue'),
+        meta: { showHeader: true, requiresAuth: true }
+    },
     // Catch-all route for 404 Not Found
     {
         path: '/:pathMatch(.*)*',

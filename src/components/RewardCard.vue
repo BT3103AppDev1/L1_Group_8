@@ -1,27 +1,50 @@
 <template>
-    <div class="reward-card">
+    <div class="reward-card" :class="{ expired: isExpired, redeemed: isRedeemed}">
         <div class="reward-content">
-            <!-- Reward title is reward_name in firestore -->
-            <h2 class="reward-title">title</h2>
-            <!-- expiry_date in firestore -->
-            <h3 class="expiry-date">Expiry Date: date </h3>
-            <!-- under reward redemption in firestore as status -->
-            <h3 class="redemption-status">Status: status </h3>
+            <h2 class="reward-title">{{ reward.reward_name }}</h2>
+            <h3 class="expiry-date">Expiry Date: {{ formattedExpiryDate }}</h3>
+            <h3 class="redemption-status">Status: {{ reward.status }}</h3>
         </div>
         <button class="reward-detail-button" @click="viewRewardDetail">View Details</button>
     </div>
 </template>
 
 <script>
-    import { doc, updateDoc, increment } from "firebase/firestore"
-    import { db } from "@/firebase"
-    import { useRouter } from "vue-router"
+export default {
+    name: 'RewardCard',
+    props: {
+        reward: {
+            type: Object,
+            required: true
+        }
+    },
 
-    const router = useRouter();
+    computed: {
+        formattedExpiryDate() {
+            const date = this.reward.expiry_date.toDate();
+            return date.toLocaleDateString();
+        },
+        
+        isExpired() {
+            return this.reward.status === 'EXPIRED';
+        },
 
-    const viewRewardDetail = async () => {
-        router.push()
+        isRedeemed() {
+            return this.reward.status === 'REDEEMED';
+        }
+    },
+
+    methods: {
+        viewRewardDetail() {
+            this.$router.push({
+                name: 'RewardDetails',
+                params: { redemptionId: this.reward.redemption_id }
+            })
+        }
     }
+}
+
+
 </script>
 
 <style scoped>
@@ -37,6 +60,10 @@
         overflow: hidden;
         min-height: 240px;
         margin: 10px 0px 0px 0px;
+    }
+
+    .reward-card.expired, .reward-card.redeemed { 
+        background-color: var(--gray5);
     }
 
     .reward-content {
