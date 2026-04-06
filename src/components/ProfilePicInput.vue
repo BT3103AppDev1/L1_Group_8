@@ -173,6 +173,7 @@ export default {
 .profile-pic-preview {
     border-radius: 50%;
     object-fit: cover;
+    border: 2px solid var(--gray5);
 }
 
 .action-if-not-uploaded {

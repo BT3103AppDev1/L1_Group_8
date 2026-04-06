@@ -340,6 +340,7 @@ export default {
     object-fit: cover;
     width: 11vw;
     height: 11vw;
+    border: 2px solid var(--gray5);
 }
 
 .profile-info {
