@@ -4,7 +4,7 @@
             <VueSpinner size="40" color="var(--secondary)" aria-label="Loading profile..." />
         </div>
         <div v-else class="profile-page-content">
-            <div class="profile-left-container">
+            <div :class="['profile-left-container', isPrivateProfile ? 'private-margin' : 'public-margin']">
                 <div class="profile-left">
                     <div v-if="isPrivateProfile" class="private-profile-header">
                         <PageHeader title="My Profile" />
@@ -99,6 +99,10 @@
             </div>
         </div>
 
+        <div v-if="!isPrivateProfile" class="awaiting-listings-section">
+            <AwaitingListings :key="$route.params.uid" :uid="$route.params.uid" :username="profileData.username"/>
+        </div>
+
         <div v-if="isPrivateProfile" class="sign-out-section">
             <button class="btn btn-danger" @click="showSignOutModal = true">
                 Sign Out
@@ -138,6 +142,7 @@ import defaultProfilePic from '@/assets/default-profile-pic.png';
 import eduIcon from '@/assets/education-icon.png';
 import buddyIcon from '@/assets/buddy-icon.png';
 import survivalIcon from '@/assets/survival-icon.png';
+import AwaitingListings from '@/components/AwaitingListings.vue';
 
 export default {
     name: 'Profile',
@@ -147,6 +152,7 @@ export default {
         Check,
         ConfirmationModal,
         VueSpinner,
+        AwaitingListings
     },
     data() {
         return {
@@ -280,8 +286,15 @@ export default {
 
 .profile-left-container {
     display: flex;
-    margin: 4rem 0;
     flex: 1;
+}
+
+.private-margin {
+    margin: 4rem 0;
+}
+
+.public-margin {
+    margin: 7rem 0;
 }
 
 .profile-left {
