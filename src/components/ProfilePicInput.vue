@@ -215,6 +215,13 @@ export default {
     cursor: not-allowed;
 }
 
+.text-link:disabled {
+    color: var(--gray5);
+    background-color: transparent;
+    border: none;
+    cursor: not-allowed;
+}
+
 .file-requirements {
     min-height: 0;
     text-align: center;
