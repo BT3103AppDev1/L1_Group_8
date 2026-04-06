@@ -5,7 +5,7 @@
     <main :class="['main-content', {'main-content-with-header': $route.meta.showHeader}]">
       <RouterView v-slot="{ Component }">
         <transition name="fade" mode="out-in">
-          <component :is="Component" :key="$router.fullPath"/>
+          <component :is="Component" :key="$route.fullPath"/>
         </transition>
       </RouterView>
     </main>
