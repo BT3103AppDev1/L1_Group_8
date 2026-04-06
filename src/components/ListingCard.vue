@@ -81,6 +81,9 @@ const categoryClass = (cat) => {
   gap: 0.55rem;
   font-size: 1rem;
   overflow: hidden;
+
+  /* NEW: ensures all cards align in the grid */
+  min-height: 260px;
 }
 
 /* Title */
@@ -89,6 +92,12 @@ const categoryClass = (cat) => {
   font-weight: 700;
   color: var(--black2);
   margin-bottom: 0.2rem;
+
+  /* NEW: prevents long titles from stretching card height */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 /* Category tag */
@@ -112,6 +121,7 @@ const categoryClass = (cat) => {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  flex: 1;
 }
 
 .listing-info {
@@ -135,7 +145,6 @@ const categoryClass = (cat) => {
   border: none;
   cursor: pointer;
   transition: 0.15s ease;
-  border-radius: 0 0 var(--radius) var(--radius);
 }
 
 .listing-btn:hover {
