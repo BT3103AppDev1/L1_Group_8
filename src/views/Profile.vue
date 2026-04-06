@@ -4,15 +4,14 @@
             <VueSpinner size="40" color="var(--secondary)" aria-label="Loading profile..." />
         </div>
         <div v-else class="profile-page-content">
-            <div v-if="isPrivateProfile" class="private-profile-header">
-                <PageHeader title="My Profile" />
-                <router-link to="/edit-profile" class="edit-icon" aria-label="Edit profile">
-                    <SquarePen :size="28" color="var(--secondary)"/>
-                </router-link>
-            </div>
-
-            <div class="profile-content">
+            <div class="profile-left-container">
                 <div class="profile-left">
+                    <div v-if="isPrivateProfile" class="private-profile-header">
+                        <PageHeader title="My Profile" />
+                        <router-link to="/edit-profile" class="edit-icon" aria-label="Edit profile">
+                            <SquarePen :size="28" color="var(--secondary)"/>
+                        </router-link>
+                    </div>
                     <div class="profile-info-container">
                         <div class="profile-pic-container">
                             <img :src="profileData.profile_pic_url ? profileData.profile_pic_url : defaultProfilePic" :alt="`Profile picture of ${profileData.username}`" 
@@ -25,72 +24,87 @@
                                     Mobile: {{ profileData.dial_code }} {{ profileData.mobile_number }}
                                 </div>
                                 <div v-if="profileData.accept_calls" class="contact-preference">
-                                    <span class="preference-icon">
-                                        <CircleCheck color="var(--success)" size="20"/>
-                                    </span>
+                                    <div class="preference-icon">
+                                        <Check color="var(--white)" size="14" :stroke-width="3.5"/>
+                                    </div>
                                     Accept Calls
                                 </div>
                                 <div v-if="profileData.accept_messages" class="contact-preference">
-                                    <span class="preference-icon">
-                                        <CircleCheck color="var(--success)" size="20"/>
-                                    </span>
+                                    <div class="preference-icon">
+                                        <Check color="var(--white)" size="14" :stroke-width="3.5"/>
+                                    </div>
                                     Accept Messages
                                 </div>
                                 <div v-if="profileData.accept_whatsapp" class="contact-preference">
-                                    <span class="preference-icon">
-                                        <CircleCheck color="var(--success)" size="20"/>
-                                    </span>
+                                    <div class="preference-icon">
+                                        <Check color="var(--white)" size="14" :stroke-width="3.5"/>
+                                    </div>
                                     Accept WhatsApp
                                 </div>
                             </div>
-                            <div v-if="profileData.telegram_handle" class="contact-info">
-                                Telegram: {{ profileData.telegram_handle }}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="ratings-container">
-                        <div class="ratings-header">
-                            <h3 class="ratings-title">Ratings</h3>
-                            <router-link :to="ratingsHistPath" class="btn btn-secondary">
-                                Show Ratings History
-                            </router-link>
-                        </div>
-                        <div class="ratings-list">
-                            <div v-for="rating in ratings" :key="rating.category" class="rating-item">
-                                <img :src="rating.icon" :alt="`${rating.category} icon`" class="rating-icon"/>
-                                <span class="rating-category">{{ rating.category }}</span>
-                                <span v-if="rating.count" class="rating-value">{{ rating.value.toFixed(1) }} / 5.0 </span>
-                                <span v-if="rating.count" class="rating-count">({{ rating.count }} ratings received)</span>
-                                <span v-else class="rating-value">No ratings yet</span>
+                            <div v-if="profileData.telegram_handle" class="contact-info telegram-handle">
+                                Telegram: @{{ profileData.telegram_handle }}
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="vertical-divider"></div>
+            <div class="vertical-divider"></div>
+
+            <div class="profile-right">
+                <div class="ratings-container">
+                    <div class="ratings-header">
+                        <h3 class="ratings-title">Ratings</h3>
+                        <router-link :to="ratingsHistPath" class="btn btn-secondary">
+                            Show Ratings History
+                        </router-link>
+                    </div>
+                    <div class="ratings-list">
+                        <div v-for="rating in ratings" :key="rating.category" class="rating-item">
+                            <img :src="rating.icon" :alt="`${rating.category} icon`" class="rating-icon"/>
+                            <div class="rating-text">
+                                <span class="rating-category">{{ rating.category }}: </span>
+                                <span v-if="rating.count" class="rating-value">{{ rating.value.toFixed(1) }} / 5.0 </span>
+                                <span v-else class="rating-value">N/A</span>
+                                <span class="rating-count">({{ rating.count }} ratings received)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <div class="points-container">
                     <h3 class="points-title">Total Points</h3>
-                    <div class="points-content">
-                        <div class="points-text">
-                            <span class="points-value">{{ profileData.total_points }}</span>
-                            <span class="points-rank">
-                                (Top {{ profileData.is_in_top_20 ? profileData.absolute_rank : (profileData.percentage_rank + '%') }})
-                            </span>
+                    <div class="points-content-container">
+                        <div class="points-content">
+                            <div class="points-text">
+                                <span class="points-value">{{ profileData.total_points }} points</span>
+                                <span v-if="profileData.total_points" class="points-rank">
+                                    (Top {{ profileData.is_in_top_20 ? profileData.absolute_rank : (profileData.percentage_rank + '%') }})
+                                </span>
+                                <span v-else class="points-rank rank-unavailable">
+                                    (Rank unavailable)
+                                </span>
+                            </div>
+                            <router-link to="/my-points-history" class="btn btn-secondary">
+                                Show Points History
+                            </router-link>
                         </div>
-                        <router-link to="/my-points-history" class="btn btn-secondary">
-                            Show Points History
-                        </router-link>
+                        <div v-if="!profileData.total_points" class="helper-text">
+                            Only users with positive points are ranked. <br />
+                            Earn points by helping others to unlock your rank!
+                        </div>
                     </div>
                 </div>
             </div>
-
-            <div v-if="isPrivateProfile" class="sign-out-section">
-                <button class="btn btn-danger" @click="showSignOutModal = true">
-                    Sign Out
-                </button>
-            </div>
         </div>
+
+        <div v-if="isPrivateProfile" class="sign-out-section">
+            <button class="btn btn-danger" @click="showSignOutModal = true">
+                Sign Out
+            </button>
+        </div>
+
         <!-- sign out confirmation modal -->
         <confirmation-modal v-model:showModal="showSignOutModal" title="Sign out?">
             Are you sure you want to sign out?
@@ -113,20 +127,24 @@
 
 <script>
 import PageHeader from '@/components/PageHeader.vue';
-import { SquarePen, CircleCheck } from 'lucide-vue-next';
+import { SquarePen, Check } from 'lucide-vue-next';
 import ConfirmationModal from '@/components/ConfirmationModal.vue';
 import { VueSpinner } from 'vue3-spinners';
 import { db, auth } from '@/firebase.js';
 import { signOut } from 'firebase/auth';
 import { getCurrentUser } from '@/auth.js';
 import { doc, onSnapshot } from 'firebase/firestore';
+import defaultProfilePic from '@/assets/default-profile-pic.png';
+import eduIcon from '@/assets/education-icon.png';
+import buddyIcon from '@/assets/buddy-icon.png';
+import survivalIcon from '@/assets/survival-icon.png';
 
 export default {
     name: 'Profile',
     components: {
         PageHeader,
         SquarePen,  
-        CircleCheck,
+        Check,
         ConfirmationModal,
         VueSpinner,
     },
@@ -134,6 +152,7 @@ export default {
         return {
             isLoading: true,
 
+            defaultProfilePic,
             profileData: null,
 
             // Firestore listener unsubscribe functions
@@ -157,19 +176,19 @@ export default {
             return [
                 {
                     category: 'Education', 
-                    icon: "@/assets/education-icon.png", 
+                    icon: eduIcon, 
                     value: this.profileData ? this.profileData.edu_avg_rating : null, 
                     count: this.profileData ? this.profileData.edu_rating_count : 0
                 },
                 {
                     category: 'Buddy', 
-                    icon: "@/assets/buddy-icon.png", 
+                    icon: buddyIcon, 
                     value: this.profileData ? this.profileData.buddy_avg_rating : null, 
                     count: this.profileData ? this.profileData.buddy_rating_count : 0
                 },
                 {
                     category: 'Survival', 
-                    icon: "@/assets/survival-icon.png", 
+                    icon: survivalIcon, 
                     value: this.profileData ? this.profileData.survival_avg_rating : null, 
                     count: this.profileData ? this.profileData.survival_rating_count : 0
                 }
@@ -251,6 +270,27 @@ export default {
     padding: 1.25rem;
 }
 
+.profile-page-content {
+    display: flex;
+    gap: 2rem;
+    width: 100%;
+    align-items: stretch;
+    justify-content: center;
+}
+
+.profile-left-container {
+    display: flex;
+    margin: 4rem 0;
+    flex: 1;
+}
+
+.profile-left {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    flex: 1;
+}
+
 .private-profile-header {
     display: flex;
     align-items: center;
@@ -269,65 +309,83 @@ export default {
     color: var(--primary-hover);
 }
 
-.profile-content {
-    display: flex;
-    gap: 2rem;
-    width: 100%;
-}
-
-.profile-left {
-    display: flex;
-    flex-direction: column;
-    gap: 5rem;
-    flex: 1;
-}
-
 .profile-info-container {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 3vw;
+}
+
+.profile-pic-container {
+    display: flex;
+    justify-content: center;
     align-items: center;
 }
 
 .profile-pic {
     border-radius: 50%;
     object-fit: cover;
-    width: 13vw;
-    height: 13vw;
+    width: 11vw;
+    height: 11vw;
 }
 
 .profile-info {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.875rem;
 }
 
 .username {
-    font-size: 2.5rem;
+    font-size: 2rem;
     font-weight: bold;
 }
 
 .contact-info {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.25rem;
 }
 
-.mobile-number {
-    font-size: 1.25rem;
+.mobile-number, .telegram-handle {
+    font-size: 1.125rem;
     font-weight: bold;
 }
 
 .contact-preference {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 1.125rem;
+    gap: 0.25rem;
+    font-size: 1rem;
+}
+
+.preference-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background-color: var(--success);
+    border-radius: 50%;
+}
+
+.vertical-divider {
+    margin: 0 1.5rem;
+    border: none;
+    width: 1px;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.profile-right {
+    display: flex;
+    flex-direction: column;
+    gap: 4rem;
+    flex: 1;
 }
 
 .ratings-container {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1.25rem;
 }
 
 .ratings-header {
@@ -337,7 +395,7 @@ export default {
 }
 
 .ratings-title, .points-title {
-    font-size: 2.5rem;
+    font-size: 2rem;
     font-weight: bold;
     color: var(--primary);
 }
@@ -345,10 +403,10 @@ export default {
 .ratings-list {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1.25rem;
 }
 
-.ratings-item {
+.rating-item {
     display: flex;
     align-items: center;
     gap: 1rem;
@@ -359,8 +417,14 @@ export default {
     height: auto;
 }
 
+.rating-text {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 .rating-category {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: bold;
 }
 
@@ -370,22 +434,19 @@ export default {
 }
 
 .rating-count {
-    font-size: 1.25rem;
-}
-
-.vertical-divider {
-    margin: 0.5rem 2rem;
-    border: none;
-    width: 1px;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.1);
+    font-size: 1rem;
 }
 
 .points-container {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
-    flex: 1;
+    gap: 1.25rem;
+}
+
+.points-content-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
 }
 
 .points-content {
@@ -400,12 +461,27 @@ export default {
     align-items: center;
 }
 
-.points-value, .points-rank {
-    font-size: 1.5rem;
+.points-value {
+    font-size: 1.25rem;
     font-weight: bold;
 }
 
+.points-rank {
+    font-size: 1rem;
+}
+
+.rank-unavailable {
+    color: var(--gray3);
+}
+
+.helper-text {
+    font-size: 0.875rem;
+    color: var(--gray3);
+    text-align: start;
+}
+
 .sign-out-section {
+    margin-top: 2rem;
     display: flex;
     justify-content: flex-end;
 }
