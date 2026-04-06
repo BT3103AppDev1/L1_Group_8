@@ -59,7 +59,7 @@ export default {
         this._firestoreUnsubscribe = onSnapshot(userDocRef, (doc) => {
           if (doc.exists()) {
             const data = doc.data();
-            this.profilePicUrl = data.profilePicUrl || null;
+            this.profilePicUrl = data.profile_pic_url || null;
 
             const route = this.$route.path;
             if (!data.email_verified && route !== '/email-verification') {
