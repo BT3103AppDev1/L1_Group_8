@@ -52,7 +52,7 @@ import ContactMethodsInput from '@/components/ContactMethodsInput.vue';
 import { VueSpinner } from 'vue3-spinners';
 import { getCurrentUser } from '@/auth.js';
 import { db } from '@/firebase.js';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, getDocs, query, updateDoc, writeBatch, where, collection } from 'firebase/firestore';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '@/firebase.js';
 import axios from 'axios';
@@ -207,6 +207,13 @@ export default {
                     profilePicUrl = null; // User reverted to default 
                 }
 
+
+                const listingsQuery = query(collection(db, 'listings'), 
+                    where('lister_id', '==', uid));
+                const listingSnapshot = await getDocs(listingsQuery);
+
+                const batch = writeBatch(db);
+
                 const userDocRef = doc(db, "users", uid);
                 await updateDoc(userDocRef, {
                     username: this.username,
@@ -219,6 +226,15 @@ export default {
                     accept_whatsapp: this.contact.acceptWhatsApp,
                     telegram_handle: this.contact.telegram,
                 });
+
+                listingSnapshot.forEach((doc) => {
+                    const listingRef = doc.ref;
+                    batch.update(listingRef, {
+                        lister_name: this.username,
+                    });
+                });
+
+                await batch.commit();
 
                 alert("Profile updated successfully! You will be redirected to your profile page.");
                 
