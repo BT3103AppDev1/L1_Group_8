@@ -11,7 +11,7 @@
 
     <!-- Info group -->
     <div class="listing-info-group">
-      <p class="listing-info"><strong>Listed By:</strong> {{ listing.listedBy }}</p>
+      <p class="listing-info"><strong>Listed By:</strong> {{ listing.lister_name }}</p>
       <p class="listing-info"><strong>Posted On:</strong> {{ listing.postedOn }}</p>
 
       <!-- Location with blue icon -->
@@ -121,7 +121,6 @@ const categoryClass = (cat) => {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  flex: 1;
 }
 
 .listing-info {
@@ -130,13 +129,10 @@ const categoryClass = (cat) => {
   line-height: 1.35;
 }
 
-/* Button — clean full-width footer */
+/* Button — now stable and aligned */
 .listing-btn {
-  margin-top: 1rem;
-  margin-left: -1.4rem;
-  margin-right: -1.4rem;
-  margin-bottom: -1.2rem;
-  width: calc(100% + 2.8rem);
+  margin-top: auto; 
+  width: 100%;
   padding: 14px 0;
   font-size: 1rem;
   font-weight: 600;
@@ -145,6 +141,7 @@ const categoryClass = (cat) => {
   border: none;
   cursor: pointer;
   transition: 0.15s ease;
+  border-radius: var(--radius) var(--radius) var(--radius) var(--radius);
 }
 
 .listing-btn:hover {
