@@ -172,7 +172,7 @@
 <script>
 import ConfirmModal from '@/components/ConfirmModal.vue'
 import { db } from '@/firebase.js'
-import { collection, query, where, getDocs, getDoc, doc } from 'firebase/firestore'
+import { collection, query, where, getDocs, getDoc, doc, updateDoc } from 'firebase/firestore'
 import { getCurrentUser } from '@/auth.js'
 
 export default {
@@ -302,14 +302,24 @@ export default {
         title: `Choose ${applicant.name}?`,
         message: 'Once you accept this provider, all other applicants will be automatically rejected. This cannot be undone.',
         confirmLabel: 'Accept Provider', confirmClass: 'btn-primary',
-        _fn: () => {
-          const idx = this.listings.awaiting.findIndex(l => l.id === listing.id)
-          if (idx !== -1) {
-            const moved = { ...listing, provider: applicant }
-            this.listings.awaiting.splice(idx, 1)
-            this.listings.ongoing.unshift(moved)
-            this.activeTab = 'ongoing'
+        _fn: async () => {
+          try {
+            await updateDoc(doc(db, 'listings', listing.id), {
+              provider_id: applicant.id,
+              status: 'Ongoing',
+              applicants: [],
+            })
+            const idx = this.listings.awaiting.findIndex(l => l.id === listing.id)
+            if (idx !== -1) {
+              const moved = { ...listing, provider: applicant, applicants: [] }
+              this.listings.awaiting.splice(idx, 1)
+              this.listings.ongoing.unshift(moved)
+              this.activeTab = 'ongoing'
+            }
             this.showToast(`${applicant.name} accepted as your provider!`)
+          } catch (e) {
+            console.error('Failed to choose provider:', e)
+            this.showToast('Something went wrong. Please try again.')
           }
         },
       }
@@ -321,14 +331,22 @@ export default {
         title: 'Mark as Completed?',
         message: 'Confirm that the service has been fulfilled. You will then be prompted to rate your provider.',
         confirmLabel: 'Mark Completed', confirmClass: 'btn-primary',
-        _fn: () => {
-          const idx = this.listings.ongoing.findIndex(l => l.id === listing.id)
-          if (idx !== -1) {
-            const moved = { ...listing, ratingGiven: 5 }
-            this.listings.ongoing.splice(idx, 1)
-            this.listings.completed.unshift(moved)
-            this.activeTab = 'completed'
+        _fn: async () => {
+          try {
+            await updateDoc(doc(db, 'listings', listing.id), {
+              status: 'Completed',
+            })
+            const idx = this.listings.ongoing.findIndex(l => l.id === listing.id)
+            if (idx !== -1) {
+              const moved = { ...listing }
+              this.listings.ongoing.splice(idx, 1)
+              this.listings.completed.unshift(moved)
+              this.activeTab = 'completed'
+            }
             this.showToast('Service marked as completed!')
+          } catch (e) {
+            console.error('Failed to mark complete:', e)
+            this.showToast('Something went wrong. Please try again.')
           }
         },
       }
