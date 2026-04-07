@@ -25,7 +25,7 @@ export default {
             const date = this.reward.expiry_date.toDate?.() ?? new Date(this.reward.expiry_date);
             return date.toLocaleDateString('en-SG', { day: 'numeric', month: 'long', year: 'numeric' });
         },
-        
+
         isExpired() {
             return this.reward.status === 'EXPIRED';
         },
