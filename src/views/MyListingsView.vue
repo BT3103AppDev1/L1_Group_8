@@ -53,7 +53,7 @@
                 </span>
               </div>
             </div>
-            <button class="btn btn-secondary btn-sm" @click="showToast('View Listing Details — coming soon!')">View Listing Details</button>
+            <button class="btn btn-secondary btn-sm" @click="$router.push('/listing/' + listing.id)">View Listing Details</button>
           </div>
 
           <!-- Applicants -->
@@ -92,7 +92,7 @@
                 </span>
               </div>
             </div>
-            <button class="btn btn-secondary btn-sm" @click="showToast('View Listing Details — coming soon!')">View Listing Details</button>
+            <button class="btn btn-secondary btn-sm" @click="$router.push('/listing/' + listing.id)">View Listing Details</button>
           </div>
 
           <!-- Assigned provider -->
@@ -134,7 +134,7 @@
                 </span>
               </div>
             </div>
-            <button class="btn btn-secondary btn-sm" @click="showToast('View Listing Details — coming soon!')">View Listing Details</button>
+            <button class="btn btn-secondary btn-sm" @click="$router.push('/listing/' + listing.id)">View Listing Details</button>
           </div>
 
           <div class="applicants">
@@ -172,7 +172,7 @@
 <script>
 import ConfirmModal from '@/components/ConfirmModal.vue'
 import { db } from '@/firebase.js'
-import { collection, query, where, getDocs, getDoc, doc, updateDoc } from 'firebase/firestore'
+import { collection, query, where, getDocs, getDoc, doc, updateDoc, arrayUnion } from 'firebase/firestore'
 import { getCurrentUser } from '@/auth.js'
 
 export default {
@@ -231,6 +231,7 @@ export default {
               name: u.username ?? 'Unknown',
               profilePic: u.profile_pic_url ?? null,
             }
+            console.log(uid, 'profile_pic_url:', u.profile_pic_url)
           }
         } catch (_) {}
       }))
@@ -304,11 +305,20 @@ export default {
         confirmLabel: 'Accept Provider', confirmClass: 'btn-primary',
         _fn: async () => {
           try {
-            await updateDoc(doc(db, 'listings', listing.id), {
+            const otherIds = listing.applicants.filter(a => a.id !== applicant.id).map(a => a.id)
+            const rejectedAt = {}
+            otherIds.forEach(uid => { rejectedAt[uid] = new Date() })
+
+            const updateData = {
               provider_id: applicant.id,
               status: 'Ongoing',
               applicants: [],
-            })
+            }
+            if (otherIds.length > 0) {
+              updateData.rejected_applicant_ids = arrayUnion(...otherIds)
+              updateData.rejected_at = rejectedAt
+            }
+            await updateDoc(doc(db, 'listings', listing.id), updateData)
             const idx = this.listings.awaiting.findIndex(l => l.id === listing.id)
             if (idx !== -1) {
               const moved = { ...listing, provider: applicant, applicants: [] }
