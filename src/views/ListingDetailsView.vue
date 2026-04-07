@@ -76,7 +76,7 @@ import { ref, computed, onMounted } from 'vue'
 
 // Firebase Imports
 import { db } from '@/firebase'
-import { doc, getDoc, deleteDoc } from 'firebase/firestore'
+import { doc, getDoc, deleteDoc, updateDoc, arrayUnion } from 'firebase/firestore'
 import { getAuth } from 'firebase/auth'
 
 // Router Imports
@@ -114,8 +114,17 @@ const deleteListing = async () => {
     router.push("/explore")
 }
 
-const offerHelp = () => {
-    alert("You have offered to help! Contact the lister using the info provided.")
+const offerHelp = async () => {
+    if (!user.value) return
+    try {
+        await updateDoc(doc(db, 'listings', listing.value.id), {
+            applicants: arrayUnion(user.value.uid)
+        })
+        router.push('/my-gigs')
+    } catch (e) {
+        console.error('Failed to apply:', e)
+        alert('Something went wrong. Please try again.')
+    }
 }
 
 onMounted(async () => {
