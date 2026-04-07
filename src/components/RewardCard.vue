@@ -5,7 +5,7 @@
             <h3 class="expiry-date">Expiry Date: {{ formattedExpiryDate }}</h3>
             <h3 class="redemption-status">Status: {{ reward.status }}</h3>
         </div>
-        <button class="reward-detail-button" @click="viewRewardDetail">View Details</button>
+        <button class="reward-detail-button btn-secondary:hover" @click="viewRewardDetail">View Details</button>
     </div>
 </template>
 
@@ -20,9 +20,10 @@ export default {
     },
 
     computed: {
-        formattedExpiryDate() {
-            const date = this.reward.expiry_date.toDate();
-            return date.toLocaleDateString();
+        formattedExpiry() {
+            if (!this.reward.expiry_date) return 'N/A';
+            const date = this.reward.expiry_date.toDate?.() ?? new Date(this.reward.expiry_date);
+            return date.toLocaleDateString('en-SG', { day: 'numeric', month: 'long', year: 'numeric' });
         },
         
         isExpired() {
