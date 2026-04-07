@@ -1,11 +1,14 @@
 <template> 
     <PageHeader title="Reward Details"/>
+
+    <button class="back-button" @click="$router.back()">← Back</button>
+
     <div v-if="loading">Loading...</div>
     <div v-else-if="reward" class="reward-detail-page">
         <div class="reward-detail-box">
             <div class="reward-name-box">
                 <h2 class="reward-name">{{ reward.reward_name }}</h2>
-                <p class="information">Valid till {{ reward.expiry_date }} </p>
+                <p class="information">Valid till {{ formattedExpiryDate }} </p>
             </div>
             <hr class="divider">
 
@@ -28,37 +31,61 @@
         </div>  
 
         <div class="redeem-button-section">
-            <button 
-                class="btn btn-secondary btn-secondary:hover" 
+            <button
+                class="btn btn-secondary"
                 :disabled="reward.status !== 'NOT REDEEMED'"
-                @click="redeemReward"
+                @click="showConfirmModal = true"
             >
-                {{  reward.status === 'REDEEMED' ? 'Redeemed' : reward.status === 'EXPIRED' ? 'Expired' : 'Redeem' }}
+                {{ reward.status === 'REDEEMED' ? 'Redeemed' : reward.status === 'EXPIRED' ? 'Expired' : 'Redeem' }}
             </button>
         </div>
+
+        <ConfirmationModal
+            :showModal="showConfirmModal"
+            title="Confirm Redemption"
+            @update:showModal="showConfirmModal = $event"
+        >
+            Redeem <strong>{{ reward.reward_name }}</strong>? This action cannot be undone.
+
+            <template #buttons>
+                <button class="btn btn-secondary" @click="confirmRedeem">Confirm</button>
+                <button class="btn btn-outlined" @click="showConfirmModal = false">Cancel</button>
+            </template>
+        </ConfirmationModal>
     </div>
 
 </template>
 
 <script>
 import PageHeader from '@/components/PageHeader.vue';
+import ConfirmationModal from '@/components/ConfirmationModal.vue';
 import { db, auth } from '@/firebase';
 import { doc, getDoc, Timestamp, updateDoc } from 'firebase/firestore';
 
 export default {
     components: {
-        PageHeader
+        PageHeader,
+        ConfirmationModal,
     },
 
     data() {
         return {
             reward: null,
-            loading: true
+            loading: true,
+            showConfirmModal: false,
         }
     },
 
     mounted() {
         this.fetchRewardDetails();
+    },
+
+    computed: {
+        formattedExpiry() {
+            if (!this.reward?.expiry_date) return 'N/A';
+            const date = this.reward.expiry_date.toDate?.() ?? new Date(this.reward.expiry_date);
+            return date.toLocaleDateString('en-SG', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
     },
 
     methods: {
@@ -100,6 +127,11 @@ export default {
             }
         },
 
+        async confirmRedeem() {
+            this.showConfirmModal = false;
+            await this.redeemReward();
+        },
+
         async redeemReward() {
             if (this.reward.status !== 'NOT REDEEMED') return;
 
@@ -122,15 +154,22 @@ export default {
 <style scoped>
     .reward-detail-page {
         display: flex;
+        flex-direction: row;
+        align-items: flex-start;
         gap: 10px;
+        padding: 20px;
+        max-width: 700px;
+        margin: 0 auto;
     }
 
     .reward-detail-box {
         background-color: #DDEBFB;
         flex-direction: column;
         border-radius: var(--radius);
-        border-color: var(--black1);;
+        border: 1px solid var(--black1);
         padding: 15px;
+        width: 100%;
+        flex: 1;
     }
 
     .reward-detail, .redemption-instruction, .terms-and-conditions {
@@ -152,9 +191,31 @@ export default {
 
     .information {
         font-size: 12px;
+        white-space: pre-line;
     }
 
     .redeem-button-section {
-        bottom: 0;
+        display: flex;
+        justify-content: flex-end;
+        flex-shrink: 0;
+    }
+
+    button:disabled {
+        background-color: var(--gray5);
+        cursor: not-allowed;
+    }
+
+    back-button {
+        background: none;
+        border: none;
+        color: var(--primary);
+        font-size: 14px;
+        cursor: pointer;
+        margin-bottom: 10px;
+    }
+
+    back-button:hover {
+        text-decoration: underline;
+        opacity: 0.8;
     }
 </style>
