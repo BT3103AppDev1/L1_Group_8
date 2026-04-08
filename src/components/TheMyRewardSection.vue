@@ -1,11 +1,13 @@
 <template>
-    <PageHeader title="My Rewards" />
-    <div class="reward-grid">
-        <div v-if="loading">Loading...</div>
-        <div v-else-if="rewards.length === 0">No rewards available...</div>
-        <RewardCard v-else 
-            v-for="reward in rewards" :key="reward.redemption_id" :reward="reward" 
-        />
+    <div class="my-reward-section">
+        <PageHeader title="My Rewards" />
+        <div class="reward-grid">
+            <div v-if="loading">Loading...</div>
+            <div v-else-if="rewards.length === 0">No rewards available...</div>
+            <RewardCard v-else 
+                v-for="reward in rewards" :key="reward.redemption_id" :reward="reward" 
+            />
+        </div>
     </div>
 </template>
 
@@ -30,7 +32,6 @@ export default {
     },
 
     async mounted() {
-        //seedRewards(); // Seed rewards for testing purposes
         this.fetchRewards();
     },
 
@@ -62,7 +63,7 @@ export default {
                         return null;
                     }
 
-                    if (redemption.status === "NOT_REDEEMED" && expiryDate < now) {
+                    if (redemption.status === "NOT REDEEMED" && expiryDate < now) {
                         await updateDoc(doc(db, 'reward_redemption', redemptionDoc.id), { status: "EXPIRED" });
                         redemption.status = "EXPIRED";
                     }
@@ -81,7 +82,7 @@ export default {
                     };
                 });
 
-                const rewardsData = await Promise.all(rewardPromises);
+                const rewardsData = (await Promise.all(rewardPromises)).filter(Boolean); 
 
                 this.rewards = rewardsData.sort((a, b) => {
                     const aInactive = a.status === 'EXPIRED' || a.status === 'REDEEMED';

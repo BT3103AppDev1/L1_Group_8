@@ -20,7 +20,7 @@ export default {
     },
 
     computed: {
-        formattedExpiry() {
+        formattedExpiryDate() {
             if (!this.reward.expiry_date) return 'N/A';
             const date = this.reward.expiry_date.toDate?.() ?? new Date(this.reward.expiry_date);
             return date.toLocaleDateString('en-SG', { day: 'numeric', month: 'long', year: 'numeric' });

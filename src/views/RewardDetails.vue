@@ -1,59 +1,60 @@
 <template> 
-    <PageHeader title="Reward Details"/>
+    <div>
+        <PageHeader title="Reward Details"/>
 
-    <button class="back-button" @click="$router.back()">← Back</button>
+        <button class="back-button" @click="$router.push({ name: 'PrivateProfile' })">← Back</button>
 
-    <div v-if="loading">Loading...</div>
-    <div v-else-if="reward" class="reward-detail-page">
-        <div class="reward-detail-box">
-            <div class="reward-name-box">
-                <h2 class="reward-name">{{ reward.reward_name }}</h2>
-                <p class="information">Valid till {{ formattedExpiryDate }} </p>
+        <div v-if="loading">Loading...</div>
+        <div v-else-if="reward" class="reward-detail-page">
+            <div class="reward-detail-box">
+                <div class="reward-name-box">
+                    <h2 class="reward-name">{{ reward.reward_name }}</h2>
+                    <p class="information">Valid till {{ formattedExpiryDate }} </p>
+                </div>
+                <hr class="divider">
+
+                <div class="reward-detail">
+                    <h2 class="section-title">REWARD DETAILS</h2>
+                    <p class="information">{{ reward.reward_details }}</p>
+                </div>
+                <hr class="divider">
+
+                <div class="redemption-instruction">
+                    <h2 class="section-title">REDEMPTION INSTRUCTION</h2>
+                    <p class="information">{{ reward.redemption_instruction }}</p>
+                </div>
+                <hr class="divider">  
+                
+                <div class="terms-and-conditions">
+                    <h2 class="section-title">TERMS AND CONDITIONS</h2>
+                    <p class="information">{{ reward.terms_and_conditions }}</p>
+                </div>            
+            </div>  
+
+            <div class="redeem-button-section">
+                <button
+                    class="btn btn-secondary"
+                    :disabled="reward.status !== 'NOT REDEEMED'"
+                    @click="showConfirmModal = true"
+                >
+                    {{ reward.status === 'REDEEMED' ? 'Redeemed' : reward.status === 'EXPIRED' ? 'Expired' : 'Redeem' }}
+                </button>
             </div>
-            <hr class="divider">
 
-            <div class="reward-detail">
-                <h2 class="section-title">REWARD DETAILS</h2>
-                <p class="information">{{ reward.reward_details }}</p>
-            </div>
-            <hr class="divider">
-
-            <div class="redemption-instruction">
-                <h2 class="section-title">REDEMPTION INSTRUCTION</h2>
-                <p class="information">{{ reward.redemption_instruction }}</p>
-            </div>
-            <hr class="divider">  
-            
-            <div class="terms-and-conditions">
-                <h2 class="section-title">TERMS AND CONDITIONS</h2>
-                <p class="information">{{ reward.terms_and_conditions }}</p>
-            </div>            
-        </div>  
-
-        <div class="redeem-button-section">
-            <button
-                class="btn btn-secondary"
-                :disabled="reward.status !== 'NOT REDEEMED'"
-                @click="showConfirmModal = true"
+            <ConfirmationModal
+                :showModal="showConfirmModal"
+                title="Confirm Redemption"
+                @update:showModal="showConfirmModal = $event"
             >
-                {{ reward.status === 'REDEEMED' ? 'Redeemed' : reward.status === 'EXPIRED' ? 'Expired' : 'Redeem' }}
-            </button>
+                Redeem <strong>{{ reward.reward_name }}</strong>? This action cannot be undone.
+
+                <template #buttons>
+                    <button class="btn btn-secondary" @click="confirmRedeem">Confirm</button>
+                    <button class="btn btn-outlined" @click="showConfirmModal = false">Cancel</button>
+                </template>
+            </ConfirmationModal>
         </div>
-
-        <ConfirmationModal
-            :showModal="showConfirmModal"
-            title="Confirm Redemption"
-            @update:showModal="showConfirmModal = $event"
-        >
-            Redeem <strong>{{ reward.reward_name }}</strong>? This action cannot be undone.
-
-            <template #buttons>
-                <button class="btn btn-secondary" @click="confirmRedeem">Confirm</button>
-                <button class="btn btn-outlined" @click="showConfirmModal = false">Cancel</button>
-            </template>
-        </ConfirmationModal>
     </div>
-
 </template>
 
 <script>
@@ -81,7 +82,7 @@ export default {
     },
 
     computed: {
-        formattedExpiry() {
+        formattedExpiryDate() {
             if (!this.reward?.expiry_date) return 'N/A';
             const date = this.reward.expiry_date.toDate?.() ?? new Date(this.reward.expiry_date);
             return date.toLocaleDateString('en-SG', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -155,10 +156,9 @@ export default {
     .reward-detail-page {
         display: flex;
         flex-direction: row;
-        align-items: flex-start;
+        align-items: flex-end;
         gap: 10px;
-        padding: 20px;
-        max-width: 700px;
+        padding: 10px;
         margin: 0 auto;
     }
 
@@ -168,8 +168,8 @@ export default {
         border-radius: var(--radius);
         border: 1px solid var(--black1);
         padding: 15px;
-        width: 100%;
-        flex: 1;
+        width: 600px;
+        flex-shrink: 0;
     }
 
     .reward-detail, .redemption-instruction, .terms-and-conditions {
@@ -205,7 +205,7 @@ export default {
         cursor: not-allowed;
     }
 
-    back-button {
+    .back-button {
         background: none;
         border: none;
         color: var(--primary);
@@ -214,7 +214,7 @@ export default {
         margin-bottom: 10px;
     }
 
-    back-button:hover {
+    .back-button:hover {
         text-decoration: underline;
         opacity: 0.8;
     }
