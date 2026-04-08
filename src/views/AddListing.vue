@@ -7,29 +7,33 @@
             <div class="photo">
                 <!-- <img :src="listing_pic"/>  -->
                 <img ref="cropperImg" :src="listing_pic" class="cropper-img"/>
-                <p class="hint">Ensure that you photo is of .jpg, .jpeg, .png, .heic, or .heif format. Else, default photo will be used!</p>
+                <p class="text-instruct">Ensure that you photo is of .jpg, .jpeg, .png, .heic, or .heif format. Else, default photo will be used!</p>
                 <input type="file" @change="uploadlistingpic" accept="image/*"></input>
             </div>
             <!-- image/jpg, image/jpeg, image/png, image/heic, image/heif -> actly im thinking if its better to not let them select unsupported photos from the get go is better -->
 
             <div class="cropper-actions" v-if="file_to_upload">
-                <button @click="onSave">Save</button>
-                <button @click="onRemove">Remove</button>
+                <button @click="onSave" class="btn-primary">Save</button>
+                <button @click="onRemove" class="btn-primary">Remove</button>
             </div>
 
             <!-- service title & description -->
-            <div class="service-description">
+            <div class="text-instruct"> 
                 <input v-model="title" placeholder="[Service Title]" required></input>
                 <p v-if="submitted && !title" class="error-message">Mandatory Title!</p>
                 <hr style="border:0; border-top: 2px solid black; background-color: black; margin: 0 0 8px 0;">        
                 
+                <!-- description -->
                 <textarea v-model="description" placeholder="Write your description here (min 10 words, max 800)!" required></textarea>
                 
             </div>
 
             <!-- dropwdown selection -->
+            <div class="text-instruct">Please select one option in the all the drop-down boxes. Mandatory field! </div>
             <div class="dropdown">
-                <select v-model="payment_mode">
+              <div class="dropdown-group">
+                <div class="dropdown-choices">
+                  <select v-model="payment_mode" class="dropdown-coloured">
                     <option disabled value="">Payment Mode</option>
                     <option>Cash</option>
                     <option>Treat to Food</option>
@@ -37,15 +41,19 @@
                     <option>Free</option>
                     <option>Contact me</option>
                 </select>
-
-                <select v-model="listing_category">
+                </div>
+                
+                <div class="dropdown-choices">
+                <select v-model="listing_category" class="dropdown-coloured">
                     <option disabled value="">Category</option>
                     <option>Education</option>
                     <option>Buddy</option>
                     <option>Survival</option>
                 </select>
+                </div>
 
-                <select v-model="location_text">
+                <div class="dropdown-choices">
+                <select v-model="location_text" class="dropdown-coloured">
                     <option disabled value="">Location</option>
                     <option>UTown</option>
                     <option>Central Library</option>
@@ -55,15 +63,16 @@
                     <option>Engineering buidling</option>
                     <option>Kent Ridge MRT</option>
                     <option>YST</option>
-                    
                 </select>
-                
+                </div>
+              </div>
+
+              <!-- button -->
+              <div class="button-wrapper">
+              <button @click="createlisting" class="btn-listing">UPLOAD</button>
+              </div>
             </div>
 
-            <!-- button -->
-            <div class="button-design">
-            <button @click="createlisting" class="btn-secondary">UPLOAD</button>
-            </div>
         </div>
     </div>
 
@@ -286,13 +295,31 @@ export default {
 </script>
 
 <style scoped>
+@import '@/assets/main.css';
+
 .container {
     display: flex;
     justify-content: center;
     align-items: center;
+    padding: 50px;
 
 }
 
+.listing-card {
+    width: 800px;
+    border-radius: 10px;
+    padding: 20px;
+    padding-bottom: 210px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    justify-content: center;
+    align-items: center;
+    background-color: #89CFF0;
+    overflow: visible;
+    position: relative;
+    margin-bottom: 50px;
+}
+
+/* photo */
 .photo {
     width: 100%;
     max-width: 500px;
@@ -317,49 +344,78 @@ export default {
 }
 
 
-.listing-card {
-    width: 600px;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    justify-content: center;
-    align-items: center;
-}
 
-.service-description{
-    font-size: 11px;
+/* for text instruction */
+.text-instruct{
+    font-size: 12px;
     width: 100%;
-    margin-bottom: 20px;
+    margin-bottom: 5px;
     font-family: Arial, Helvetica, sans-serif;
 }
-
-/* old one dont use pls */
-/* .upload-button {
-    display: flex;
-    padding: 8px;
-    font-size: 16px;
-    cursor: pointer;
-    font-family: Arial, Helvetica, sans-serif;
-    color: white;
-    background-color: #EF7C00;
-    border: none;
-    justify-content: center;
-    align-items: center;
-} */
 
 
 input {
     width: 100%;
     font-family: Arial, Helvetica, sans-serif;
+    background-color: rgb(205, 239, 251);
 
 }
 
 textarea {
     width: 100%;
-    font-size: 11px;
+    font-size: 12px;
     font-family: Arial, Helvetica, sans-serif;
     resize: none; /*dont adjust the size of box */
-    height: 200px
+    height: 200px;
+    background-color: rgb(205, 239, 251);
 
 }
+
+/* the dropdown UIs */
+.dropdown {
+  display: flex;
+  gap: 30px; 
+  align-items: flex-start;
+  margin-top: 10px; 
+}
+
+.dropdown-group {
+  display: flex;
+  gap: 20px;
+}
+
+.dropdown-choices {
+  flex: 1;
+}
+
+.dropdown-coloured {
+  width: 100%;
+  padding: 5px 5px;
+  cursor: pointer;
+  border: 1px solid;
+  background-color: #ff944d;
+  border-color: #000;
+}
+
+.dropdown-coloured option {
+  background-color: bisque;
+}
+
+
+/* button */
+.btn-listing{
+  width: 100%;
+  padding: 10px 0px;
+  background-color: #ff944d;
+  color: white;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.button-wrapper {
+  flex: 1;
+  min-width: 120px;
+  justify-content: flex-end;
+}
+
 </style>

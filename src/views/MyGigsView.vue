@@ -60,7 +60,7 @@
                 </span>
               </div>
             </div>
-            <button class="btn btn-secondary btn-sm" @click="showToast('View Listing Details — coming soon!')">View Listing Details</button>
+            <button class="btn btn-secondary btn-sm" @click="$router.push('/listing/' + gig.id)">View Listing Details</button>
           </div>
 
           <!-- Pending: Withdraw button -->
@@ -100,7 +100,7 @@
                 </span>
               </div>
             </div>
-            <button class="btn btn-secondary btn-sm" @click="showToast('View Listing Details — coming soon!')">View Listing Details</button>
+            <button class="btn btn-secondary btn-sm" @click="$router.push('/listing/' + gig.id)">View Listing Details</button>
           </div>
 
           <div class="card-body">
@@ -133,7 +133,7 @@
                 </span>
               </div>
             </div>
-            <button class="btn btn-secondary btn-sm" @click="showToast('View Listing Details — coming soon!')">View Listing Details</button>
+            <button class="btn btn-secondary btn-sm" @click="$router.push('/listing/' + gig.id)">View Listing Details</button>
           </div>
         </article>
       </template>
@@ -160,7 +160,7 @@
 <script>
 import ConfirmModal from '@/components/ConfirmModal.vue'
 import { db } from '@/firebase.js'
-import { collection, query, where, getDocs } from 'firebase/firestore'
+import { collection, query, where, getDocs, doc, updateDoc, arrayRemove } from 'firebase/firestore'
 import { getCurrentUser } from '@/auth.js'
 
 export default {
@@ -178,6 +178,7 @@ export default {
       toast: { show: false, message: '' },
       modal: { show: false, icon: '', title: '', message: '', confirmLabel: 'Confirm', confirmClass: 'btn-primary', _fn: null },
       loading: false,
+      currentUserId: null,
 
       gigs: {
         awaiting:  [],
@@ -190,6 +191,7 @@ export default {
   async mounted() {
     const user = await getCurrentUser()
     if (!user) return
+    this.currentUserId = user.uid
     this.loading = true
     try {
       const listingsRef = collection(db, 'listings')
@@ -209,21 +211,46 @@ export default {
         query(listingsRef, where('provider_id', '==', user.uid), where('status', '==', 'Completed'))
       )
 
-      const mapGig = (doc) => {
-        const d = doc.data()
+      // Rejected: listings where user was not chosen
+      const rejectedSnap = await getDocs(
+        query(listingsRef, where('rejected_applicant_ids', 'array-contains', user.uid))
+      )
+
+      const mapGig = (docSnap) => {
+        const d = docSnap.data()
         return {
-          id: doc.id,
+          id: docSnap.id,
           status: 'pending',
           category: d.listing_category,
           title: d.title,
           location: d.location_text,
           postedOn: d.created_at?.toDate().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) ?? '',
+          createdAtRaw: d.created_at?.toDate() ?? new Date(0),
         }
       }
 
-      this.gigs.awaiting  = awaitingSnap.docs.map(mapGig)
-      this.gigs.ongoing   = ongoingSnap.docs.map(mapGig)
-      this.gigs.completed = completedSnap.docs.map(mapGig)
+      const mapRejected = (docSnap) => {
+        const d = docSnap.data()
+        const rejectedDate = d.rejected_at?.[user.uid]?.toDate() ?? new Date()
+        const daysUntilRemoval = Math.max(0, 30 - Math.floor((new Date() - rejectedDate) / (1000 * 60 * 60 * 24)))
+        return {
+          id: docSnap.id,
+          status: 'rejected',
+          category: d.listing_category,
+          title: d.title,
+          location: d.location_text,
+          postedOn: d.created_at?.toDate().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) ?? '',
+          createdAtRaw: d.created_at?.toDate() ?? new Date(0),
+          daysUntilRemoval,
+        }
+      }
+
+      const byDateDesc = (a, b) => b.createdAtRaw - a.createdAtRaw
+      const pendingGigs = awaitingSnap.docs.map(mapGig)
+      const rejectedGigs = rejectedSnap.docs.map(mapRejected)
+      this.gigs.awaiting  = [...pendingGigs, ...rejectedGigs].sort(byDateDesc)
+      this.gigs.ongoing   = ongoingSnap.docs.map(mapGig).sort(byDateDesc)
+      this.gigs.completed = completedSnap.docs.map(mapGig).sort(byDateDesc)
     } catch (e) {
       console.error('Failed to load gigs:', e)
     } finally {
@@ -263,9 +290,17 @@ export default {
         title: 'Withdraw application?',
         message: `You will lose your spot for "${gig.title}". You can re-apply later if the listing is still open.`,
         confirmLabel: 'Yes, withdraw', confirmClass: 'btn-danger',
-        _fn: () => {
-          this.gigs.awaiting = this.gigs.awaiting.filter(g => g.id !== gig.id)
-          this.showToast('Application withdrawn.')
+        _fn: async () => {
+          try {
+            await updateDoc(doc(db, 'listings', gig.id), {
+              applicants: arrayRemove(this.currentUserId),
+            })
+            this.gigs.awaiting = this.gigs.awaiting.filter(g => g.id !== gig.id)
+            this.showToast('Application withdrawn.')
+          } catch (e) {
+            console.error('Failed to withdraw:', e)
+            this.showToast('Something went wrong. Please try again.')
+          }
         },
       }
     },
@@ -276,9 +311,17 @@ export default {
         title: 'Remove from list?',
         message: `"${gig.title}" will be removed from your gig list.`,
         confirmLabel: 'Remove', confirmClass: 'btn-danger',
-        _fn: () => {
-          this.gigs.awaiting = this.gigs.awaiting.filter(g => g.id !== gig.id)
-          this.showToast('Removed from your list.')
+        _fn: async () => {
+          try {
+            await updateDoc(doc(db, 'listings', gig.id), {
+              rejected_applicant_ids: arrayRemove(this.currentUserId),
+            })
+            this.gigs.awaiting = this.gigs.awaiting.filter(g => g.id !== gig.id)
+            this.showToast('Removed from your list.')
+          } catch (e) {
+            console.error('Failed to remove:', e)
+            this.showToast('Something went wrong. Please try again.')
+          }
         },
       }
     },

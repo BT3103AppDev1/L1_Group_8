@@ -7,29 +7,33 @@
             <div class="photo">
                 <!-- <img :src="listing_pic"/>  -->
                 <img ref="cropperImg" :src="listing_pic" class="cropper-img"/>
-                <p class="hint">Ensure that you photo is of .jpg, .jpeg, .png, .heic, or .heif format. Else, default photo will be used!</p>
+                <p class="text-instruct">Ensure that you photo is of .jpg, .jpeg, .png, .heic, or .heif format. Else, default photo will be used!</p>
                 <input type="file" @change="uploadlistingpic" accept="image/*"></input>
             </div>
             <!-- image/jpg, image/jpeg, image/png, image/heic, image/heif -> actly im thinking if its better to not let them select unsupported photos from the get go is better -->
 
             <div class="cropper-actions" v-if="file_to_upload">
-                <button @click="onSave">Save</button>
-                <button @click="onRemove">Remove</button>
+                <button @click="onSave" class="btn-primary">Save</button>
+                <button @click="onRemove" class="btn-primary">Remove</button>
             </div>
 
             <!-- service title & description -->
-            <div class="service-description">
+            <div class="text-instruct"> 
                 <input v-model="title" placeholder="[Service Title]" required></input>
                 <p v-if="submitted && !title" class="error-message">Mandatory Title!</p>
                 <hr style="border:0; border-top: 2px solid black; background-color: black; margin: 0 0 8px 0;">        
                 
+                <!-- description -->
                 <textarea v-model="description" placeholder="Write your description here (min 10 words, max 800)!" required></textarea>
                 
             </div>
 
             <!-- dropwdown selection -->
+            <div class="text-instruct">Please select one option in the all the drop-down boxes. Mandatory field! </div>
             <div class="dropdown">
-                <select v-model="payment_mode">
+              <div class="dropdown-group">
+                <div class="dropdown-choices">
+                  <select v-model="payment_mode" class="dropdown-coloured">
                     <option disabled value="">Payment Mode</option>
                     <option>Cash</option>
                     <option>Treat to Food</option>
@@ -37,15 +41,19 @@
                     <option>Free</option>
                     <option>Contact me</option>
                 </select>
-
-                <select v-model="listing_category">
+                </div>
+                
+                <div class="dropdown-choices">
+                <select v-model="listing_category" class="dropdown-coloured">
                     <option disabled value="">Category</option>
                     <option>Education</option>
                     <option>Buddy</option>
                     <option>Survival</option>
                 </select>
+                </div>
 
-                <select v-model="location_text">
+                <div class="dropdown-choices">
+                <select v-model="location_text" class="dropdown-coloured">
                     <option disabled value="">Location</option>
                     <option>UTown</option>
                     <option>Central Library</option>
@@ -55,15 +63,16 @@
                     <option>Engineering buidling</option>
                     <option>Kent Ridge MRT</option>
                     <option>YST</option>
-                    
                 </select>
-                
+                </div>
+              </div>
+
+              <!-- button -->
+              <div class="button-wrapper">
+              <button @click="updatelisting" class="btn-listing">UPDATE</button>
+              </div>
             </div>
 
-            <!-- button -->
-            <div class="button-design">
-            <button @click="updatelisting" class="btn-secondary">UPDATE</button>
-            </div>
         </div>
     </div>
 
@@ -74,21 +83,24 @@
 import { ref, computed } from 'vue'
 import { db } from "../firebase.js";
 import { getCurrentUser } from '@/auth.js';
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc, collection, doc, getDoc, updateDoc } from "firebase/firestore";
 import defaultPic from '@/assets/listing_pics/default_list_pic.jpg'
 import axios from 'axios';
 import Cropper from "cropperjs";
 import "cropperjs/dist/cropper.min.css";
+import { User } from 'lucide-vue-next';
 
-const CLOUDINARRY_CLOUD_NAME = "dwr4f7ae0";
+
+const CLOUDINARY_CLOUD_NAME = "dwr4f7ae0";
 const CLOUDINARY_UPLOAD_PRESET = "nusos-listing-pics";
 
 export default {
     name: 'EditListing',
     data(){
         return {
+            listing_id: null,
             listing_pic: defaultPic, //only for display
-            file_to_upload: null, 
+            file_to_upload: null, //for upload only
             cropper: null,
             title: "",
             description: "",
@@ -96,23 +108,25 @@ export default {
             listing_category: "",
             location_text: "",
             submitted: false,
-            // successupload: false,
+            submitting: false,
+            //cropper helpers using in destroyCropper function to reset states    
+            cropperReady: false, 
+            isSaving: false,
         }
     },
 
     computed: {
-        wordCount() {
-            if (!this.description) return 0;
-            else return this.description.trim().split(/\s+/).length
-
-        }
-        
+    //Word Count Functon for description field
+    wordCount() {
+      if (!this.description) return 0;
+      return this.description.trim().split(/\s+/).length;
     },
+  },
 
     // get rdy to get the old data
     async mounted() {
         this.listing_id = this.$route.params.listing_id; //get listing_id from url
-        console.log(listing_id);
+        console.log(this.listing_id);
 
         if (!this.listing_id) { //just in case no listing with this id
             alert("Listing unavailable");
@@ -136,7 +150,7 @@ export default {
                     this.payment_mode = data.payment_mode,
                     this.listing_category = data.listing_category,
                     this.location_text= data.location_text,
-                    this.listing_pic = data.picture_url //this one i got to edit after that following xinyan's stroage for the pics
+                    this.listing_pic = data.picture_url || defaultPic //this one i got to edit after that following xinyan's stroage for the pics
                 }
 
             }
@@ -165,11 +179,11 @@ export default {
             
             try {
                 let picture_url = this.listing_pic //keep old url by default 
-
+                const user = await getCurrentUser();
                 if (this.file_to_upload) {
-                    const uploadedUrl = await this.uploadToCloudinary(this.file_to_upload);
+                    const uploadedUrl = await this.uploadToCloudinary(this.file_to_upload, user.uid);
                     if (uploadedUrl) picture_url = uploadedUrl;
-
+        
                 }
                 const doclistRef = doc(db, "listings", this.listing_id);
                 await updateDoc(doclistRef, {
@@ -178,7 +192,7 @@ export default {
                     payment_mode: this.payment_mode,
                     listing_category: this.listing_category,
                     location_text: this.location_text,
-                    picture_url, //new photo 
+                    picture_url: picture_url, //new photo 
                     created_at: new Date() //just update the timing
 
 
@@ -222,14 +236,54 @@ export default {
             );
         },
 
+        //Destroying the Cropper instance 
+        destroyCropper() {
+        if (this.cropper) {
+            this.cropper.destroy();
+            this.cropper = null;
+        }
+        this.cropperReady = false;
+        this.isSaving = false;
+        },
+
+        //Remove the selected image 
+        onRemove() {
+        this.listing_pic = defaultPic;
+        this.file_to_upload = null;
+        if (this.cropper) this.cropper.destroy();
+        this.cropper = null;
+
+        const input = document.querySelector('input[type="file"]');
+        if (input) input.value = '';
+        },
+
+        //Save Cropped Image and prepare for upload
+        async onSave() {
+        if (!this.cropper) return;
+
+        const canvas = this.cropper.getCroppedCanvas({
+            width: 800,
+            height: 600,
+        });
+
+        const blob = await new Promise((resolve) =>
+            canvas.toBlob(resolve, "image/jpeg", 0.9)
+        );
+
+        this.listing_pic = URL.createObjectURL(blob);
+        this.file_to_upload = blob;
+        this.destroyCropper();
+        this.cropper = null;
+        },
+
         async uploadToCloudinary(blob, uid) {
             const formData = new FormData();
             formData.append("file", blob);
             formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-            formData.append("public_id", `listing-pics${uid}`);
+            formData.append("public_id", `listing-pics${uid}`); //uodate with new time
 
             const response = await axios.post(
-                `https://api.cloudinary.com/v1_1/${CLOUDINARRY_CLOUD_NAME}/image/upload`,
+                `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
                 formData,
             );
 
@@ -247,13 +301,31 @@ export default {
 
 
 <style scoped>
+@import '@/assets/main.css';
+
 .container {
     display: flex;
     justify-content: center;
     align-items: center;
+    padding: 50px;
 
 }
 
+.listing-card {
+    width: 800px;
+    border-radius: 10px;
+    padding: 20px;
+    padding-bottom: 210px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    justify-content: center;
+    align-items: center;
+    background-color: #89CFF0;
+    overflow: visible;
+    position: relative;
+    margin-bottom: 50px;
+}
+
+/* photo */
 .photo {
     width: 100%;
     max-width: 500px;
@@ -278,49 +350,78 @@ export default {
 }
 
 
-.listing-card {
-    width: 600px;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    justify-content: center;
-    align-items: center;
-}
 
-.service-description{
-    font-size: 11px;
+/* for text instruction */
+.text-instruct{
+    font-size: 12px;
     width: 100%;
-    margin-bottom: 20px;
+    margin-bottom: 5px;
     font-family: Arial, Helvetica, sans-serif;
 }
-
-/* old one dont use pls */
-/* .upload-button {
-    display: flex;
-    padding: 8px;
-    font-size: 16px;
-    cursor: pointer;
-    font-family: Arial, Helvetica, sans-serif;
-    color: white;
-    background-color: #EF7C00;
-    border: none;
-    justify-content: center;
-    align-items: center;
-} */
 
 
 input {
     width: 100%;
     font-family: Arial, Helvetica, sans-serif;
+    background-color: rgb(205, 239, 251);
 
 }
 
 textarea {
     width: 100%;
-    font-size: 11px;
+    font-size: 12px;
     font-family: Arial, Helvetica, sans-serif;
     resize: none; /*dont adjust the size of box */
-    height: 200px
+    height: 200px;
+    background-color: rgb(205, 239, 251);
 
 }
+
+/* the dropdown UIs */
+.dropdown {
+  display: flex;
+  gap: 30px; 
+  align-items: flex-start;
+  margin-top: 10px; 
+}
+
+.dropdown-group {
+  display: flex;
+  gap: 20px;
+}
+
+.dropdown-choices {
+  flex: 1;
+}
+
+.dropdown-coloured {
+  width: 100%;
+  padding: 5px 5px;
+  cursor: pointer;
+  border: 1px solid;
+  background-color: #ff944d;
+  border-color: #000;
+}
+
+.dropdown-coloured option {
+  background-color: bisque;
+}
+
+
+/* button */
+.btn-listing{
+  width: 100%;
+  padding: 10px 0px;
+  background-color: #ff944d;
+  color: white;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.button-wrapper {
+  flex: 1;
+  min-width: 120px;
+  justify-content: flex-end;
+}
+
 </style>
