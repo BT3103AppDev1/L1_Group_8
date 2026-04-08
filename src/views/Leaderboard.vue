@@ -10,9 +10,13 @@
                 <button class="closeButton" @click="viewReward = false">X</button>
 
                 <h2 class="modalTitle">Current Month Reward</h2>
-                <div class="modalDetail">
-                    <p class="modalLabel">Reward Name</p>
-                    <p class="modalText">Reward examples....</p>    
+                <div v-if="currentMonthReward" class="modalDetail">
+                    <p class="modalLabel">{{  currentMonthReward.reward_name }}</p>
+                    <p class="modalText">{{  currentMonthReward.reward_details }}</p>    
+                    <p class="modalText">Eligibility: Top 20 users of the month</p>
+                </div>
+                <div v-else class="modalDetail">
+                    <p class="modalText">No reward information available for this month.</p>
                 </div>
             </div>
         </div>
@@ -111,6 +115,7 @@ export default {
             rankedUser: [],
 
             currentUserStatus: null,
+            currentMonthReward: null,
         };
     },
 
@@ -156,6 +161,7 @@ export default {
 
     mounted() {
         this.fetchLeaderboardData();
+        this.fetchCurrentMonthReward();
     },
 
     beforeUnmount() {
@@ -295,9 +301,27 @@ export default {
             const s = ["th", "st", "nd", "rd"];
             const v = n % 100;
             return n + (s[(v - 20) % 10] || s[v] || s[0]);
+        },
+
+        async fetchCurrentMonthReward() {
+            try {
+                const rewardsSnap = await getDocs(collection(db, 'rewards'));
+                const rewards = rewardsSnap.docs
+                    .map(doc => ({ id: doc.id, ...doc.data() }))
+                    .sort((a, b) => a.id.localeCompare(b.id));
+
+                if (rewards.length === 0) return;
+
+                const monthSeed = new Date().getMonth();
+                const index = monthSeed % rewards.length;
+                this.currentMonthReward = rewards[index];
+
+            } catch (error) {
+                console.error('Error fetching current month reward:', error);
+            }
         }
     }
-};
+}
 </script>
 
 <style scoped>
@@ -335,6 +359,7 @@ export default {
         display: flex;
         justify-content: center;
         align-items: center;
+        z-index: 9999;
     }
 
     .viewRewardContent {
@@ -342,8 +367,8 @@ export default {
         padding: 20px;
         border-radius: 8px;
         position: relative;
-        width: 400px;
-        height: 200px;
+        width: 450px;
+        height: 220px;
         overflow-y: auto;
     }
 
@@ -357,6 +382,8 @@ export default {
         font-size: 16px;
         color: white;
         cursor: pointer;
+        width: 20px;
+        height: 20px;
     }
 
     .closeButton:hover {
@@ -370,8 +397,8 @@ export default {
     }
 
     .modalDetail {
-        margin: 0 20px 10px 20px;
-        align-content: flex-start;
+        margin: 10px 20px 10px 20px;
+        align-content: center;
     }
 
     .modalLabel {
@@ -380,7 +407,7 @@ export default {
     }
 
     .modalText {
-        font-size: 16px;
+        font-size: 14px;
     }
 
     .monthNavigation {
