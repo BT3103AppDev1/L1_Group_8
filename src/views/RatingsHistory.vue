@@ -10,7 +10,7 @@
             <div class="ratings-history-header">
                 <PageHeader :title="isPrivateProfile ? 'My Ratings History' : 
                     (this.username ? `${this.username}'s Ratings History` : 'Ratings History')" />
-                <img :src="activeTabIcon" :alt="`${activeTab} icon`" class="category-icon"/>
+                <img :src="this.icons[activeTab]" :alt="`${activeTab} icon`" class="category-icon"/>
             </div>
 
             <!-- Category Tabs -->
@@ -83,11 +83,20 @@ import { db } from '@/firebase';
 import { collection, query, where, orderBy, limit, startAfter, getDocs, getDoc, doc } from 'firebase/firestore';
 import { getCurrentUser } from '@/auth.js';
 import { VueSpinner } from 'vue3-spinners';
+import EduIcon from '@/assets/education-icon.png';
+import BuddyIcon from '@/assets/buddy-icon.png';
+import SurvivalIcon from '@/assets/survival-icon.png';
+import PageHeader from '@/components/PageHeader.vue';
 
 const MAX_RATINGS_PER_LOAD = 20;
 
 export default {
     name: 'RatingsHistory',
+
+    components: {
+        VueSpinner,
+        PageHeader
+    },
 
     data() {
         return {
@@ -119,6 +128,11 @@ export default {
             errorMessage: "",
             uid: "",
             username: "",
+            icons: {
+                Education: EduIcon,
+                Buddy: BuddyIcon,
+                Survival: SurvivalIcon
+            }
         };
     },
 
@@ -165,7 +179,7 @@ export default {
                     collection(db, 'ratings'),
                     where('receiver_id', '==', this.uid),
                     where('listing_category', '==', category),
-                    orderBy('timestamp', 'desc'),
+                    orderBy('rated_at', 'desc'),
                     limit(MAX_RATINGS_PER_LOAD + 1) // + 1 for determining whether have more documents to load later
                 );
 
@@ -199,7 +213,7 @@ export default {
                     collection(db, 'ratings'),
                     where('receiver_id', '==', this.uid),
                     where('listing_category', '==', category),
-                    orderBy('timestamp', 'desc'),
+                    orderBy('rated_at', 'desc'),
                     startAfter(this.lastDocs[category]),
                     limit(MAX_RATINGS_PER_LOAD + 1) // + 1 for determining whether have more documents to load later
                 );
@@ -262,7 +276,7 @@ export default {
     async created() {
         this.isPageLoading = true;
 
-        await this.getUid();
+        this.uid = await this.getUid();
 
         // get username for public view of ratings history
         if (!this.isPrivateProfile) {
@@ -297,7 +311,7 @@ export default {
 .ratings-history-content {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 0.5rem;
     width: 100%;
 }
 
@@ -305,7 +319,7 @@ export default {
 .ratings-history-header {
     display: flex;
     align-items: center;
-    gap: 2rem;
+    gap: 1.5rem;
 }
 
 .category-icon {
