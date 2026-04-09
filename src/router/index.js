@@ -16,6 +16,8 @@ import Profile from '@/views/Profile.vue'
 import ListingDetailsView from '@/views/ListingDetailsView.vue'
 import EditListing from '@/views/EditListing.vue'
 import EditProfile from '@/views/EditProfile.vue'
+import ChangePassword from '@/views/ChangePassword.vue'
+import ActionHandler from '@/views/ActionHandler.vue'
 
 const routes = [
     {
@@ -35,6 +37,12 @@ const routes = [
         name: 'EmailVerification',
         component: EmailVerification,
         meta: { showHeader: false, requiresAuth: true }
+    },
+    {
+        path: '/auth/action',
+        name: 'ActionHandler',
+        component: ActionHandler,
+        meta: { showHeader: false, requiresAuth: false }
     },
     {
         path: '/forgot-password',
@@ -112,10 +120,13 @@ const routes = [
         path: '/edit-profile',
         name: 'EditProfile',
         component: EditProfile,
-        meta: {
-            showHeader: true,
-            requiresAuth: true
-        }
+        meta: { showHeader: true, requiresAuth: true }
+    },
+    {
+        path: '/change-password',
+        name: 'ChangePassword',
+        component: ChangePassword,
+        meta: { showHeader: true, requiresAuth: true }
     },
     {
         path: '/listing/:id',
