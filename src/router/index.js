@@ -16,6 +16,7 @@ import Profile from '@/views/Profile.vue'
 import ListingDetailsView from '@/views/ListingDetailsView.vue'
 import EditListing from '@/views/EditListing.vue'
 import EditProfile from '@/views/EditProfile.vue'
+import Rating from '@/views/Rating.vue'
 
 const routes = [
     {
@@ -83,6 +84,13 @@ const routes = [
         name: 'MyListings',
         component: MyListingsView,
         meta: { showHeader: true, requiresAuth: true }
+    },
+    {
+        path: '/rating',
+        name: 'Rating',
+        component: Rating,
+        meta: { showHeader: true, requiresAuth: true }
+
     },
     {
         path: '/my-gigs',
