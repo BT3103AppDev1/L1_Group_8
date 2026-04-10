@@ -37,7 +37,7 @@
             </div>
 
             <div v-else class="table-and-btn">
-                 <!-- Ratings Table -->
+                <!-- Ratings Table -->
                 <div class="table-container">
                     <table class="ratings-history-table">
                         <thead>
@@ -67,11 +67,11 @@
 
                 <!-- View More Button -->
                 <div class="btn-or-spinner">
-                    <button v-if="hasMore" class="btn btn-secondary" @click="loadMore">
+                    <VueSpinner v-if="isLoadingMore" size="30" color="var(--secondary)"
+                        :aria-label="`Loading more ratings received for ${activeTab} services you provided ...`"/> 
+                    <button v-else-if="hasMore" class="btn btn-secondary" @click="loadMore">
                         View More
                     </button>
-                    <VueSpinner v-else-if="isLoadingMore" size="30" color="var(--secondary)"
-                        :aria-label="`Loading more ratings received for ${activeTab} services you provided ...`"/> 
                 </div>
             </div>
         </div>
@@ -207,7 +207,7 @@ export default {
 
             this.isLoadingMore = true;
             const category = this.activeTab;
-
+            
             try {
                 const q = query(
                     collection(db, 'ratings'),
@@ -330,6 +330,7 @@ export default {
 /* tabs */
 .tabs-container {
     border-bottom: 1px solid #E5E9EF;
+    margin-bottom: 1.5rem;
 }
 
 .category-tabs {
@@ -376,7 +377,7 @@ export default {
     font-weight: bold;
     font-size: 1.25rem;
 }
-.error-text {
+.error-state {
     color: var(--error);
 }
 
@@ -388,13 +389,14 @@ export default {
 .table-and-btn {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 2rem;
     align-items: center;
 }
 
 .table-container {
     box-shadow: var(--card-shadow);
     overflow-x: auto;
+    width: 100%;
 }
 
 .ratings-history-table {
@@ -403,6 +405,7 @@ export default {
     background-color: var(--white);
     font-size: 1rem;
     font-weight: bold;
+    table-layout: fixed;
 }
 
 .ratings-history-table thead tr {
@@ -411,7 +414,7 @@ export default {
 }
 
 .ratings-history-table thead th {
-    padding: 0.875rem 1.125rem;
+    padding: 0.875rem;
     text-align: left;
     position: sticky;
     top: 0;
@@ -421,13 +424,29 @@ export default {
 }
 
 .ratings-history-table thead th:first-child {
+    padding-left: 1.5rem;
     border-top-left-radius: var(--radius);
     border-bottom-left-radius: var(--radius);
+    width: 8%;
+}
+
+.ratings-history-table thead th:nth-child(2) {
+    width: 19%;
+}
+
+.ratings-history-table thead th:nth-child(3) {
+    width: 19%;
+}
+
+.ratings-history-table thead th:nth-child(4) {
+    width: 19%;
 }
 
 .ratings-history-table thead th:last-child {
+    padding-right: 1.5rem;
     border-top-right-radius: var(--radius);
     border-bottom-right-radius: var(--radius);
+    width: 40%;
 }
 
 .ratings-history-table tbody tr {
@@ -435,40 +454,40 @@ export default {
     transition: background-color 0.15s;
 }
 
-.ratings-history-table tbody tr:hover {
-    background-color: #f2f2f2;
-}
-
-.ratings-history-table tbody tr.row-even {
+.ratings-history-table tbody tr.even-row {
     background-color: rgba(224, 224, 224, 0.4);
 }
 
-.ratings-history-table tbody tr.row-even:hover {
-    background-color: rgba(224, 224, 224, 0.6);
-}
-
 .ratings-history-table td {
-    padding: 0.875rem 0.5rem;
+    padding: 0.875rem;
     color: var(--gray2);
     vertical-align: middle;
 }
 
-.associated-service-cell {
-    max-width: 60ch;
+.ratings-history-table tbody td:first-child {
+    padding-left: 1.5rem;
+}
+
+.ratings-history-table tbody td:last-child {
+    padding-right: 1.5rem;
 }
 
 .listing-title {
     text-decoration: underline;
-    font-weight: 600;
+    text-decoration-color: var(--gray2);
     white-space: nowrap;
-    max-width: 60ch;
     overflow: hidden;
     text-overflow: ellipsis;
     cursor: pointer;
+    color: var(--gray2);
+    font-weight: bold;
+    display: block;
+    width: 100%;
 }
 
 .listing-title:hover {
-    color: var(--gray1);
+    color: var(--primary-hover);
+    text-decoration-color: var(--primary-hover);
 }
 
 /* view more button */
