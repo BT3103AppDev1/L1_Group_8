@@ -91,7 +91,7 @@
                                 Show Points History
                             </router-link>
                         </div>
-                        <div v-if="!totalPoints" class="helper-text">
+                        <div v-if="!totalPoints && isPrivateProfile" class="helper-text">
                             Only users with positive points are ranked. <br />
                             Earn points by helping others to unlock your rank!
                         </div>
