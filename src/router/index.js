@@ -17,6 +17,8 @@ import ListingDetailsView from '@/views/ListingDetailsView.vue'
 import EditListing from '@/views/EditListing.vue'
 import EditProfile from '@/views/EditProfile.vue'
 import Rating from '@/views/Rating.vue'
+import RatingsHistory from '@/views/RatingsHistory.vue'
+import PointsHistory from '@/views/PointsHistory.vue'
 
 const routes = [
     {
@@ -135,6 +137,24 @@ const routes = [
         path: '/reward/:redemptionId',
         name: 'RewardDetails',
         component: () => import('@/views/RewardDetails.vue'),
+        meta: { showHeader: true, requiresAuth: true }
+    },
+    {
+        path: '/my-ratings-history',
+        name: 'MyRatingsHistory',
+        component: RatingsHistory,
+        meta: { showHeader: true, requiresAuth: true }
+    },
+    {
+        path: '/users/:uid/ratings-history',
+        name: 'PublicRatingsHistory',
+        component: RatingsHistory,
+        meta: { showHeader: true, requiresAuth: true }
+    },
+    {
+        path: '/my-points-history',
+        name: 'MyPointsHistory',
+        component: PointsHistory,
         meta: { showHeader: true, requiresAuth: true }
     },
     // Catch-all route for 404 Not Found

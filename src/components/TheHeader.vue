@@ -168,6 +168,7 @@ export default {
     height: 3rem;
     width: 3rem;
     border-radius: 50%;
+    border: 2px solid var(--gray5);
 }
 
 .menu-container {
