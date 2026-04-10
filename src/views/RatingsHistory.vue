@@ -93,6 +93,7 @@ import EduIcon from '@/assets/education-icon.png';
 import BuddyIcon from '@/assets/buddy-icon.png';
 import SurvivalIcon from '@/assets/survival-icon.png';
 import PageHeader from '@/components/PageHeader.vue';
+import { formatTimestamp } from '@/utils.js';
 
 const MAX_RATINGS_PER_LOAD = 20;
 
@@ -155,6 +156,8 @@ export default {
     },
 
     methods: {
+        formatTimestamp,
+
         async getUid() {
             if (this.isPrivateProfile) {
                 const user = await getCurrentUser();
@@ -253,34 +256,6 @@ export default {
                 await this.fetchRatings(tab);
             } 
         },
-
-        formatTimestamp(timestamp) {
-            if (!timestamp) {
-                return '-';
-            }
-
-            let date;
-            if (timestamp.toDate) {
-                date = timestamp.toDate();
-            } else if (timestamp instanceof Date) {
-                date = timestamp;
-            } else {
-                date = new Date(timestamp);
-            }
-
-            const parts = new Intl.DateTimeFormat("en-GB", { 
-                timeZone: "Asia/Singapore",
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit",
-                hour12: false
-            }).formatToParts(date);
-            const getPart = (type) => parts.find(p => p.type === type)?.value || '00';
-            return `${getPart('day')}/${getPart('month')}/${getPart('year')} ${getPart('hour')}:${getPart('minute')}:${getPart('second')}`;
-        }
     },
 
     async created() {
