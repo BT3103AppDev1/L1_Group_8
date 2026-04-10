@@ -24,27 +24,41 @@
 <script>
 import ConfirmationModal from '@/components/ConfirmationModal.vue';
 import "@/assets/main.css";
+import { db } from '@/firebase.js';
+import { doc, updateDoc, addDoc, collection } from 'firebase/firestore';
 
 export default {
     components: { ConfirmationModal },
 
     data() {
         return {
-        showRatingModal: true,
-        selectedRating: 0,
+            showRatingModal: true,
+            selectedRating: 0,
         };
     },
 
     methods: {
-    openMarkComplete() {
-        this.showRatingModal = true;
+        async confirmRating() {
+            const { listingId, providerId } = this.$route.query;
+            try {
+                await Promise.all([
+                    updateDoc(doc(db, 'listings', listingId), {
+                        rating_given: this.selectedRating,
+                    }),
+                    addDoc(collection(db, 'ratings'), {
+                        receiver_id: providerId,
+                        rating: this.selectedRating,
+                        rated_at: new Date(),
+                        listing_id: listingId,
+                    }),
+                ]);
+                this.showRatingModal = false;
+                this.$router.push('/my-listings');
+            } catch (e) {
+                console.error('Failed to save rating:', e);
+            }
+        }
     },
-
-    confirmRating() {
-        console.log("Rating is", this.selectedRating);
-        this.showRatingModal = false 
-    }
-}
 };
 
 
