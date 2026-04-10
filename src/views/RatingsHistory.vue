@@ -48,19 +48,19 @@
                                     <tr>
                                         <th>No</th>
                                         <th>Timestamp</th>
-                                        <th>Rating (Out of 5)</th>
+                                        <th>Rating</th>
                                         <th>New Average Rating</th>
                                         <th>Associated Service</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr v-for="(rating, index) in displayedRatings" :key="rating.id" :class="{ 'even-row': index % 2 === 1 }">
-                                        <td>{{ index + 1 }}</td>
-                                        <td>{{ formatTimestamp(rating.rated_at) }}</td>
-                                        <td>{{ rating.rating }}</td>
-                                        <td>{{ rating.new_avg_rating.toFixed(1) }}</td>
+                                        <td :title="`No: ${index + 1}`">{{ index + 1 }}</td>
+                                        <td :title="`Timestamp: ${formatTimestamp(rating.rated_at)}`">{{ formatTimestamp(rating.rated_at) }}</td>
+                                        <td :title="`Rating: ${rating.rating}`">{{ rating.rating }}</td>
+                                        <td :title="`New Average Rating: ${rating.new_avg_rating.toFixed(1)}`">{{ rating.new_avg_rating.toFixed(1) }}</td>
                                         <td class="associated-service-cell">
-                                            <router-link :to="`/listing/${rating.listing_id}`" class="listing-title" :title="rating.listing_title">
+                                            <router-link :to="`/listing/${rating.listing_id}`" class="listing-title" :title="`Associated Service: ${rating.listing_title}`">
                                                 {{ rating.listing_title }}
                                             </router-link>
                                         </td>
@@ -410,7 +410,7 @@ export default {
     border-collapse: collapse;
     background-color: var(--white);
     font-size: 1rem;
-    font-weight: bold;
+    font-weight: medium;
     table-layout: fixed;
 }
 
@@ -422,9 +422,6 @@ export default {
 .ratings-history-table thead th {
     padding: 0.875rem;
     text-align: left;
-    position: sticky;
-    top: 0;
-    z-index: 1;
     background-color: var(--primary);
     color: var(--white);
 }
@@ -486,7 +483,7 @@ export default {
     text-overflow: ellipsis;
     cursor: pointer;
     color: var(--gray2);
-    font-weight: bold;
+    font-weight: medium;
     display: block;
     width: 100%;
 }
