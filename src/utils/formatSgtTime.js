@@ -1,0 +1,54 @@
+import { m } from "vue-router/dist/router-CWoNjPRp.mjs";
+
+// format current date to "YYYY-MM" in Singapore Timezone
+export function getSgtYearMonth() {
+    const now = new Date();
+    const sgtYrMonth = new Intl.DateTimeFormat("en-CA", { 
+        timeZone: "Asia/Singapore",
+        year: "numeric",
+        month: "2-digit",
+    }).format(now);
+    return sgtYrMonth;
+}
+
+// Get milliseconds until the first day of next month midnight 00:00:00 in Singapore Timezone
+export function getMsToSgtNextMonth() {
+    const now = new Date();
+    const sgtYrMonth = getSgtYearMonth();
+    const [year, month] = sgtYrMonth.split('-').map(Number);
+
+    const nextMonth = month === 12 ? 1 : month + 1;
+    const nextYear = month === 12 ? year + 1 : year;
+
+    const nextMonthDate = new Date(nextYear, nextMonth - 1, 1); 
+    return nextMonthDate - now;
+}
+
+// format USC timestamp to "DD/MM/YYYY HH:mm:ss" in Singapore Timezone
+export function formatTimestamp(timestamp) {
+    if (!timestamp) {
+        return '-';
+    }
+
+    let date;
+    if (timestamp.toDate) {
+        date = timestamp.toDate();
+    } else if (timestamp instanceof Date) {
+        date = timestamp;
+    } else {
+        date = new Date(timestamp);
+    }
+
+    const parts = new Intl.DateTimeFormat("en-GB", { 
+        timeZone: "Asia/Singapore",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false
+    }).formatToParts(date);
+    const getPart = (type) => parts.find(p => p.type === type)?.value ?? '-';
+    return `${getPart('day')}/${getPart('month')}/${getPart('year')} ${getPart('hour')}:${getPart('minute')}:${getPart('second')}`;
+}

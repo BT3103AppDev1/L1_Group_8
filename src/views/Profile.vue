@@ -78,9 +78,9 @@
                     <div class="points-content-container">
                         <div class="points-content">
                             <div class="points-text">
-                                <span class="points-value">{{ profileData.total_points }} points</span>
-                                <span v-if="profileData.total_points" class="points-rank">
-                                    (Top {{ profileData.is_in_top_20 ? profileData.absolute_rank : (profileData.percentage_rank + '%') }})
+                                <span class="points-value">{{ totalPoints }} points</span>
+                                <span v-if="totalPoints" class="points-rank">
+                                    (Top {{ (absoluteRank <= 20) ? absoluteRank : (percentageRank + '%') }})
                                 </span>
                                 <span v-else class="points-rank rank-unavailable">
                                     (Rank unavailable)
@@ -90,7 +90,7 @@
                                 Show Points History
                             </router-link>
                         </div>
-                        <div v-if="!profileData.total_points" class="helper-text">
+                        <div v-if="!totalPoints" class="helper-text">
                             Only users with positive points are ranked. <br />
                             Earn points by helping others to unlock your rank!
                         </div>
@@ -143,6 +143,7 @@ import eduIcon from '@/assets/education-icon.png';
 import buddyIcon from '@/assets/buddy-icon.png';
 import survivalIcon from '@/assets/survival-icon.png';
 import AwaitingListings from '@/components/AwaitingListings.vue';
+import { getSgtYearMonth, getMsToSgtNextMonth } from '@/utils/formatSgtTime';
 
 export default {
     name: 'Profile',
@@ -156,6 +157,7 @@ export default {
     },
     data() {
         return {
+            refreshTimer: null,
             isLoading: true,
 
             defaultProfilePic,
@@ -199,10 +201,34 @@ export default {
                     count: this.profileData ? this.profileData.survival_rating_count : 0
                 }
             ];
-        }
+        },
+
+        yearMonth() {
+            return getSgtYearMonth();
+        },
+
+        totalPoints() {
+            return this.profileData?.total_points?.[this.yearMonth] ?? 0;
+        },
+
+        absoluteRank() {
+            return this.profileData?.absolute_rank?.[this.yearMonth] ?? null;
+        },
+
+        percentageRank() {
+            return this.profileData?.percentage_rank?.[this.yearMonth] ?? null;
+        },
     },
 
-    methods: {
+    methods: { 
+        scheduleMonthlyRefresh() {
+            const msToNextMonth = getMsToSgtNextMonth();
+            this.refreshTimer = setTimeout(() => {
+                this.setUserListener(); 
+                this.scheduleMonthlyRefresh(); 
+            }, msToNextMonth);
+        },
+
         async getUid() {
             if (this.isPrivateProfile) {
                 const user = await getCurrentUser();
@@ -251,12 +277,16 @@ export default {
     },
 
     created() {
+        this.scheduleMonthlyRefresh();
         this.setUserListener();
     },
     
     beforeUnmount() {
         if (this.unsubscribeUser) {
             this.unsubscribeUser();
+        }
+        if (this.refreshTimer) {
+            clearTimeout(this.refreshTimer);
         }
     }
 }
