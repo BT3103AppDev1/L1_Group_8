@@ -238,7 +238,9 @@ export default {
 
       snapshot.forEach(docSnap => {
         const d = docSnap.data()
-        const enrichedApplicants = (d.applicants ?? []).map(uid => userProfiles[uid] ?? { id: uid, name: uid, profilePic: null })
+        const enrichedApplicants = (d.applicants ?? [])
+          .map(uid => ({ ...(userProfiles[uid] ?? { id: uid, name: uid, profilePic: null }), appliedAt: d.applied_at?.[uid]?.toDate() ?? new Date(0) }))
+          .sort((a, b) => a.appliedAt - b.appliedAt)
         const providerProfile = d.provider_id ? (userProfiles[d.provider_id] ?? { id: d.provider_id, name: d.provider_id, profilePic: null }) : null
 
         const listing = {
@@ -351,9 +353,8 @@ export default {
               const moved = { ...listing }
               this.listings.ongoing.splice(idx, 1)
               this.listings.completed.unshift(moved)
-              this.activeTab = 'completed'
             }
-            this.showToast('Service marked as completed!')
+            this.$router.push({ path: '/rating', query: { listingId: listing.id, providerId: listing.provider?.id } })
           } catch (e) {
             console.error('Failed to mark complete:', e)
             this.showToast('Something went wrong. Please try again.')
