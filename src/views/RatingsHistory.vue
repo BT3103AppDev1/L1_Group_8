@@ -10,7 +10,9 @@
             <div class="ratings-history-header">
                 <PageHeader :title="isPrivateProfile ? 'My Ratings History' : 
                     (this.username ? `${this.username}'s Ratings History` : 'Ratings History')" />
-                <img :src="this.icons[activeTab]" :alt="`${activeTab} icon`" class="category-icon"/>
+                <transition name="fade" mode="out-in">
+                    <img :key="activeTab" :src="this.icons[activeTab]" :alt="`${activeTab} icon`" class="category-icon"/>
+                </transition>
             </div>
 
             <!-- Category Tabs -->
@@ -22,58 +24,62 @@
                 </div>
             </div>
 
-            <div v-if="isRatingsLoading" class="ratings-loading">
-                <VueSpinner size="40" color="var(--secondary)" :aria-label="`Loading ratings received for ${activeTab} services you provided ...`" />
-            </div>
+            <transition name="fade" mode="out-in">
+                <div :key="activeTab + (isRatingsLoading ? '-loading' : '')">
+                    <div v-if="isRatingsLoading" class="ratings-loading">
+                        <VueSpinner size="40" color="var(--secondary)" :aria-label="`Loading ratings received for ${activeTab} services you provided ...`" />
+                    </div>
 
-            <!-- Error State -->
-            <div v-else-if="hasError" class="error-state">
-                <p>{{ errorMessage }}</p>
-            </div>
+                    <!-- Error State -->
+                    <div v-else-if="hasError" class="error-state">
+                        <p>{{ errorMessage }}</p>
+                    </div>
 
-            <!-- Empty State -->
-            <div v-else-if="displayedRatings.length === 0" class="empty-state">
-                <p>No ratings yet for {{ activeTab }} services.</p>
-            </div>
+                    <!-- Empty State -->
+                    <div v-else-if="displayedRatings.length === 0" class="empty-state">
+                        <p>No ratings yet for {{ activeTab }} services.</p>
+                    </div>
 
-            <div v-else class="table-and-btn">
-                <!-- Ratings Table -->
-                <div class="table-container">
-                    <table class="ratings-history-table">
-                        <thead>
-                            <tr>
-                                <th>No</th>
-                                <th>Timestamp</th>
-                                <th>Rating (Out of 5)</th>
-                                <th>New Average Rating</th>
-                                <th>Associated Service</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="(rating, index) in displayedRatings" :key="rating.id" :class="{ 'even-row': index % 2 === 1 }">
-                                <td>{{ index + 1 }}</td>
-                                <td>{{ formatTimestamp(rating.rated_at) }}</td>
-                                <td>{{ rating.rating }}</td>
-                                <td>{{ rating.new_avg_rating.toFixed(1) }}</td>
-                                <td class="associated-service-cell">
-                                    <router-link :to="`/listing/${rating.listing_id}`" class="listing-title" :title="rating.listing_title">
-                                        {{ rating.listing_title }}
-                                    </router-link>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div v-else class="table-and-btn">
+                        <!-- Ratings Table -->
+                        <div class="table-container">
+                            <table class="ratings-history-table">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Timestamp</th>
+                                        <th>Rating (Out of 5)</th>
+                                        <th>New Average Rating</th>
+                                        <th>Associated Service</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(rating, index) in displayedRatings" :key="rating.id" :class="{ 'even-row': index % 2 === 1 }">
+                                        <td>{{ index + 1 }}</td>
+                                        <td>{{ formatTimestamp(rating.rated_at) }}</td>
+                                        <td>{{ rating.rating }}</td>
+                                        <td>{{ rating.new_avg_rating.toFixed(1) }}</td>
+                                        <td class="associated-service-cell">
+                                            <router-link :to="`/listing/${rating.listing_id}`" class="listing-title" :title="rating.listing_title">
+                                                {{ rating.listing_title }}
+                                            </router-link>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- View More Button -->
+                        <div class="btn-or-spinner">
+                            <VueSpinner v-if="isLoadingMore" size="30" color="var(--secondary)"
+                                :aria-label="`Loading more ratings received for ${activeTab} services you provided ...`"/> 
+                            <button v-else-if="hasMore" class="btn btn-secondary" @click="loadMore">
+                                View More
+                            </button>
+                        </div>
+                    </div>
                 </div>
-
-                <!-- View More Button -->
-                <div class="btn-or-spinner">
-                    <VueSpinner v-if="isLoadingMore" size="30" color="var(--secondary)"
-                        :aria-label="`Loading more ratings received for ${activeTab} services you provided ...`"/> 
-                    <button v-else-if="hasMore" class="btn btn-secondary" @click="loadMore">
-                        View More
-                    </button>
-                </div>
-            </div>
+            </transition>
         </div>
     </div>
 </template>
@@ -245,7 +251,7 @@ export default {
             // Only fetch if not already loaded
             if (this.allRatings[tab].length === 0 && !this.isLoading) {
                 await this.fetchRatings(tab);
-            }
+            } 
         },
 
         formatTimestamp(timestamp) {
@@ -330,7 +336,7 @@ export default {
 /* tabs */
 .tabs-container {
     border-bottom: 1px solid #E5E9EF;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .category-tabs {
@@ -506,10 +512,18 @@ export default {
     width: 15vw;
 }
 
-.btn:disabled {
-    background-color: var(--gray5);
-    border: var(--gray5);
-    color: var(--white);
-    cursor: not-allowed;
+/* Fade transition */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.fade-enter-from {
+  opacity: 0;
+  transform: translateY(5px);
+}
+
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-5px);
 }
 </style>
