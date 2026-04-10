@@ -268,16 +268,18 @@ export default {
                 date = new Date(timestamp);
             }
 
-            const sgtDate = new Date(date.toLocaleString('en-US', { timeZone: 'Asia/Singapore' }));
-
-            const pad = n => String(n).padStart(2, '0');
-            const day = pad(date.getDate());
-            const month = pad(date.getMonth() + 1);
-            const year = date.getFullYear();
-            const hours = pad(date.getHours());
-            const minutes = pad(date.getMinutes());
-            const seconds = pad(date.getSeconds());
-            return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+            const parts = new Intl.DateTimeFormat("en-GB", { 
+                timeZone: "Asia/Singapore",
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: false
+            }).formatToParts(date);
+            const getPart = (type) => parts.find(p => p.type === type)?.value || '00';
+            return `${getPart('day')}/${getPart('month')}/${getPart('year')} ${getPart('hour')}:${getPart('minute')}:${getPart('second')}`;
         }
     },
 
