@@ -93,7 +93,7 @@ import EduIcon from '@/assets/education-icon.png';
 import BuddyIcon from '@/assets/buddy-icon.png';
 import SurvivalIcon from '@/assets/survival-icon.png';
 import PageHeader from '@/components/PageHeader.vue';
-import { formatTimestamp } from '@/utils.js';
+import { formatTimestamp } from '@/utils/formatSgtTime.js';
 
 const MAX_RATINGS_PER_LOAD = 20;
 
@@ -362,6 +362,7 @@ export default {
     font-weight: bold;
     font-size: 1.25rem;
 }
+
 .error-state {
     color: var(--error);
 }
