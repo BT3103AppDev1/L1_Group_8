@@ -14,7 +14,7 @@
         </div>
 
         <!-- Empty State -->
-        <div v-else-if="displayedPoints.length === 0" class="empty-state">
+        <div v-else-if="pointsLogs.length === 0" class="empty-state">
             <p>No points yet for {{ activeTab }} services.</p>
         </div>
 
@@ -34,9 +34,9 @@
                     <tbody>
                         <tr v-for="(pointsLog, index) in pointsLogs" :key="pointsLog.id" :class="{ 'even-row': index % 2 === 1 }">
                             <td :title="`No: ${index + 1}`">{{ index + 1 }}</td>
-                            <td :title="`Timestamp (SGT): ${formatTimestamp(pointsLog.rated_at)}`">{{ formatTimestamp(pointsLog.rated_at) }}</td>
+                            <td :title="`Timestamp (SGT): ${formatTimestamp(pointsLog.time)}`">{{ formatTimestamp(pointsLog.time) }}</td>
                             <td :title="`Points Change: ${pointsLog.increase_in_points}`">{{ pointsLog.increase_in_points }}</td>
-                            <td :title="`New Total Points: ${pointsLog.new_total_points.toFixed(1)}`">{{ pointsLog.new_total_points.toFixed(1) }}</td>
+                            <td :title="`New Total Points: ${pointsLog.new_total_points}`">{{ pointsLog.new_total_points }}</td>
                             <td class="associated-service-cell">
                                 <router-link :to="`/listing/${pointsLog.listing_id}`" class="listing-title" :title="`Associated Service: ${pointsLog.listing_title}`">
                                     {{ pointsLog.listing_title }}
@@ -51,7 +51,7 @@
             <div class="btn-or-spinner">
                 <VueSpinner v-if="isLoadingMore" size="30" color="var(--secondary)"
                     aria-label="Loading more points history..."/> 
-                <button v-else-if="hasMore" class="btn btn-secondary" @click="loadMore">
+                <button v-else-if="hasMoreDocs" class="btn btn-secondary" @click="loadMore">
                     View More
                 </button>
             </div>
@@ -203,7 +203,7 @@ export default {
 .points-history-page {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 1rem;
     width: 100%;
 }
 
