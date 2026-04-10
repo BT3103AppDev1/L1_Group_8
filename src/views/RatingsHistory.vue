@@ -47,7 +47,7 @@
                                 <thead>
                                     <tr>
                                         <th>No</th>
-                                        <th>Timestamp</th>
+                                        <th>Timestamp (SGT)</th>
                                         <th>Rating</th>
                                         <th>New Average Rating</th>
                                         <th>Associated Service</th>
@@ -56,7 +56,7 @@
                                 <tbody>
                                     <tr v-for="(rating, index) in displayedRatings" :key="rating.id" :class="{ 'even-row': index % 2 === 1 }">
                                         <td :title="`No: ${index + 1}`">{{ index + 1 }}</td>
-                                        <td :title="`Timestamp: ${formatTimestamp(rating.rated_at)}`">{{ formatTimestamp(rating.rated_at) }}</td>
+                                        <td :title="`Timestamp (SGT): ${formatTimestamp(rating.rated_at)}`">{{ formatTimestamp(rating.rated_at) }}</td>
                                         <td :title="`Rating: ${rating.rating}`">{{ rating.rating }}</td>
                                         <td :title="`New Average Rating: ${rating.new_avg_rating.toFixed(1)}`">{{ rating.new_avg_rating.toFixed(1) }}</td>
                                         <td class="associated-service-cell">
@@ -267,6 +267,8 @@ export default {
             } else {
                 date = new Date(timestamp);
             }
+
+            const sgtDate = new Date(date.toLocaleString('en-US', { timeZone: 'Asia/Singapore' }));
 
             const pad = n => String(n).padStart(2, '0');
             const day = pad(date.getDate());
