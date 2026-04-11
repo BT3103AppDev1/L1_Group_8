@@ -43,10 +43,10 @@
 
             <ConfirmationModal
                 :showModal="showConfirmModal"
-                title="Confirm Redemption"
+                :title="`Redeem ${reward?.reward_name || ''}?`"
                 @update:showModal="showConfirmModal = $event"
             >
-                Redeem <strong>{{ reward.reward_name }}</strong>? This action cannot be undone.
+                <p>This action cannot be undone.</p>
 
                 <template #buttons>
                     <button class="btn btn-secondary" @click="confirmRedeem">Confirm</button>
@@ -131,6 +131,7 @@ export default {
         async confirmRedeem() {
             this.showConfirmModal = false;
             await this.redeemReward();
+            showToast(`Redeem ${this.reward?.reward_name || ''}?`);
         },
 
         async redeemReward() {
