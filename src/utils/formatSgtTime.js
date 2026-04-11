@@ -1,3 +1,14 @@
+// format current date to "YYYY-MM-DD" in Singapore Timezone
+export function getSgtDateKey() {
+    const now = new Date();
+    return new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Singapore",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+    }).format(now); // returns "YYYY-MM-DD"
+}
+
 // format current date to "YYYY-MM" in Singapore Timezone
 export function getSgtYearMonth() {
     const now = new Date();
