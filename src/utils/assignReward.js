@@ -1,24 +1,26 @@
 import { db } from '@/firebase'
 import { collection, doc, getDocs, setDoc, addDoc, getDoc, Timestamp } from 'firebase/firestore'
 
-export async function assignMonthlyRewardsIfNeeded() {
+function getLastMonthKey() {
     const now = new Date();
-
-    // Get last month's key in "YYYY-MM" format
     const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const monthKey = `${lastMonth.getFullYear()}-${String(lastMonth.getMonth() + 1).padStart(2, '0')}`;
+    return `${lastMonth.getFullYear()}-${String(lastMonth.getMonth() + 1).padStart(2, '0')}`;
+}
 
-    // Check if rewards already assigned for last month
-    // Store a flag in Firestore to prevent duplicate assignments
-    const assignedFlagRef = doc(db, 'reward_assignments', monthKey);
-    const assignedFlagSnap = await getDoc(assignedFlagRef);
+function getCurrentMonthKey() {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+}
 
-    //means rewards for this month already assigned, skip
-    if (assignedFlagSnap.exists()) {
-        return;
-    }
+export async function assignMonthlyRewardsIfNeeded() {
+    const monthKey = getLastMonthKey();
 
-    // 1. Get the reward for last month
+    // Check if already done for last month
+    const flagRef = doc(db, 'reward_assignments', monthKey);
+    const flagSnap = await getDoc(flagRef);
+    if (flagSnap.exists()) return;
+
+    // 1. Get last month's reward
     const rewardsSnap = await getDocs(collection(db, 'rewards'));
     const rewards = rewardsSnap.docs
         .map(d => ({ id: d.id, ...d.data() }))
@@ -26,16 +28,26 @@ export async function assignMonthlyRewardsIfNeeded() {
 
     if (rewards.length === 0) return;
 
+    const lastMonth = new Date();
+    lastMonth.setMonth(lastMonth.getMonth() - 1);
     const monthSeed = lastMonth.getMonth();
     const reward = rewards[monthSeed % rewards.length];
 
-    // 2. Get all winners from last month
+    // 2. Get all users and find top 20 by absolute_rank
     const usersSnap = await getDocs(collection(db, 'users'));
     const winners = [];
+    const allUserIds = [];
+
     usersSnap.forEach(docSnap => {
         const data = docSnap.data();
-        if (data.absolute_rank <= 20) {
-            winners.push(docSnap.id);
+        allUserIds.push(docSnap.id);
+
+        const absoluteRank = data.absolute_rank?.[monthKey];
+        if (absoluteRank !== null && absoluteRank !== undefined && absoluteRank <= 20) {
+            winners.push({
+                uid: docSnap.id,
+                rank: absoluteRank,
+            });
         }
     });
 
@@ -43,14 +55,14 @@ export async function assignMonthlyRewardsIfNeeded() {
     for (const uid of winners) {
         await addDoc(collection(db, 'reward_redemption'), {
             reward_id:   reward.id,
-            user_id:     uid,
+            user_id:     winner.uid,
             status:      'NOT REDEEMED',
             redeemed_at: null,
         });
     }
 
-    // 4. Mark as assigned so it doesn't run again
-    await setDoc(assignedFlagRef, {
+    // 4. Mark assignment as done
+    await setDoc(flagRef, {
         assigned_at: Timestamp.now(),
         month:       monthKey,
         reward_id:   reward.id,
