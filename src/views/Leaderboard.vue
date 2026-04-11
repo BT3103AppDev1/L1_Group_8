@@ -183,71 +183,50 @@ export default {
             this.currentUserStatus = null;
             const currentUid = auth.currentUser?.uid ?? null;
 
+            const now = new Date();
+            const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
             try {
-                const { start, end } = getMonthRange(this.monthOffset);
+                const usersSnap = await getDocs(collection(db, 'users'));
 
-                const ratingsSnap = await getDocs(query(collection(db, 'ratings'), where('rated_at', '>=', Timestamp.fromDate(start)), where('rated_at', '<', Timestamp.fromDate(end))));
-
-                const pointsMap = {};
-                ratingsSnap.forEach(docSnap => {
-                    const { receiver_id, rating } = docSnap.data();
-                    pointsMap[receiver_id] = (pointsMap[receiver_id] || 0) + this.ratingToPoints(rating);
-                })
-
-                if (Object.keys(pointsMap).length === 0) {
-                    this.loading = false;
-                    return;
-                }
-
-                const uids = Object.keys(pointsMap);
-                const usersSnap = await getDocs(collection(db, "users"));
-                const usersMap = {};
+                const allUsers = [];
                 usersSnap.forEach(docSnap => {
-                    if (uids.includes(docSnap.id)) {
-                        usersMap[docSnap.id] = { uid: docSnap.id, ...docSnap.data()};
+                    const data = docSnap.data();
+                    const monthPoints = data.total_points?.[monthKey] ?? 0;
+                    const absoluteRank = data.absolute_rank?.[monthKey] ?? null;
+                    if (monthPoints > 0) {
+                        allUsers.push({
+                            uid: docSnap.id,
+                            username: data.username || "Unknown User",
+                            totalPoints: monthPoints,
+                            rank: absoluteRank,
+                            isCurrentUser: docSnap.id === currentUid,
+                        });
                     }
                 });
 
-                const sorted = uids.map(uid => ({
-                    uid,
-                    username: usersMap[uid]?.username || "Unknown User",
-                    totalPoints: pointsMap[uid],
-                })).sort((a, b) => {
-                    if (b.totalPoints !== a.totalPoints) return b.totalPoints - a.totalPoints;
-                    return a.username.localeCompare(b.username);
-                });
+                // Sort and display top 20
+                const sorted = allUsers.sort((a, b) => b.totalPoints - a.totalPoints);
+                const displayList = sorted.slice(0, DISPLAY_LIMIT);
+                this.rankedUser = displayList;
 
-                const displayCount = sorted.length <= DISPLAY_LIMIT ? sorted.length : DISPLAY_LIMIT;
-                const displayList = sorted.slice(0, displayCount);
-
-                this.rankedUser = displayList.map((u, i) => {
-                    const rank = displayList.filter(other => other.totalPoints > u.totalPoints).length + 1;
-                    return {
-                        rank,
-                        uid: u.uid,
-                        username: u.username,
-                        totalPoints: u.totalPoints,
-                        isCurrentUser: u.uid === currentUid,
-                    }
-                })
-
-                const currentUserPosition = sorted.findIndex(u => u.uid === currentUid);
-                const isInDisplayList = currentUserPosition !== -1 && currentUserPosition < displayCount;
+                // Current user bar
+                const currentUser = sorted.find(u => u.uid === currentUid);
+                const isInDisplayList = displayList.some(u => u.uid === currentUid);
 
                 if (currentUid && !isInDisplayList) {
-                    if (currentUserPosition === -1) {
-                        //if users have no rating/ 0 points, they are not ranked
+                    if (!currentUser) {
                         this.currentUserStatus = { rank: "N/A", points: 0 };
                     } else {
-                        //if users have rating but not top 20, show percentile
-                        const pct = Math.round(((currentUserPosition + 1) / sorted.length) * 100);
+                        const usersData = usersSnap.docs.find(d => d.id === currentUid)?.data();
+                        const pct = usersData?.percentage_rank?.[monthKey] ?? null;
                         this.currentUserStatus = {
-                            rank: `${pct} %`,
-                            points: sorted[currentUserPosition].totalPoints,
+                            rank: pct ? `${pct} %` : "N/A",
+                            points: currentUser.totalPoints,
                         };
                     }
                 }
+
             } catch (error) {
                 console.error("Error fetching leaderboard data:", error);
             }
