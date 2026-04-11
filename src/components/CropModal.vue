@@ -139,7 +139,7 @@ export default {
                 width: OUTPUT_SIZE,
                 height: OUTPUT_SIZE,
                 imageSmoothingQuality: "high",
-                fillColor: "var(--gray5)",
+                fillColor: "#fff",
             });
 
             canvas.toBlob(

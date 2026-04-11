@@ -118,7 +118,8 @@ const offerHelp = async () => {
     if (!user.value) return
     try {
         await updateDoc(doc(db, 'listings', listing.value.id), {
-            applicants: arrayUnion(user.value.uid)
+            applicants: arrayUnion(user.value.uid),
+            [`applied_at.${user.value.uid}`]: new Date(),
         })
         router.push('/my-gigs')
     } catch (e) {

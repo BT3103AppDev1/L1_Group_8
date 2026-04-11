@@ -12,7 +12,7 @@
 
             <div class="form-section">
                 <UsernameInput ref="usernameInput" @status-object="onUsernameStatusChange" 
-                    :is-submitting="isSubmitting" :initial-username="initialUsername"/>
+                    :is-submitting="isSubmitting" :initial-username="initialUsername" :uid="uid"/>
 
                 <ContactMethodsInput 
                     ref="contactMethodsInput" 
@@ -52,7 +52,7 @@ import ContactMethodsInput from '@/components/ContactMethodsInput.vue';
 import { VueSpinner } from 'vue3-spinners';
 import { getCurrentUser } from '@/auth.js';
 import { db } from '@/firebase.js';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, getDocs, query, writeBatch, where, collection } from 'firebase/firestore';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '@/firebase.js';
 import axios from 'axios';
@@ -73,6 +73,7 @@ export default {
             isLoading: true,
             isEmailPasswordProvider: false,
 
+            uid: null,
             initialProfilePicUrl: null,
             initialUsername: "",
             initialMobile: "",
@@ -108,7 +109,7 @@ export default {
                 }
                 const providerData = user.providerData || [];
                 this.isEmailPasswordProvider = providerData.some(provider => provider.providerId === "password");
-                const uid = user.uid;
+                this.uid = user.uid; 
 
                 /* // Stimulate isEmailPasswordProvider for testing without auth
                 this.isEmailPasswordProvider = true;
@@ -116,7 +117,7 @@ export default {
                 // Simulate user ID for testing without auth
                 const uid = "zrxX7Bt3kZSaPYpyBuaokbJz47i1"; */
 
-                const userDocRef = doc(db, "users", uid);
+                const userDocRef = doc(db, "users", this.uid);
                 const userDocSnap = await getDoc(userDocRef);
                 if (!userDocSnap.exists()) {
                     throw new Error("User document not found!");
@@ -189,26 +190,17 @@ export default {
             this.isSubmitting = true;
 
             try {
-                /*
-                const user = getCurrentUser();
-                if (!user) {
-                    throw new Error("No user found!");
-                }
-                const uid = user.uid; 
-                */
-                
-                // Simulate user ID for testing without auth
-                const uid = "zrxX7Bt3kZSaPYpyBuaokbJz47i1";
-
                 let profilePicUrl = this.initialProfilePicUrl;
                 if (this.profilePicBlob) {
-                    profilePicUrl = await this.uploadToCloudinary(this.profilePicBlob, uid);
+                    profilePicUrl = await this.uploadToCloudinary(this.profilePicBlob, this.uid);
                 } else if (this.profilePicStatus === "idle" && !this.$refs.profilePicInput.profilePicUrl) {
                     profilePicUrl = null; // User reverted to default 
                 }
 
-                const userDocRef = doc(db, "users", uid);
-                await updateDoc(userDocRef, {
+                const batch = writeBatch(db);
+
+                const userDocRef = doc(db, "users", this.uid);
+                batch.update(userDocRef, {
                     username: this.username,
                     profile_pic_url: profilePicUrl,
                     country_code: this.contact.countryCode,
@@ -219,6 +211,21 @@ export default {
                     accept_whatsapp: this.contact.acceptWhatsApp,
                     telegram_handle: this.contact.telegram,
                 });
+
+                if (this.username !== this.initialUsername) {
+                    const listingsQuery = query(collection(db, 'listings'), 
+                        where('lister_id', '==', this.uid));
+                    const listingSnapshot = await getDocs(listingsQuery);
+
+                    listingSnapshot.forEach((listingDoc) => {
+                        const listingRef = listingDoc.ref;
+                        batch.update(listingRef, {
+                            lister_name: this.username,
+                        });
+                    });
+                }
+
+                await batch.commit();
 
                 alert("Profile updated successfully! You will be redirected to your profile page.");
                 

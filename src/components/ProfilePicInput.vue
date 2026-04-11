@@ -173,6 +173,7 @@ export default {
 .profile-pic-preview {
     border-radius: 50%;
     object-fit: cover;
+    border: 2px solid var(--gray5);
 }
 
 .action-if-not-uploaded {
@@ -212,6 +213,13 @@ export default {
     background-color: var(--gray5);
     border: var(--gray5);
     color: var(--white);
+    cursor: not-allowed;
+}
+
+.text-link:disabled {
+    color: var(--gray5);
+    background-color: transparent;
+    border: none;
     cursor: not-allowed;
 }
 
