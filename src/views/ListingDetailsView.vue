@@ -58,6 +58,17 @@
                     <button class="btn btn-primary" @click="editListing">Edit Listing</button>
                     <button class="btn btn-danger" @click="deleteListing">Delete Listing</button>
                 </div>
+
+                <!-- Analytics (only for lister) -->
+                <div v-if="isLister" class="analytics-card">
+                    <div class="analytics-total">
+                        <span class="analytics-number">{{ totalClicks }}</span>
+                        <span class="analytics-label">Total Views</span>
+                    </div>
+                    <p class="analytics-subtitle">No. of times people clicked to view your listing details</p>
+                    <Line v-if="chartData" :data="chartData" :options="chartOptions" />
+                    <p v-else class="no-data">No views yet.</p>
+                </div>
                 <!-- Help Button (only for non-lister when listing is awaiting) -->
                 <div v-if="canHelp" class="help-button">
                     <button class="btn btn-secondary" @click="offerHelp">I can help :)</button>
@@ -73,10 +84,14 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { Line } from 'vue-chartjs'
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Tooltip } from 'chart.js'
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip)
 
 // Firebase Imports
 import { db } from '@/firebase'
-import { doc, getDoc, deleteDoc, updateDoc, arrayUnion } from 'firebase/firestore'
+import { doc, getDoc, deleteDoc, updateDoc, arrayUnion, increment } from 'firebase/firestore'
+import { getSgtDateKey } from '@/utils/formatSgtTime'
 import { getAuth } from 'firebase/auth'
 
 // Router Imports
@@ -90,6 +105,30 @@ const auth = getAuth()
 // Listing Data
 const listing = ref(null)
 const defaultImage = "@/assets/default-listing.jpg"
+const clicksByDay = ref({})
+
+const totalClicks = computed(() => Object.values(clicksByDay.value).reduce((sum, v) => sum + v, 0))
+
+const chartData = computed(() => {
+    const entries = Object.entries(clicksByDay.value).sort(([a], [b]) => a.localeCompare(b))
+    if (!entries.length) return null
+    return {
+        labels: entries.map(([date]) => {
+            const [,, day] = date.split('-')
+            return `${parseInt(day)} ${new Date(date).toLocaleString('en-GB', { month: 'short' })}`
+        }),
+        datasets: [{
+            data: entries.map(([, count]) => count),
+            borderColor: '#003D7C',
+            backgroundColor: 'rgba(0,61,124,0.1)',
+            tension: 0.3,
+            fill: true,
+            pointRadius: 4,
+        }],
+    }
+})
+
+const chartOptions = { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
 
 //Computed Property to check if the current user is the lister of this listing
 const user = computed(() => auth.currentUser)
@@ -155,6 +194,15 @@ onMounted(async () => {
     const userData = userSnapShot.data()
 
     //Merge listing and user data into one single object for easier handling 
+    clicksByDay.value = listingData.clicks_by_day ?? {}
+
+    // Record click for non-listers
+    if (auth.currentUser && auth.currentUser.uid !== listingData.lister_id) {
+        updateDoc(doc(db, 'listings', listingId), {
+            [`clicks_by_day.${getSgtDateKey()}`]: increment(1)
+        }).catch(() => {})
+    }
+
     listing.value = {
 
         // Listing fields
@@ -279,5 +327,39 @@ onMounted(async () => {
   margin: 4px 0;
 }
 
-
+.analytics-card {
+  margin-top: 20px;
+  background: #F8F9FB;
+  border: 1px solid #E5E9EF;
+  border-radius: 8px;
+  padding: 16px;
+}
+.analytics-total {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+.analytics-number {
+  font-size: 36px;
+  font-weight: 700;
+  color: #003D7C;
+  line-height: 1;
+}
+.analytics-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #6E6E6E;
+}
+.analytics-subtitle {
+  font-size: 11px;
+  color: #9CA3AF;
+  margin-bottom: 12px;
+}
+.no-data {
+  color: #9CA3AF;
+  font-size: 13px;
+  text-align: center;
+  padding: 16px 0;
+}
 </style>
