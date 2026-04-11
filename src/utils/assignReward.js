@@ -51,13 +51,26 @@ export async function assignMonthlyRewardsIfNeeded() {
         }
     });
 
-    // 3. Create reward card for each winner
-    for (const uid of winners) {
+    // 3. Assign reward + create notification for each winner
+    for (const winner of winners) {
+        // Create reward_redemption
         await addDoc(collection(db, 'reward_redemption'), {
             reward_id:   reward.id,
             user_id:     winner.uid,
             status:      'NOT REDEEMED',
             redeemed_at: null,
+        });
+
+        // Create notification
+        await addDoc(collection(db, 'notifications'), {
+            uid:                winner.uid,
+            type:               'receive_reward',
+            listing_title:      null,
+            listing_id:         null,
+            rating:             null,
+            increase_in_points: null,
+            is_sent:            false,
+            created_at:         Timestamp.now(),
         });
     }
 
