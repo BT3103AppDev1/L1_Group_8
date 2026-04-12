@@ -9,16 +9,17 @@ export function ratingToPoints(rating) {
     return 0
 }
 
-export function getMonthKey() {
+export function getMonthKeyFromOffset(offset) {
     const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const target = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+    return `${target.getFullYear()}-${String(target.getMonth() + 1).padStart(2, '0')}`;
 }
 
 export async function addPointsForRating(receiverUid, rating) {
     const pointsEarned = ratingToPoints(rating);
     if (pointsEarned === 0) return;
 
-    const monthKey = getMonthKey();
+    const monthKey = getMonthKeyFromOffset(0); // Always update points for current month
 
     // Step 1: update this user's points
     await updateDoc(doc(db, 'users', receiverUid), {

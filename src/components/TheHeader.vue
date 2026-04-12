@@ -45,6 +45,7 @@
             </div>  
         </div>
     </header>
+    <button @click="testNotification">Test Notif</button>
 </template>
 
 <script> 
@@ -103,8 +104,27 @@ export default {
         isActive(path) {
             return this.$route.path === path || 
                 this.$route.path.startsWith(path + '/');
-        }
+        },
+
+        async testNotification() {
+            const { addDoc, collection, Timestamp } = await import('firebase/firestore')
+            const { db, auth } = await import('@/firebase')
+            await addDoc(collection(db, 'notifications'), {
+                uid: auth.currentUser?.uid,
+                type: 'receive_reward',
+                is_sent: false,
+                created_at: Timestamp.now(),
+                listing_title: null,
+                listing_id: null,
+                rating: null,
+                increase_in_points: null,
+            })
+            alert('Test notification created! Refresh the page.')
+        }           
     }
+
+    // temporary for testing reward notification
+ 
 }
 </script>
 

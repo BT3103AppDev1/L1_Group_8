@@ -5,21 +5,19 @@
             <button class="viewRewardButton" @click="viewReward=true">View Reward</button>
         </div>
         
-        <div v-if="viewReward" class="viewRewardModalOverlay" @click.self="viewReward = false">
-            <div class="viewRewardContent">
-                <button class="closeButton" @click="viewReward = false">X</button>
-
+        <InfoModal v-model:showModal="viewReward">
+            <div class="modalDetail">
                 <h2 class="modalTitle">Current Month Reward</h2>
-                <div v-if="currentMonthReward" class="modalDetail">
-                    <p class="modalLabel">{{  currentMonthReward.reward_name }}</p>
-                    <p class="modalText">{{  currentMonthReward.reward_details }}</p>    
+                <div v-if="currentMonthReward">
+                    <p class="modalLabel">{{ currentMonthReward.reward_name }}</p>
+                    <p class="modalText">{{ currentMonthReward.reward_details }}</p>
                     <p class="modalText">Eligibility: Top 20 users of the month</p>
                 </div>
-                <div v-else class="modalDetail">
+                <div v-else>
                     <p class="modalText">No reward information available for this month.</p>
                 </div>
             </div>
-        </div>
+        </InfoModal>
 
         <div class="monthNavigation">
             <button class="navigationArrow" @click="previousMonth">&lt;</button>
@@ -80,6 +78,8 @@ import PageHeader from "../components/PageHeader.vue";
 import { db, auth } from '@/firebase'
 import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore' 
 import { seedAll } from "@/mockLeaderboard";
+import InfoModal from "@/components/InfoModal.vue";
+import { getMonthKeyFromOffset } from "@/utils/points";
 
 function buildMonthLabels() {
     const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -102,7 +102,7 @@ const DISPLAY_LIMIT = 20;
 
 export default {
     name: "Leaderboard",
-    components: { PageHeader },
+    components: { PageHeader, InfoModal },
 
     data() {
         return {
@@ -183,8 +183,7 @@ export default {
             this.currentUserStatus = null;
             const currentUid = auth.currentUser?.uid ?? null;
 
-            const now = new Date();
-            const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            const monthKey = getMonthKeyFromOffset(this.monthOffset);
 
             try {
                 const usersSnap = await getDocs(collection(db, 'users'));
@@ -315,7 +314,7 @@ export default {
     }
 
     .viewRewardButton {
-        background-color: #EF7C00;
+        background-color: var(--secondary);
         color: white;
         border: none;
         border-radius: 8px;
@@ -328,7 +327,7 @@ export default {
         opacity: 0.8;
     }
 
-    .viewRewardModalOverlay {
+/*    .viewRewardModalOverlay {
         position: fixed;
         top: 0;
         left: 0;
@@ -355,7 +354,7 @@ export default {
         position: absolute;
         top: 10px;
         right: 10px;
-        background-color: #8C8C8C;
+        background-color: var(--grey4);
         border: none;
         border-radius: 8px;
         font-size: 16px;
@@ -367,10 +366,10 @@ export default {
 
     .closeButton:hover {
         opacity: 0.8;
-    }
+    } */
 
     .modalTitle {
-        color: #003D7C;
+        color: var(--primary);
         font-size: 24px;
         text-align: center;
     }
@@ -393,7 +392,7 @@ export default {
         display: flex;
         justify-content: center;
         align-items: center;
-        background-color: #003D7C;
+        background-color: var(--primary);
         padding: 10px;
         margin: 20px 0px 0px 0px;
     }
@@ -407,7 +406,7 @@ export default {
     }
     
     .navigationArrow:hover {
-        color: #EF7C00;
+        color: var(--secondary);
         cursor: pointer;
     }
 
@@ -427,7 +426,7 @@ export default {
     }
 
     .currentUserBar {
-        background-color: #EF7C00;
+        background-color: var(--secondary);
         align-items: center;
         justify-content: space-between;
         padding: 10px 16px;
@@ -448,7 +447,7 @@ export default {
     }
 
     .leaderboardTable {
-        background-color: #003D7C;
+        background-color: var(--primary);
         display: flex;
         flex-direction: column;
         flex: 1;
@@ -485,7 +484,7 @@ export default {
     }
 
     .leaderboardTableRow.isCurrentUser {
-        background-color: #EF7C00;
+        background-color: var(--secondary);
     }
 
     .leaderboardTableRow.isCurrentUser .colRank,
