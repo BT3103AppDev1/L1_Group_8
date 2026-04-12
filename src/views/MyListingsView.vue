@@ -172,8 +172,9 @@
 <script>
 import ConfirmModal from '@/components/ConfirmModal.vue'
 import { db } from '@/firebase.js'
-import { collection, query, where, getDocs, getDoc, doc, updateDoc, arrayUnion } from 'firebase/firestore'
+import { collection, query, where, getDocs, getDoc, doc, updateDoc, arrayUnion, writeBatch } from 'firebase/firestore'
 import { getCurrentUser } from '@/auth.js'
+import { addCreateNotifToBatch } from '@/utils/notifications'
 
 export default {
   name: 'MyListingsView',
@@ -320,7 +321,30 @@ export default {
               updateData.rejected_applicant_ids = arrayUnion(...otherIds)
               updateData.rejected_at = rejectedAt
             }
-            await updateDoc(doc(db, 'listings', listing.id), updateData)
+            
+            const batch = writeBatch(db)
+            batch.update(doc(db, 'listings', listing.id), updateData)
+
+            // notify accepted provider
+            addCreateNotifToBatch(batch, {
+              uid: applicant.id,
+              type: 'application_success',
+              listing_title: listing.title,
+              listing_id: listing.id,
+            })
+
+            // notify rejected applicants
+            otherIds.forEach(uid => {
+              addCreateNotifToBatch(batch, {
+                uid,
+                type: 'application_fail',
+                listing_title: listing.title,
+                listing_id: listing.id,
+              })
+            })
+
+            await batch.commit();
+            
             const idx = this.listings.awaiting.findIndex(l => l.id === listing.id)
             if (idx !== -1) {
               const moved = { ...listing, provider: applicant, applicants: [] }
