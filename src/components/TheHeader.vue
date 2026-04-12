@@ -56,6 +56,7 @@ import { Menu as MenuIcon } from 'lucide-vue-next';
 import { DropdownMenuContent, DropdownMenuItem, DropdownMenuRoot, DropdownMenuTrigger } from 'radix-vue';
 import RewardNotification from './RewardNotification.vue';
 import { assignMonthlyRewardsIfNeeded } from '@/utils/assignReward';
+import { getMsToSgtNextMonth } from '@/utils/formatSgtTime';
 
 export default {
     name: 'TheHeader',
@@ -76,6 +77,7 @@ export default {
                 { name: 'My Gigs', path: '/my-gigs' },
                 { name: 'Leaderboard', path: '/leaderboard' },
             ],
+            refreshTimer: null,
         }
     },
 
@@ -108,6 +110,16 @@ export default {
     async mounted() {
         assignMonthlyRewardsIfNeeded();
 
+        const msUntilNextMonth = getMsToSgtNextMonth();
+        this.refreshTimer = setTimeout(() => {
+            assignMonthlyRewardsIfNeeded();
+        }, msUntilNextMonth); 
+    },
+
+    beforeUnmount() {
+        if (this.refreshTimer) {
+            clearTimeout(this.refreshTimer);
+        }
     },
 
     methods: {
@@ -131,7 +143,7 @@ export default {
             })
             alert('Test notification created! Refresh the page.')
         }           
-    }
+    },
 
     // temporary for testing reward notification
  

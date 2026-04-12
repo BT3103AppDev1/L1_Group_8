@@ -1,7 +1,7 @@
 import { db } from '@/firebase'
 import { collection, doc, getDocs, setDoc, getDoc, Timestamp, writeBatch } from 'firebase/firestore'
 import { getLastMonthKey } from '@/utils/formatSgtTime';
-import { add } from 'firebase/firestore/pipelines';
+import { addCreateNotifToBatch } from '@/utils/notifications';
 
 export async function assignMonthlyRewardsIfNeeded() {
     const monthKey = getLastMonthKey();
@@ -64,6 +64,6 @@ export async function assignMonthlyRewardsIfNeeded() {
         reward_id: reward.id,
         winners: winners.length,
     });
-    
+
     await batch.commit();
 }
