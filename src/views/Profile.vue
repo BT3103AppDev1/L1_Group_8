@@ -109,8 +109,15 @@
                 <span class="analytics-number">{{ totalProfileClicks }}</span>
                 <span class="analytics-label">Total Listing Views</span>
             </div>
-            <p class="analytics-subtitle">Daily clicks on your listings over the last 7 days</p>
-            <Bar :data="profileChartData" :options="profileChartOptions" />
+            <p class="analytics-subtitle">
+                {{ activeView === 'today' ? 'Clicks by hour today across all your listings' : 'Daily clicks on your listings over the last 7 days' }}
+            </p>
+            <div class="chart-toggle">
+                <button :class="['toggle-btn', { active: activeView === 'today' }]" @click="activeView = 'today'">Today</button>
+                <button :class="['toggle-btn', { active: activeView === 'week' }]" @click="activeView = 'week'">Last 7 Days</button>
+            </div>
+            <Bar v-if="activeView === 'week'" :data="profileChartData" :options="profileChartOptions" />
+            <Bar v-else :data="todayProfileChartData" :options="profileChartOptions" />
         </div>
 
         <div v-if="isPrivateProfile" class="my-rewards-section">
@@ -193,6 +200,8 @@ export default {
             isSigningOut: false,
 
             clicksByDay: {},
+            clicksByHour: {},
+            activeView: 'week',
         };
     },
 
@@ -270,6 +279,29 @@ export default {
             };
         },
 
+        todayProfileChartData() {
+            const todayKey = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Singapore', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+            const hours = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+            return {
+                labels: hours.map(h => {
+                    const hr = parseInt(h);
+                    if (hr === 0) return '12am';
+                    if (hr < 12) return `${hr}am`;
+                    if (hr === 12) return '12pm';
+                    return `${hr - 12}pm`;
+                }),
+                datasets: [{
+                    data: hours.map(h => this.clicksByHour[`${todayKey}_${h}`] ?? 0),
+                    backgroundColor: hours.map((h, i) => {
+                        const now = new Date();
+                        const currentHour = parseInt(new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Singapore', hour: '2-digit', hour12: false }).format(now));
+                        return i === currentHour ? '#7C3AED' : 'rgba(124,58,237,0.2)';
+                    }),
+                    borderRadius: 4,
+                }],
+            };
+        },
+
         profileChartOptions() {
             return {
                 responsive: true,
@@ -326,14 +358,19 @@ export default {
 
         async fetchListingClicks(uid) {
             const snap = await getDocs(query(collection(db, 'listings'), where('lister_id', '==', uid)));
-            const merged = {};
+            const mergedDay = {};
+            const mergedHour = {};
             snap.forEach(docSnap => {
-                const byDay = docSnap.data().clicks_by_day ?? {};
-                Object.entries(byDay).forEach(([date, count]) => {
-                    merged[date] = (merged[date] ?? 0) + count;
+                const data = docSnap.data();
+                Object.entries(data.clicks_by_day ?? {}).forEach(([date, count]) => {
+                    mergedDay[date] = (mergedDay[date] ?? 0) + count;
+                });
+                Object.entries(data.clicks_by_hour ?? {}).forEach(([key, count]) => {
+                    mergedHour[key] = (mergedHour[key] ?? 0) + count;
                 });
             });
-            this.clicksByDay = merged;
+            this.clicksByDay = mergedDay;
+            this.clicksByHour = mergedHour;
         },
 
         async handleSignOut() {
@@ -626,7 +663,27 @@ export default {
 .analytics-subtitle {
     font-size: 12px;
     color: #9CA3AF;
-    margin-bottom: 16px;
+    margin-bottom: 8px;
+}
+.chart-toggle {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 12px;
+}
+.toggle-btn {
+    padding: 4px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid var(--primary);
+    border-radius: 999px;
+    background: none;
+    color: var(--primary);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+.toggle-btn.active {
+    background: var(--primary);
+    color: #fff;
 }
 
 .sign-out-section {

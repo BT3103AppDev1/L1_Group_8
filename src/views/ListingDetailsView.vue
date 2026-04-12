@@ -66,8 +66,12 @@
                         <span class="analytics-label">Total Views</span>
                     </div>
                     <p class="analytics-subtitle">No. of times people clicked to view your listing details</p>
-                    <Line v-if="chartData" :data="chartData" :options="chartOptions" />
-                    <p v-else class="no-data">No views yet.</p>
+                    <div class="chart-toggle">
+                        <button :class="['toggle-btn', { active: activeView === 'today' }]" @click="activeView = 'today'">Today</button>
+                        <button :class="['toggle-btn', { active: activeView === 'week' }]" @click="activeView = 'week'">Last 7 Days</button>
+                    </div>
+                    <Line v-if="activeView === 'week'" :data="weekChartData" :options="chartOptions" />
+                    <Line v-else :data="todayChartData" :options="chartOptions" />
                 </div>
                 <!-- Help Button (only for non-lister when listing is awaiting) -->
                 <div v-if="canHelp" class="help-button">
@@ -91,7 +95,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip)
 // Firebase Imports
 import { db } from '@/firebase'
 import { doc, getDoc, deleteDoc, updateDoc, arrayUnion, increment } from 'firebase/firestore'
-import { getSgtDateKey } from '@/utils/formatSgtTime'
+import { getSgtDateKey, getSgtHourKey } from '@/utils/formatSgtTime'
 import { getAuth } from 'firebase/auth'
 
 // Router Imports
@@ -106,24 +110,53 @@ const auth = getAuth()
 const listing = ref(null)
 const defaultImage = "@/assets/default-listing.jpg"
 const clicksByDay = ref({})
+const clicksByHour = ref({})
+const activeView = ref('week')
 
 const totalClicks = computed(() => Object.values(clicksByDay.value).reduce((sum, v) => sum + v, 0))
 
-const chartData = computed(() => {
-    const entries = Object.entries(clicksByDay.value).sort(([a], [b]) => a.localeCompare(b))
-    if (!entries.length) return null
+const weekChartData = computed(() => {
+    const days = []
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date()
+        d.setDate(d.getDate() - i)
+        const key = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Singapore', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d)
+        days.push(key)
+    }
     return {
-        labels: entries.map(([date]) => {
+        labels: days.map(date => {
             const [,, day] = date.split('-')
             return `${parseInt(day)} ${new Date(date).toLocaleString('en-GB', { month: 'short' })}`
         }),
         datasets: [{
-            data: entries.map(([, count]) => count),
+            data: days.map(date => clicksByDay.value[date] ?? 0),
             borderColor: '#003D7C',
             backgroundColor: 'rgba(0,61,124,0.1)',
             tension: 0.3,
             fill: true,
             pointRadius: 4,
+        }],
+    }
+})
+
+const todayChartData = computed(() => {
+    const todayKey = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Singapore', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date())
+    const hours = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'))
+    return {
+        labels: hours.map(h => {
+            const hr = parseInt(h)
+            if (hr === 0) return '12am'
+            if (hr < 12) return `${hr}am`
+            if (hr === 12) return '12pm'
+            return `${hr - 12}pm`
+        }),
+        datasets: [{
+            data: hours.map(h => clicksByHour.value[`${todayKey}_${h}`] ?? 0),
+            borderColor: '#7C3AED',
+            backgroundColor: 'rgba(124,58,237,0.1)',
+            tension: 0.3,
+            fill: true,
+            pointRadius: 3,
         }],
     }
 })
@@ -195,11 +228,13 @@ onMounted(async () => {
 
     //Merge listing and user data into one single object for easier handling 
     clicksByDay.value = listingData.clicks_by_day ?? {}
+    clicksByHour.value = listingData.clicks_by_hour ?? {}
 
     // Record click for non-listers
     if (auth.currentUser && auth.currentUser.uid !== listingData.lister_id) {
         updateDoc(doc(db, 'listings', listingId), {
-            [`clicks_by_day.${getSgtDateKey()}`]: increment(1)
+            [`clicks_by_day.${getSgtDateKey()}`]: increment(1),
+            [`clicks_by_hour.${getSgtHourKey()}`]: increment(1),
         }).catch(() => {})
     }
 
@@ -361,5 +396,25 @@ onMounted(async () => {
   font-size: 13px;
   text-align: center;
   padding: 16px 0;
+}
+.chart-toggle {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+.toggle-btn {
+  padding: 4px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid #003D7C;
+  border-radius: 999px;
+  background: none;
+  color: #003D7C;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.toggle-btn.active {
+  background: #003D7C;
+  color: #fff;
 }
 </style>

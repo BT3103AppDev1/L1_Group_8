@@ -44,6 +44,9 @@
             </DropdownMenuRoot>
             </div>  
         </div>
+        <RewardNotification />
+         <!-- temporary for testing reward notification -->
+        <button @click="testNotification">Test Notif</button>
     </header>
 </template>
 
@@ -51,6 +54,8 @@
 import defaultProfilePic from '@/assets/default-profile-pic.png';
 import { Menu as MenuIcon } from 'lucide-vue-next';
 import { DropdownMenuContent, DropdownMenuItem, DropdownMenuRoot, DropdownMenuTrigger } from 'radix-vue';
+import RewardNotification from './RewardNotification.vue';
+import { assignMonthlyRewardsIfNeeded } from '@/utils/assignReward';
 
 export default {
     name: 'TheHeader',
@@ -97,14 +102,39 @@ export default {
         DropdownMenuContent,
         DropdownMenuItem,
         MenuIcon,
+        RewardNotification,
+    },
+
+    async mounted() {
+        assignMonthlyRewardsIfNeeded();
+
     },
 
     methods: {
         isActive(path) {
             return this.$route.path === path || 
                 this.$route.path.startsWith(path + '/');
-        }
+        },
+
+        async testNotification() {
+            const { addDoc, collection, Timestamp } = await import('firebase/firestore')
+            const { db, auth } = await import('@/firebase')
+            await addDoc(collection(db, 'notifications'), {
+                uid: auth.currentUser?.uid,
+                type: 'receive_reward',
+                is_sent: false,
+                created_at: Timestamp.now(),
+                listing_title: null,
+                listing_id: null,
+                rating: null,
+                increase_in_points: null,
+            })
+            alert('Test notification created! Refresh the page.')
+        }           
     }
+
+    // temporary for testing reward notification
+ 
 }
 </script>
 

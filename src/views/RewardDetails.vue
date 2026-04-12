@@ -43,10 +43,10 @@
 
             <ConfirmationModal
                 :showModal="showConfirmModal"
-                title="Confirm Redemption"
+                :title="`Redeem ${reward?.reward_name || ''}?`"
                 @update:showModal="showConfirmModal = $event"
             >
-                Redeem <strong>{{ reward.reward_name }}</strong>? This action cannot be undone.
+                <p>This action cannot be undone.</p>
 
                 <template #buttons>
                     <button class="btn btn-secondary" @click="confirmRedeem">Confirm</button>
@@ -62,6 +62,7 @@ import PageHeader from '@/components/PageHeader.vue';
 import ConfirmationModal from '@/components/ConfirmationModal.vue';
 import { db, auth } from '@/firebase';
 import { doc, getDoc, Timestamp, updateDoc } from 'firebase/firestore';
+import { useToast } from 'vue-toastification';
 
 export default {
     components: {
@@ -142,9 +143,13 @@ export default {
                     redeemed_at: Timestamp.now(),
                 });
                 this.reward.status = 'REDEEMED';
-                alert('Redeemed reward successfully!')
+                const toast = useToast();
+                toast.success(`Redeemed "${this.reward.reward_name}" successfully!`);
+
             } catch (error) {
                 console.error('Error redeeming reward:', error);
+                const toast = useToast();
+                toast.error('Failed to redeem reward. Please try again later.');
             }
         }
     }
