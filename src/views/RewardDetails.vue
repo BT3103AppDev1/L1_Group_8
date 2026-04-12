@@ -3,10 +3,9 @@
         <button class="back-button" @click="$router.push({ name: 'PrivateProfile' })">← Back</button>
         <PageHeader title="Reward Details"/>
 
-
         <div v-if="loading">Loading...</div>
         <div v-else-if="reward" class="reward-detail-page">
-            <div class="reward-detail-box">
+            <div class="reward-detail-box detail-box">
                 <div class="reward-name-box">
                     <h2 class="reward-name">{{ reward.reward_name }}</h2>
                     <p class="information">Valid till {{ formattedExpiryDate }} </p>
@@ -168,11 +167,7 @@ export default {
     }
 
     .reward-detail-box {
-        background-color: #DDEBFB;
         flex-direction: column;
-        border-radius: var(--radius);
-        border: 1px solid var(--black1);
-        padding: 15px;
         width: 600px;
         flex-shrink: 0;
     }
@@ -216,7 +211,9 @@ export default {
         color: var(--primary);
         font-size: 14px;
         cursor: pointer;
-        margin-bottom: 10px;
+        position: relative; 
+        top: 15px;
+        margin-bottom: 20px;
     }
 
     .back-button:hover {
