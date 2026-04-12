@@ -199,6 +199,7 @@ const offerHelp = async () => {
             uid: listing.value.lister_uid,
             type: 'receive_applicant',
             listing_title: listing.value.title,
+            listing_id: listing.value.id,
         })
         await batch.commit();
         router.push('/my-gigs')
