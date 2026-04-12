@@ -47,8 +47,8 @@ export function getLastMonthKey() {
     return `${lastYear}-${String(lastMonth).padStart(2, '0')}`;
 }
 
-// Get milliseconds until the first day of next month midnight 00:00:00 in Singapore Timezone
-export function getMsToSgtNextMonth() {
+// Get milliseconds until the first day of next month in Singapore Timezone with a buffer (default 1 minute) to ensure it's next month in SGT when the timer triggers
+export function getMsToSgtNextMonth(bufferMs = 60000) {
     const now = new Date();
     const sgtYrMonth = getSgtYearMonth();
     const [year, month] = sgtYrMonth.split('-').map(Number);
@@ -57,7 +57,7 @@ export function getMsToSgtNextMonth() {
     const nextYear = month === 12 ? year + 1 : year;
 
     const nextMonthDate = new Date(nextYear, nextMonth - 1, 1); 
-    return nextMonthDate - now;
+    return nextMonthDate - now + bufferMs; // add buffer to ensure it's next month in SGT
 }
 
 // format USC timestamp to "DD/MM/YYYY HH:mm:ss" in Singapore Timezone
