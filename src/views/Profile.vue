@@ -104,6 +104,15 @@
             <AwaitingListings :key="$route.params.uid" :uid="$route.params.uid" :username="profileData.username"/>
         </div>
 
+        <div v-if="isPrivateProfile" class="analytics-section">
+            <div class="analytics-total">
+                <span class="analytics-number">{{ totalProfileClicks }}</span>
+                <span class="analytics-label">Total Listing Views</span>
+            </div>
+            <p class="analytics-subtitle">Daily clicks on your listings over the last 7 days</p>
+            <Bar :data="profileChartData" :options="profileChartOptions" />
+        </div>
+
         <div v-if="isPrivateProfile" class="my-rewards-section">
             <TheMyRewardSection />
         </div>
@@ -145,26 +154,30 @@ import RewardCard from '@/components/RewardCard.vue';
 import RewardDetails from './RewardDetails.vue';
 import TheMyRewardSection from '@/components/TheMyRewardSection.vue';
 import { getCurrentUser } from '@/auth.js';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, collection, query, where, getDocs } from 'firebase/firestore';
 import defaultProfilePic from '@/assets/default-profile-pic.png';
 import eduIcon from '@/assets/education-icon.png';
 import buddyIcon from '@/assets/buddy-icon.png';
 import survivalIcon from '@/assets/survival-icon.png';
 import AwaitingListings from '@/components/AwaitingListings.vue';
 import { getSgtYearMonth, getMsToSgtNextMonth } from '@/utils/formatSgtTime';
+import { Bar } from 'vue-chartjs'
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Tooltip } from 'chart.js'
+ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip)
 
 export default {
     name: 'Profile',
     components: {
         PageHeader,
-        SquarePen,  
+        SquarePen,
         Check,
         ConfirmationModal,
         VueSpinner,
         RewardCard,
         RewardDetails,
         TheMyRewardSection,
-        AwaitingListings
+        AwaitingListings,
+        Bar,
     },
     data() {
         return {
@@ -174,11 +187,12 @@ export default {
             defaultProfilePic,
             profileData: null,
 
-            // Firestore listener unsubscribe functions
             unsubscribeUser: null,
 
             showSignOutModal: false,
             isSigningOut: false,
+
+            clicksByDay: {},
         };
     },
 
@@ -229,6 +243,40 @@ export default {
         percentageRank() {
             return this.profileData?.percentage_rank?.[this.yearMonth] ?? null;
         },
+
+        totalProfileClicks() {
+            return Object.values(this.clicksByDay).reduce((sum, v) => sum + v, 0);
+        },
+
+        profileChartData() {
+            // Last 7 days in SGT
+            const days = [];
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const key = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Singapore', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
+                days.push(key);
+            }
+            return {
+                labels: days.map(date => {
+                    const [,, day] = date.split('-');
+                    return `${parseInt(day)} ${new Date(date).toLocaleString('en-GB', { month: 'short' })}`;
+                }),
+                datasets: [{
+                    data: days.map(date => this.clicksByDay[date] ?? 0),
+                    backgroundColor: days.map((date, i) => i === 6 ? '#7C3AED' : '#003D7C22'),
+                    borderRadius: 4,
+                }],
+            };
+        },
+
+        profileChartOptions() {
+            return {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+            };
+        },
     },
 
     methods: { 
@@ -256,6 +304,10 @@ export default {
                 return;
             }
 
+            if (this.isPrivateProfile) {
+                this.fetchListingClicks(uid);
+            }
+
             // Listen to profile data changes
             const userRef = doc(db, 'users', uid);
             this.unsubscribeUser = onSnapshot(userRef, doc => {
@@ -270,6 +322,18 @@ export default {
                 console.error("Error fetching user data:", error);
                 this.isLoading = false;
             });
+        },
+
+        async fetchListingClicks(uid) {
+            const snap = await getDocs(query(collection(db, 'listings'), where('lister_id', '==', uid)));
+            const merged = {};
+            snap.forEach(docSnap => {
+                const byDay = docSnap.data().clicks_by_day ?? {};
+                Object.entries(byDay).forEach(([date, count]) => {
+                    merged[date] = (merged[date] ?? 0) + count;
+                });
+            });
+            this.clicksByDay = merged;
         },
 
         async handleSignOut() {
@@ -533,6 +597,36 @@ export default {
     font-size: 0.875rem;
     color: var(--gray3);
     text-align: start;
+}
+
+.analytics-section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    max-width: 600px;
+}
+.analytics-total {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 4px;
+}
+.analytics-number {
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--primary);
+    line-height: 1;
+}
+.analytics-label {
+    font-size: 16px;
+    font-weight: 600;
+    color: #6E6E6E;
+}
+.analytics-subtitle {
+    font-size: 12px;
+    color: #9CA3AF;
+    margin-bottom: 16px;
 }
 
 .sign-out-section {

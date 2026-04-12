@@ -36,7 +36,7 @@
 </template>
 
 <script setup>
-import { doc, updateDoc, increment } from "firebase/firestore"
+import { doc, updateDoc, arrayUnion, Timestamp } from "firebase/firestore"
 import { db } from "@/firebase"
 import { useRouter } from "vue-router"
 
@@ -54,7 +54,7 @@ const viewListing = async () => {
   const ref = doc(db, "listings", props.listing.id)
 
   await updateDoc(ref, {
-    count: increment(1)
+    clicks: arrayUnion(Timestamp.now()) // Store click timestamps for analytics 
   })
 
   router.push(`/listing/${props.listing.id}`)
