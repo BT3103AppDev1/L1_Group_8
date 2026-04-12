@@ -72,7 +72,6 @@ export async function addRatingsAndPoints(receiverUid, rating, listing_id) {
             uid: receiverUid,
             type: 'receive_rating',
             listing_title: listing_title,
-            listing_id: listing_id,
             rating,
             increase_in_points: pointsEarned,
             sgt_year_month: monthKey,

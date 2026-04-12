@@ -330,7 +330,6 @@ export default {
               uid: applicant.id,
               type: 'application_success',
               listing_title: listing.title,
-              listing_id: listing.id,
             })
 
             // notify rejected applicants
@@ -339,7 +338,6 @@ export default {
                 uid,
                 type: 'application_fail',
                 listing_title: listing.title,
-                listing_id: listing.id,
               })
             })
 
