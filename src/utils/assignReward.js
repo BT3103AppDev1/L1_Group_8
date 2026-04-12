@@ -54,6 +54,7 @@ export async function assignMonthlyRewardsIfNeeded() {
         addCreateNotifToBatch(batch, {
             uid: winner.uid,
             type: 'receive_reward',
+            sgt_year_month: monthKey,
         });
     }
 
