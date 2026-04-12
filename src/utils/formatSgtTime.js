@@ -9,6 +9,22 @@ export function getSgtDateKey() {
     }).format(now); // returns "YYYY-MM-DD"
 }
 
+// format current date to "YYYY-MM-DD_HH" in Singapore Timezone (for hourly click tracking)
+export function getSgtHourKey() {
+    const now = new Date();
+    const parts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Singapore",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        hour12: false,
+    }).formatToParts(now);
+    const get = (type) => parts.find(p => p.type === type)?.value ?? '00';
+    const hour = get('hour') === '24' ? '00' : get('hour');
+    return `${get('year')}-${get('month')}-${get('day')}_${hour}`;
+}
+
 // format current date to "YYYY-MM" in Singapore Timezone
 export function getSgtYearMonth() {
     const now = new Date();

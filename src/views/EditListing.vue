@@ -82,8 +82,12 @@
                 <span class="analytics-label">Total Views</span>
             </div>
             <p class="analytics-subtitle">No. of times people clicked to view your listing details</p>
-            <Line v-if="chartData" :data="chartData" :options="chartOptions" />
-            <p v-else class="no-data">No click data yet.</p>
+            <div class="chart-toggle">
+                <button :class="['toggle-btn', { active: activeView === 'today' }]" @click="activeView = 'today'">Today</button>
+                <button :class="['toggle-btn', { active: activeView === 'week' }]" @click="activeView = 'week'">Last 7 Days</button>
+            </div>
+            <Line v-if="activeView === 'week'" :data="weekChartData" :options="chartOptions" />
+            <Line v-else :data="todayChartData" :options="chartOptions" />
         </div>
     </div>
 </template>
@@ -125,6 +129,8 @@ export default {
             cropperReady: false,
             isSaving: false,
             clicksByDay: {},
+            clicksByHour: {},
+            activeView: 'week',
         }
     },
 
@@ -136,21 +142,47 @@ export default {
         totalClicks() {
             return Object.values(this.clicksByDay).reduce((sum, v) => sum + v, 0);
         },
-        chartData() {
-            const entries = Object.entries(this.clicksByDay).sort(([a], [b]) => a.localeCompare(b));
-            if (!entries.length) return null;
+        weekChartData() {
+            const days = [];
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const key = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Singapore', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
+                days.push(key);
+            }
             return {
-                labels: entries.map(([date]) => {
-                    const [, , day] = date.split('-');
+                labels: days.map(date => {
+                    const [,, day] = date.split('-');
                     return `${parseInt(day)} ${new Date(date).toLocaleString('en-GB', { month: 'short' })}`;
                 }),
                 datasets: [{
-                    data: entries.map(([, count]) => count),
+                    data: days.map(date => this.clicksByDay[date] ?? 0),
                     borderColor: '#003D7C',
                     backgroundColor: 'rgba(0,61,124,0.1)',
                     tension: 0.3,
                     fill: true,
                     pointRadius: 4,
+                }],
+            };
+        },
+        todayChartData() {
+            const todayKey = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Singapore', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+            const hours = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+            return {
+                labels: hours.map(h => {
+                    const hr = parseInt(h);
+                    if (hr === 0) return '12am';
+                    if (hr < 12) return `${hr}am`;
+                    if (hr === 12) return '12pm';
+                    return `${hr - 12}pm`;
+                }),
+                datasets: [{
+                    data: hours.map(h => this.clicksByHour[`${todayKey}_${h}`] ?? 0),
+                    borderColor: '#7C3AED',
+                    backgroundColor: 'rgba(124,58,237,0.1)',
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 3,
                 }],
             };
         },
@@ -192,6 +224,7 @@ export default {
                     this.location_text = data.location_text;
                     this.listing_pic = data.picture_url || defaultPic;
                     this.clicksByDay = data.clicks_by_day ?? {};
+                    this.clicksByHour = data.clicks_by_hour ?? {};
                 }
 
             }
@@ -484,6 +517,26 @@ textarea {
     font-size: 13px;
     text-align: center;
     padding: 24px 0;
+}
+.chart-toggle {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 12px;
+}
+.toggle-btn {
+    padding: 4px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid #003D7C;
+    border-radius: 999px;
+    background: none;
+    color: #003D7C;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+.toggle-btn.active {
+    background: #003D7C;
+    color: #fff;
 }
 
 /* button */
