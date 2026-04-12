@@ -36,6 +36,17 @@ export function getSgtYearMonth() {
     return sgtYrMonth;
 }
 
+// Get last month in "YYYY-MM" format in Singapore Timezone
+export function getLastMonthKey() {
+    const sgtYrMonth = getSgtYearMonth();
+    const [year, month] = sgtYrMonth.split('-').map(Number);
+
+    const lastMonth = month === 1 ? 12 : month - 1;
+    const lastYear = month === 1 ? year - 1 : year;
+
+    return `${lastYear}-${String(lastMonth).padStart(2, '0')}`;
+}
+
 // Get milliseconds until the first day of next month midnight 00:00:00 in Singapore Timezone
 export function getMsToSgtNextMonth() {
     const now = new Date();
