@@ -1,8 +1,8 @@
 <template> 
     <div>
+        <button class="back-button" @click="$router.push({ name: 'PrivateProfile' })">← Back</button>
         <PageHeader title="Reward Details"/>
 
-        <button class="back-button" @click="$router.push({ name: 'PrivateProfile' })">← Back</button>
 
         <div v-if="loading">Loading...</div>
         <div v-else-if="reward" class="reward-detail-page">

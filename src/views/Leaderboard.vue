@@ -53,7 +53,12 @@
 
                         <span class="colRank">{{ ordinal(user.rank) }}</span>
                         <span class="colName">
-                            <span class="profilePic" :class="{ 'currentUserProfilePic': user.isCurrentUser }"></span>
+                            <img 
+                                :src="user.profilePic || defaultProfilePic"
+                                class="profilePic"
+                                :class="{ currentUserProfilePic: user.isCurrentUser }"
+                                alt="profile"
+                            />
                             <span class="username">{{ user.isCurrentUser ? 'You' : user.username }}</span>
                         </span>
                         <span class="colPoints">{{ user.totalPoints }}</span>
@@ -64,7 +69,11 @@
             <div v-if="showUserBar" class="currentUserBar">
                 <span class="myRank">{{ currentUserRank }}</span>
                 <span class="myName">
-                    <span class="profilePic currentUserProfilePic"></span>
+                    <img 
+                        :src="currentUserProfilePic || defaultProfilePic"
+                        class="profilePic currentUserProfilePic"
+                        alt="your profile"
+                    />
                     {{ currentUsername }}
                 </span>
                 <span class="myPoints">{{ currentUserPoints }}</span>
@@ -77,9 +86,9 @@
 import PageHeader from "../components/PageHeader.vue";
 import { db, auth } from '@/firebase'
 import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore' 
-import { seedAll } from "@/mockLeaderboard";
 import InfoModal from "@/components/InfoModal.vue";
 import { getMonthKeyFromOffset } from "@/utils/points";
+import defaultProfilePic from '@/assets/default-profile-pic.png'
 
 function buildMonthLabels() {
     const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -106,6 +115,8 @@ export default {
 
     data() {
         return {
+            defaultProfilePic,
+            currentUserProfilePic: '',
             viewReward: false,
             currentMonthIndex: CURRENT_MONTH_INDEX,
             currentUserRowVisible: false,
@@ -187,6 +198,8 @@ export default {
 
             try {
                 const usersSnap = await getDocs(collection(db, 'users'));
+                const currentUserData = usersSnap.docs.find(d => d.id === currentUid)?.data();
+                this.currentUserProfilePic = currentUserData?.profile_pic_url || '';
 
                 const allUsers = [];
                 usersSnap.forEach(docSnap => {
@@ -199,6 +212,7 @@ export default {
                             username: data.username || "Unknown User",
                             totalPoints: monthPoints,
                             rank: absoluteRank,
+                            profilePic: data.profile_pic_url || defaultProfilePic,
                             isCurrentUser: docSnap.id === currentUid,
                         });
                     }
@@ -503,4 +517,14 @@ export default {
         padding: 10px 0;
         color: black;
     }
+
+    .profilePic, .currentUserProfilePic {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        margin-right: 10px;
+        object-fit: cover;
+        border: 1px solid var(--gray5);
+    }
+
 </style>
