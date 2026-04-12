@@ -11,7 +11,7 @@ export function ratingToPoints(rating) {
     return 0
 }
 
-export async function addRatingsAndPoints(receiverUid, rating, listing_id, listing_title, listing_cat, listing_cat_abbrev) {
+export async function addRatingsAndPoints(receiverUid, rating, listing_id) {
     const pointsEarned = ratingToPoints(rating);
     if (pointsEarned === 0) return;
 
@@ -20,6 +20,10 @@ export async function addRatingsAndPoints(receiverUid, rating, listing_id, listi
     await runTransaction(db, async (transaction) => {
         // Read current ratings and points
         const userSnap = await getDocs(doc(db, 'users', receiverUid));
+        const listingSnap = await getDocs(doc(db, 'listings', listing_id));
+        const listing_title = listingSnap.data()?.title;
+        const listing_cat = listingSnap.data()?.category;
+        const listing_cat_abbrev = listing_cat === 'Education' ? 'edu' : (listing_cat === 'Buddy' ? 'buddy' : 'survival');
         const currentPoints = userSnap.data()?.total_points?.[monthKey] ?? 0;
         const currentAvgRating = userSnap.data()?.[`${listing_cat_abbrev}_avg_rating`] ?? null;
         const currentRatingCount = userSnap.data()?.[`${listing_cat_abbrev}_rating_count`] ?? 0;
@@ -36,7 +40,12 @@ export async function addRatingsAndPoints(receiverUid, rating, listing_id, listi
             [`${listing_cat_abbrev}_rating_count`]: newRatingCount,
         });
 
-        // Step 2: create ratings doc
+        // Step 2: update the listing's rating_given
+        transaction.update(doc(db, 'listings', listing_id), {
+            rating_given: rating,
+        });
+
+        // Step 3: create ratings doc
         transaction.set(doc(collection(db, 'ratings')), {
             receiver_id: receiverUid,
             rating,
@@ -47,7 +56,7 @@ export async function addRatingsAndPoints(receiverUid, rating, listing_id, listi
             rated_at: Timestamp.now(),
         });
 
-        // Step 3: create points log entry
+        // Step 4: create points log entry
         transaction.set(doc(collection(db, 'pointsLog')), {
             uid: receiverUid,
             listing_id,
@@ -58,7 +67,7 @@ export async function addRatingsAndPoints(receiverUid, rating, listing_id, listi
             time: Timestamp.now(),
         });
 
-        // Step 4: send notification to user about rating received and points earned
+        // Step 5: send notification to user about rating received and points earned
         addCreateNotifToTransaction(transaction, {
             uid: receiverUid,
             type: 'receive_rating',
@@ -70,7 +79,7 @@ export async function addRatingsAndPoints(receiverUid, rating, listing_id, listi
         });
     });
 
-    // Step 5: recalculate everyone's rank for this month
+    // Step 6: recalculate everyone's rank for this month
     await updateRankings(monthKey);
 }
 
