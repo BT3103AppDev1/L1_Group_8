@@ -44,14 +44,18 @@
             </DropdownMenuRoot>
             </div>  
         </div>
+        <RewardNotification />
+         <!-- temporary for testing reward notification -->
+        <button @click="testNotification">Test Notif</button>
     </header>
-    <button @click="testNotification">Test Notif</button>
 </template>
 
 <script> 
 import defaultProfilePic from '@/assets/default-profile-pic.png';
 import { Menu as MenuIcon } from 'lucide-vue-next';
 import { DropdownMenuContent, DropdownMenuItem, DropdownMenuRoot, DropdownMenuTrigger } from 'radix-vue';
+import RewardNotification from './RewardNotification.vue';
+import { assignMonthlyRewardsIfNeeded } from '@/utils/assignReward';
 
 export default {
     name: 'TheHeader',
@@ -98,6 +102,12 @@ export default {
         DropdownMenuContent,
         DropdownMenuItem,
         MenuIcon,
+        RewardNotification,
+    },
+
+    async mounted() {
+        assignMonthlyRewardsIfNeeded();
+
     },
 
     methods: {
