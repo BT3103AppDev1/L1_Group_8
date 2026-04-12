@@ -62,6 +62,7 @@ import PageHeader from '@/components/PageHeader.vue';
 import ConfirmationModal from '@/components/ConfirmationModal.vue';
 import { db, auth } from '@/firebase';
 import { doc, getDoc, Timestamp, updateDoc } from 'firebase/firestore';
+import { useToast } from 'vue-toastification';
 
 export default {
     components: {
@@ -131,7 +132,6 @@ export default {
         async confirmRedeem() {
             this.showConfirmModal = false;
             await this.redeemReward();
-            showToast(`Redeem ${this.reward?.reward_name || ''}?`);
         },
 
         async redeemReward() {
@@ -143,9 +143,13 @@ export default {
                     redeemed_at: Timestamp.now(),
                 });
                 this.reward.status = 'REDEEMED';
-                alert('Redeemed reward successfully!')
+                const toast = useToast();
+                toast.success(`Redeemed "${this.reward.reward_name}" successfully!`);
+
             } catch (error) {
                 console.error('Error redeeming reward:', error);
+                const toast = useToast();
+                toast.error('Failed to redeem reward. Please try again later.');
             }
         }
     }
