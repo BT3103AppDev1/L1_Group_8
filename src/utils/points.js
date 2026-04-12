@@ -1,7 +1,7 @@
 import { db } from '@/firebase'
-import { doc, increment, getDocs, collection, writeBatch, Timestamp } from 'firebase/firestore'
+import { doc, increment, getDocs, collection, writeBatch, Timestamp, runTransaction } from 'firebase/firestore'
 import { getSgtYearMonth } from './formatSgtTime'
-import { addCreateNotifToBatch } from './notifications'
+import { addCreateNotifToTransaction } from './notifications'
 
 export function ratingToPoints(rating) {
     if (rating <= 2) return 0
@@ -11,49 +11,66 @@ export function ratingToPoints(rating) {
     return 0
 }
 
-export async function addPointsForRating(receiverUid, rating, listing_id, listing_title) {
+export async function addRatingsAndPoints(receiverUid, rating, listing_id, listing_title, listing_cat, listing_cat_abbrev) {
     const pointsEarned = ratingToPoints(rating);
     if (pointsEarned === 0) return;
 
     const monthKey = getSgtYearMonth(); // Always update points for current month
 
-    // Read current points
-    const userSnap = await getDocs(doc(db, 'users', receiverUid));
-    const currentPoints = userSnap.data()?.total_points?.[monthKey] ?? 0;
-    const newTotalPoints = currentPoints + pointsEarned;
+    await runTransaction(db, async (transaction) => {
+        // Read current ratings and points
+        const userSnap = await getDocs(doc(db, 'users', receiverUid));
+        const currentPoints = userSnap.data()?.total_points?.[monthKey] ?? 0;
+        const currentAvgRating = userSnap.data()?.[`${listing_cat_abbrev}_avg_rating`] ?? null;
+        const currentRatingCount = userSnap.data()?.[`${listing_cat_abbrev}_rating_count`] ?? 0;
+        
+        // Update values
+        const newTotalPoints = currentPoints + pointsEarned;
+        const newRatingCount = currentRatingCount + 1;
+        const newAvgRating = currentAvgRating ? ((currentAvgRating * currentRatingCount) + rating) / newRatingCount : rating;
 
-    const batch = writeBatch(db);
+        // Step 1: update this user's points and rating stats
+        transaction.update(doc(db, 'users', receiverUid), {
+            [`total_points.${monthKey}`]: increment(pointsEarned),
+            [`${listing_cat_abbrev}_avg_rating`]: newAvgRating,
+            [`${listing_cat_abbrev}_rating_count`]: newRatingCount,
+        });
 
-    // Step 1: update this user's points
-    batch.update(doc(db, 'users', receiverUid), {
-        [`total_points.${monthKey}`]: increment(pointsEarned)
+        // Step 2: create ratings doc
+        transaction.set(doc(collection(db, 'ratings')), {
+            receiver_id: receiverUid,
+            rating,
+            new_avg_rating: newAvgRating,
+            listing_id,
+            listing_category: listing_cat,
+            listing_title,
+            rated_at: Timestamp.now(),
+        });
+
+        // Step 3: create points log entry
+        transaction.set(doc(collection(db, 'pointsLog')), {
+            uid: receiverUid,
+            listing_id,
+            listing_title,
+            increase_in_points: pointsEarned,
+            new_total_points: newTotalPoints,
+            sgt_year_month: monthKey,
+            time: Timestamp.now(),
+        });
+
+        // Step 4: send notification to user about rating received and points earned
+        addCreateNotifToTransaction(transaction, {
+            uid: receiverUid,
+            type: 'receive_rating',
+            listing_title: listing_title,
+            listing_id: listing_id,
+            rating,
+            increase_in_points: pointsEarned,
+            sgt_year_month: monthKey,
+        });
     });
 
-    // Step 2: update points log
-    batch.set(doc(collection(db, 'pointsLog')), {
-        uid: receiverUid,
-        listing_id,
-        listing_title,
-        increase_in_points: pointsEarned,
-        new_total_points: newTotalPoints,
-        sgt_year_month: monthKey,
-        time: Timestamp.now(),
-    });
-
-    // Step 3: send notification to user about rating received and points earned
-    addCreateNotifToBatch(batch, {
-        uid: receiverUid,
-        type: 'receive_rating',
-        listing_title: listing_title,
-        listing_id: listing_id,
-        rating: rating,
-        increase_in_points: pointsEarned,
-        sgt_year_month: monthKey,
-    }); 
-
-    await batch.commit();
-
-    // Step 4: recalculate everyone's rank for this month
+    // Step 5: recalculate everyone's rank for this month
     await updateRankings(monthKey);
 }
 
