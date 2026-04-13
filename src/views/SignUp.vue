@@ -197,7 +197,7 @@ export default {
                 const user = credential.user;
 
                 try {
-                    await sendEmailVerification(user, { url: window.location.origin + '/sign-in' });
+                    await sendEmailVerification(user, { url: window.location.origin + '/auth/action' });
                 } catch { /* ignore */ }
 
                 try {

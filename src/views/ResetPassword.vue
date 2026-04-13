@@ -85,7 +85,7 @@
 </template>
 
 <script>
-import { confirmPasswordReset } from 'firebase/auth';
+import { confirmPasswordReset, signOut } from 'firebase/auth';
 import { auth } from '@/firebase.js';
 import PublicPageLayout from '@/components/PublicPageLayout.vue';
 
@@ -155,6 +155,7 @@ export default {
             this.loading = true;
             try {
                 await confirmPasswordReset(auth, this.oobCode, this.password);
+                await signOut(auth).catch(() => {});
                 this.success = true;
             } catch (err) {
                 if (err.code === 'auth/expired-action-code' || err.code === 'auth/invalid-action-code') {

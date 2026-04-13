@@ -112,7 +112,7 @@ export default {
                         await updateDoc(doc(db, 'users', auth.currentUser.uid), { email_verified: true });
                     } catch { /* ignore */ }
                 }
-                this.$router.push('/');
+                // Let App.vue's Firestore listener handle routing based on onboarding state
             } catch (err) {
                 if (err.code === 'auth/wrong-password') {
                     this.errors.password = 'Incorrect password. Please try again.';
@@ -162,7 +162,7 @@ export default {
                         onboarded: false,
                     });
                 }
-                this.$router.push('/');
+                // Let App.vue's Firestore listener handle routing based on onboarding state
             } catch (err) {
                 if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
                     this.generalError = 'Google sign-in failed. Please try again.';

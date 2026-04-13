@@ -1,41 +1,41 @@
 <template>
     <PublicPageLayout>
         <h3 class="form-title">Verify Your Email</h3>
+            <p class="info-text">
+                We sent a verification link to<br />
+                <strong class="email-highlight">{{ userEmail }}</strong>
+            </p>
+            <p class="info-text info-text--secondary">
+                Click the link in the email to verify your account.
+                This page will update automatically once verified.
+            </p>
+            <p class="info-text info-text--secondary">
+                Don't see the email? Check your spam or junk folder.
+            </p>
 
-        <p class="info-text">
-            We sent a verification link to<br />
-            <strong class="email-highlight">{{ userEmail }}</strong>
-        </p>
-        <p class="info-text info-text--secondary">
-            Click the link in the email to verify your account.
-            This page will update automatically once verified.
-        </p>
-        <p class="info-text info-text--secondary">
-            Don't see the email? Check your spam or junk folder.
-        </p>
+            <p v-if="resendSuccess" class="input-info input-info--valid resend-msg">
+                Verification email resent successfully.
+            </p>
+            <p v-else-if="resendError" class="input-info input-info--invalid resend-msg">
+                {{ resendError }}
+            </p>
 
-        <p v-if="resendSuccess" class="input-info input-info--valid resend-msg">
-            Verification email resent successfully.
-        </p>
-        <p v-else-if="resendError" class="input-info input-info--invalid resend-msg">
-            {{ resendError }}
-        </p>
+            <button
+                class="btn btn-secondary full-btn"
+                :disabled="resendCooldown > 0 || resendLoading"
+                @click="handleResend"
+            >
+                <span v-if="resendLoading">Sending…</span>
+                <span v-else-if="resendCooldown > 0">Resend in {{ resendCooldown }}s</span>
+                <span v-else>Resend Email</span>
+            </button>
 
-        <button
-            class="btn btn-secondary full-btn"
-            :disabled="resendCooldown > 0 || resendLoading"
-            @click="handleResend"
-        >
-            <span v-if="resendLoading">Sending…</span>
-            <span v-else-if="resendCooldown > 0">Resend in {{ resendCooldown }}s</span>
-            <span v-else>Resend Email</span>
-        </button>
-
-        <button type="button" class="btn btn-outline full-btn" @click="goToSignIn">
-            Back to Sign In
-        </button>
+            <button type="button" class="btn btn-outline full-btn" @click="goToSignIn">
+                Back to Sign In
+            </button>
     </PublicPageLayout>
 </template>
+
 
 <script>
 import { sendEmailVerification, signOut } from 'firebase/auth';
@@ -92,11 +92,11 @@ export default {
                         try {
                             await updateDoc(doc(db, 'users', user.uid), { email_verified: true });
                         } catch { /* ignore */ }
-                        // App.vue's Firestore listener detects email_verified: true
-                        // and automatically redirects to /consent
+                        await signOut(auth).catch(() => {});
+                        this.$router.replace({ name: 'SignIn' });
                     }
                 } catch { /* ignore */ }
-            }, 3000);
+            }, 1000);
         },
 
         async handleResend() {
@@ -108,7 +108,7 @@ export default {
             this.resendError = '';
 
             try {
-                await sendEmailVerification(user, { url: window.location.origin + '/sign-in' });
+                await sendEmailVerification(user, { url: window.location.origin + '/auth/action' });
                 this.resendSuccess = true;
                 this.startCooldown(60);
             } catch (err) {

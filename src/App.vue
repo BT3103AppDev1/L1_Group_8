@@ -68,7 +68,7 @@ export default {
               if (route !== '/consent') this.$router.replace('/consent');
             } else if (!data.onboarded) {
               if (route !== '/onboarding') this.$router.replace('/onboarding');
-            } else if (route === '/email-verification' || route === '/consent' || route === '/onboarding') {
+            } else if (route === '/email-verification' || route === '/consent' || route === '/onboarding' || route === '/sign-in' || route === '/sign-up') {
               this.$router.replace('/');
             }
           } else {
