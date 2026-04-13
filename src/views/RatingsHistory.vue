@@ -25,7 +25,8 @@
             </div>
 
             <p v-if="lastFetchedAt[activeTab]" class="fetch-time-text"> 
-                Last fetched at: {{ formatTimestamp(lastFetchedAt[activeTab]) }} (SGT). 
+                Last fetched at: {{ formatTimestamp(lastFetchedAt[activeTab]) }} (SGT). Unable to see your latest ratings? 
+                <button class="refresh-button" @click="refreshTab">Click to Refresh</button>
             </p>
 
             <transition name="fade" mode="out-in">
@@ -191,6 +192,9 @@ export default {
             this.isRatingsLoading = true;
             this.hasError = false;
             this.errorMessage = "";
+            this.allRatings[category] = [];
+            this.lastDocs[category] = null;
+            this.hasMoreDocs[category] = false;
 
             try {
                 const q = query(
@@ -262,10 +266,14 @@ export default {
             this.activeTab = tab;
 
             // Only fetch if not already loaded
-            if (this.allRatings[tab].length === 0 && !this.isLoading) {
+            if (this.allRatings[tab].length === 0 && !this.isRatingsLoading) {
                 await this.fetchRatings(tab);
             } 
         },
+
+        async refreshTab() {
+            await this.fetchRatings(this.activeTab);
+        }
     },
 
     async created() {
@@ -388,6 +396,20 @@ export default {
     font-size: 0.875rem;
     color: var(--gray2);
     margin-bottom: 0.5rem;
+}
+
+/* refresh button */
+.refresh-button {
+    background-color: transparent;
+    border: none;
+    color: var(--primary);
+    font-size: 0.875rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.refresh-button:hover {
+    color: var(--primary-hover);
 }
 
 /* table */

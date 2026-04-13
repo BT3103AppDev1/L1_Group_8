@@ -2,65 +2,70 @@
     <div class="points-history-page">
         <!-- Page Header -->
         <PageHeader title="My Points History"/>    
+        
+        <transition name="fade" mode="out-in">
+            <div :key="lastFetchedAt" class="points-history-content">
+                <!-- Loading State -->
+                <div v-if="isLoading" class="loading">
+                    <VueSpinner size="30" color="var(--secondary)" aria-label="Loading points history..." />
+                </div>
 
-        <!-- Loading State -->
-        <div v-if="isLoading" class="loading">
-            <VueSpinner size="30" color="var(--secondary)" aria-label="Loading points history..." />
-        </div>
+                <!-- Error State -->
+                <div v-else-if="hasError" class="error-state">
+                    <p>{{ errorMessage }}</p>
+                </div>
 
-        <!-- Error State -->
-        <div v-else-if="hasError" class="error-state">
-            <p>{{ errorMessage }}</p>
-        </div>
+                <!-- Empty State -->
+                <div v-else-if="pointsLogs.length === 0" class="empty-state">
+                    <p>No points yet for {{ activeTab }} services.</p>
+                </div>
 
-        <!-- Empty State -->
-        <div v-else-if="pointsLogs.length === 0" class="empty-state">
-            <p>No points yet for {{ activeTab }} services.</p>
-        </div>
+                <div v-else class="table-and-btn">
+                <div class="table-and-text">
+                    <p v-if="lastFetchedAt" class="fetch-time-text"> 
+                        Last fetched at: {{ formatTimestamp(lastFetchedAt) }} (SGT). Unable to see your latest ratings? 
+                        <button class="refresh-button" @click="refresh">Click to Refresh</button>
+                    </p>
+                    <!-- Points Table -->
+                        <div class="table-container" :key="this.lastFetchedAt">
+                            <table class="points-history-table">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Timestamp (SGT)</th>
+                                        <th>Points Change</th>
+                                        <th>New Total Points</th>
+                                        <th>Associated Service</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(pointsLog, index) in pointsLogs" :key="pointsLog.id" :class="{ 'even-row': index % 2 === 1 }">
+                                        <td :title="`No: ${index + 1}`">{{ index + 1 }}</td>
+                                        <td :title="`Timestamp (SGT): ${formatTimestamp(pointsLog.time)}`">{{ formatTimestamp(pointsLog.time) }}</td>
+                                        <td :title="`Points Change: ${pointsLog.increase_in_points}`">{{ pointsLog.increase_in_points }}</td>
+                                        <td :title="`New Total Points: ${pointsLog.new_total_points}`">{{ pointsLog.new_total_points }}</td>
+                                        <td class="associated-service-cell">
+                                            <router-link :to="`/listing/${pointsLog.listing_id}`" class="listing-title" :title="`Associated Service: ${pointsLog.listing_title}`">
+                                                {{ pointsLog.listing_title }}
+                                            </router-link>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
 
-        <div v-else class="table-and-btn">
-            <div class="table-and-text">
-                <p v-if="lastFetchedAt" class="fetch-time-text"> 
-                    Last fetched at: {{ formatTimestamp(lastFetchedAt) }} (SGT)
-                </p>
-                <!-- Points Table -->
-                <div class="table-container">
-                    <table class="points-history-table">
-                        <thead>
-                            <tr>
-                                <th>No</th>
-                                <th>Timestamp (SGT)</th>
-                                <th>Points Change</th>
-                                <th>New Total Points</th>
-                                <th>Associated Service</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="(pointsLog, index) in pointsLogs" :key="pointsLog.id" :class="{ 'even-row': index % 2 === 1 }">
-                                <td :title="`No: ${index + 1}`">{{ index + 1 }}</td>
-                                <td :title="`Timestamp (SGT): ${formatTimestamp(pointsLog.time)}`">{{ formatTimestamp(pointsLog.time) }}</td>
-                                <td :title="`Points Change: ${pointsLog.increase_in_points}`">{{ pointsLog.increase_in_points }}</td>
-                                <td :title="`New Total Points: ${pointsLog.new_total_points}`">{{ pointsLog.new_total_points }}</td>
-                                <td class="associated-service-cell">
-                                    <router-link :to="`/listing/${pointsLog.listing_id}`" class="listing-title" :title="`Associated Service: ${pointsLog.listing_title}`">
-                                        {{ pointsLog.listing_title }}
-                                    </router-link>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <!-- View More Button -->
+                    <div class="btn-or-spinner">
+                        <VueSpinner v-if="isLoadingMore" size="30" color="var(--secondary)"
+                            aria-label="Loading more points history..."/> 
+                        <button v-else-if="hasMoreDocs" class="btn btn-secondary" @click="loadMore">
+                            View More
+                        </button>
+                    </div>
                 </div>
             </div>
-
-            <!-- View More Button -->
-            <div class="btn-or-spinner">
-                <VueSpinner v-if="isLoadingMore" size="30" color="var(--secondary)"
-                    aria-label="Loading more points history..."/> 
-                <button v-else-if="hasMoreDocs" class="btn btn-secondary" @click="loadMore">
-                    View More
-                </button>
-            </div>
-        </div>
+        </transition>   
     </div>
 </template>
 
@@ -119,6 +124,8 @@ export default {
             this.pointsLogs = [];
             this.hasError = false;
             this.errorMessage = "";
+            this.lastDocs = null;
+            this.hasMoreDocs = false;
 
             try {
                 const q = query(
@@ -180,6 +187,10 @@ export default {
                 this.isLoadingMore = false;
             }
         },
+
+        async refresh() {
+            await this.fetchPointsLogs();
+        }
     },
 
     async created() {
@@ -215,6 +226,13 @@ export default {
     width: 100%;
 }
 
+.points-histtory-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+}
+
 /* states */
 .loading {
     display: flex;
@@ -242,6 +260,20 @@ export default {
     text-align: left;
     font-size: 0.875rem;
     color: var(--gray2);
+}
+
+/* refresh button */
+.refresh-button {
+    background-color: transparent;
+    border: none;
+    color: var(--primary);
+    font-size: 0.875rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.refresh-button:hover {
+    color: var(--primary-hover);
 }
 
 .table-and-text {
@@ -367,5 +399,20 @@ export default {
     align-content: center;
     padding: 0.75rem 0;
     width: 15vw;
+}
+
+/* Fade transition */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.fade-enter-from {
+  opacity: 0;
+  transform: translateY(5px);
+}
+
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-5px);
 }
 </style>
