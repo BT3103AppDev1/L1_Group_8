@@ -5,21 +5,19 @@
             <button class="viewRewardButton" @click="viewReward=true">View Reward</button>
         </div>
         
-        <div v-if="viewReward" class="viewRewardModalOverlay" @click.self="viewReward = false">
-            <div class="viewRewardContent">
-                <button class="closeButton" @click="viewReward = false">X</button>
-
+        <InfoModal v-model:showModal="viewReward">
+            <div class="modalDetail">
                 <h2 class="modalTitle">Current Month Reward</h2>
-                <div v-if="currentMonthReward" class="modalDetail">
-                    <p class="modalLabel">{{  currentMonthReward.reward_name }}</p>
-                    <p class="modalText">{{  currentMonthReward.reward_details }}</p>    
+                <div v-if="currentMonthReward">
+                    <p class="modalLabel">{{ currentMonthReward.reward_name }}</p>
+                    <p class="modalText">{{ currentMonthReward.reward_details }}</p>
                     <p class="modalText">Eligibility: Top 20 users of the month</p>
                 </div>
-                <div v-else class="modalDetail">
+                <div v-else>
                     <p class="modalText">No reward information available for this month.</p>
                 </div>
             </div>
-        </div>
+        </InfoModal>
 
         <div class="monthNavigation">
             <button class="navigationArrow" @click="previousMonth">&lt;</button>
@@ -55,7 +53,12 @@
 
                         <span class="colRank">{{ ordinal(user.rank) }}</span>
                         <span class="colName">
-                            <span class="profilePic" :class="{ 'currentUserProfilePic': user.isCurrentUser }"></span>
+                            <img 
+                                :src="user.profilePic || defaultProfilePic"
+                                class="profilePic"
+                                :class="{ currentUserProfilePic: user.isCurrentUser }"
+                                alt="profile"
+                            />
                             <span class="username">{{ user.isCurrentUser ? 'You' : user.username }}</span>
                         </span>
                         <span class="colPoints">{{ user.totalPoints }}</span>
@@ -66,7 +69,11 @@
             <div v-if="showUserBar" class="currentUserBar">
                 <span class="myRank">{{ currentUserRank }}</span>
                 <span class="myName">
-                    <span class="profilePic currentUserProfilePic"></span>
+                    <img 
+                        :src="currentUserProfilePic || defaultProfilePic"
+                        class="profilePic currentUserProfilePic"
+                        alt="your profile"
+                    />
                     {{ currentUsername }}
                 </span>
                 <span class="myPoints">{{ currentUserPoints }}</span>
@@ -79,7 +86,9 @@
 import PageHeader from "../components/PageHeader.vue";
 import { db, auth } from '@/firebase'
 import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore' 
-import { seedAll } from "@/mockLeaderboard";
+import InfoModal from "@/components/InfoModal.vue";
+import defaultProfilePic from '@/assets/default-profile-pic.png'
+import { getSgtYearMonth } from "@/utils/formatSgtTime"; 
 
 function buildMonthLabels() {
     const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -102,10 +111,12 @@ const DISPLAY_LIMIT = 20;
 
 export default {
     name: "Leaderboard",
-    components: { PageHeader },
+    components: { PageHeader, InfoModal },
 
     data() {
         return {
+            defaultProfilePic,
+            currentUserProfilePic: '',
             viewReward: false,
             currentMonthIndex: CURRENT_MONTH_INDEX,
             currentUserRowVisible: false,
@@ -183,71 +194,52 @@ export default {
             this.currentUserStatus = null;
             const currentUid = auth.currentUser?.uid ?? null;
 
+            const monthKey = getSgtYearMonth(this.monthOffset);
 
             try {
-                const { start, end } = getMonthRange(this.monthOffset);
+                const usersSnap = await getDocs(collection(db, 'users'));
+                const currentUserData = usersSnap.docs.find(d => d.id === currentUid)?.data();
+                this.currentUserProfilePic = currentUserData?.profile_pic_url || '';
 
-                const ratingsSnap = await getDocs(query(collection(db, 'ratings'), where('rated_at', '>=', Timestamp.fromDate(start)), where('rated_at', '<', Timestamp.fromDate(end))));
-
-                const pointsMap = {};
-                ratingsSnap.forEach(docSnap => {
-                    const { receiver_id, rating } = docSnap.data();
-                    pointsMap[receiver_id] = (pointsMap[receiver_id] || 0) + this.ratingToPoints(rating);
-                })
-
-                if (Object.keys(pointsMap).length === 0) {
-                    this.loading = false;
-                    return;
-                }
-
-                const uids = Object.keys(pointsMap);
-                const usersSnap = await getDocs(collection(db, "users"));
-                const usersMap = {};
+                const allUsers = [];
                 usersSnap.forEach(docSnap => {
-                    if (uids.includes(docSnap.id)) {
-                        usersMap[docSnap.id] = { uid: docSnap.id, ...docSnap.data()};
+                    const data = docSnap.data();
+                    const monthPoints = data.total_points?.[monthKey] ?? 0;
+                    const absoluteRank = data.absolute_rank?.[monthKey] ?? null;
+                    if (monthPoints > 0) {
+                        allUsers.push({
+                            uid: docSnap.id,
+                            username: data.username || "Unknown User",
+                            totalPoints: monthPoints,
+                            rank: absoluteRank,
+                            profilePic: data.profile_pic_url || defaultProfilePic,
+                            isCurrentUser: docSnap.id === currentUid,
+                        });
                     }
                 });
 
-                const sorted = uids.map(uid => ({
-                    uid,
-                    username: usersMap[uid]?.username || "Unknown User",
-                    totalPoints: pointsMap[uid],
-                })).sort((a, b) => {
-                    if (b.totalPoints !== a.totalPoints) return b.totalPoints - a.totalPoints;
-                    return a.username.localeCompare(b.username);
-                });
+                // Sort and display top 20
+                const sorted = allUsers.sort((a, b) => b.totalPoints - a.totalPoints);
+                const displayList = sorted.slice(0, DISPLAY_LIMIT);
+                this.rankedUser = displayList;
 
-                const displayCount = sorted.length <= DISPLAY_LIMIT ? sorted.length : DISPLAY_LIMIT;
-                const displayList = sorted.slice(0, displayCount);
-
-                this.rankedUser = displayList.map((u, i) => {
-                    const rank = displayList.filter(other => other.totalPoints > u.totalPoints).length + 1;
-                    return {
-                        rank,
-                        uid: u.uid,
-                        username: u.username,
-                        totalPoints: u.totalPoints,
-                        isCurrentUser: u.uid === currentUid,
-                    }
-                })
-
-                const currentUserPosition = sorted.findIndex(u => u.uid === currentUid);
-                const isInDisplayList = currentUserPosition !== -1 && currentUserPosition < displayCount;
+                // Current user bar
+                const currentUser = sorted.find(u => u.uid === currentUid);
+                const isInDisplayList = displayList.some(u => u.uid === currentUid);
 
                 if (currentUid && !isInDisplayList) {
-                    if (currentUserPosition === -1) {
-                        //if users have no rating/ 0 points, they are not ranked
+                    if (!currentUser) {
                         this.currentUserStatus = { rank: "N/A", points: 0 };
                     } else {
-                        //if users have rating but not top 20, show percentile
-                        const pct = Math.round(((currentUserPosition + 1) / sorted.length) * 100);
+                        const usersData = usersSnap.docs.find(d => d.id === currentUid)?.data();
+                        const pct = usersData?.percentage_rank?.[monthKey] ?? null;
                         this.currentUserStatus = {
-                            rank: `${pct} %`,
-                            points: sorted[currentUserPosition].totalPoints,
+                            rank: pct ? `${pct} %` : "N/A",
+                            points: currentUser.totalPoints,
                         };
                     }
                 }
+
             } catch (error) {
                 console.error("Error fetching leaderboard data:", error);
             }
@@ -336,7 +328,7 @@ export default {
     }
 
     .viewRewardButton {
-        background-color: #EF7C00;
+        background-color: var(--secondary);
         color: white;
         border: none;
         border-radius: 8px;
@@ -349,7 +341,7 @@ export default {
         opacity: 0.8;
     }
 
-    .viewRewardModalOverlay {
+/*    .viewRewardModalOverlay {
         position: fixed;
         top: 0;
         left: 0;
@@ -376,7 +368,7 @@ export default {
         position: absolute;
         top: 10px;
         right: 10px;
-        background-color: #8C8C8C;
+        background-color: var(--grey4);
         border: none;
         border-radius: 8px;
         font-size: 16px;
@@ -388,10 +380,10 @@ export default {
 
     .closeButton:hover {
         opacity: 0.8;
-    }
+    } */
 
     .modalTitle {
-        color: #003D7C;
+        color: var(--primary);
         font-size: 24px;
         text-align: center;
     }
@@ -414,7 +406,7 @@ export default {
         display: flex;
         justify-content: center;
         align-items: center;
-        background-color: #003D7C;
+        background-color: var(--primary);
         padding: 10px;
         margin: 20px 0px 0px 0px;
     }
@@ -428,7 +420,7 @@ export default {
     }
     
     .navigationArrow:hover {
-        color: #EF7C00;
+        color: var(--secondary);
         cursor: pointer;
     }
 
@@ -448,7 +440,7 @@ export default {
     }
 
     .currentUserBar {
-        background-color: #EF7C00;
+        background-color: var(--secondary);
         align-items: center;
         justify-content: space-between;
         padding: 10px 16px;
@@ -469,7 +461,7 @@ export default {
     }
 
     .leaderboardTable {
-        background-color: #003D7C;
+        background-color: var(--primary);
         display: flex;
         flex-direction: column;
         flex: 1;
@@ -506,7 +498,7 @@ export default {
     }
 
     .leaderboardTableRow.isCurrentUser {
-        background-color: #EF7C00;
+        background-color: var(--secondary);
     }
 
     .leaderboardTableRow.isCurrentUser .colRank,
@@ -525,4 +517,14 @@ export default {
         padding: 10px 0;
         color: black;
     }
+
+    .profilePic, .currentUserProfilePic {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        margin-right: 10px;
+        object-fit: cover;
+        border: 1px solid var(--gray5);
+    }
+
 </style>

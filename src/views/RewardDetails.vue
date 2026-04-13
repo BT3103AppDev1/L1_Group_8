@@ -1,12 +1,11 @@
 <template> 
     <div>
-        <PageHeader title="Reward Details"/>
-
         <button class="back-button" @click="$router.push({ name: 'PrivateProfile' })">← Back</button>
+        <PageHeader title="Reward Details"/>
 
         <div v-if="loading">Loading...</div>
         <div v-else-if="reward" class="reward-detail-page">
-            <div class="reward-detail-box">
+            <div class="reward-detail-box detail-box">
                 <div class="reward-name-box">
                     <h2 class="reward-name">{{ reward.reward_name }}</h2>
                     <p class="information">Valid till {{ formattedExpiryDate }} </p>
@@ -43,10 +42,10 @@
 
             <ConfirmationModal
                 :showModal="showConfirmModal"
-                title="Confirm Redemption"
+                :title="`Redeem ${reward?.reward_name || ''}?`"
                 @update:showModal="showConfirmModal = $event"
             >
-                Redeem <strong>{{ reward.reward_name }}</strong>? This action cannot be undone.
+                <p>This action cannot be undone.</p>
 
                 <template #buttons>
                     <button class="btn btn-secondary" @click="confirmRedeem">Confirm</button>
@@ -62,6 +61,7 @@ import PageHeader from '@/components/PageHeader.vue';
 import ConfirmationModal from '@/components/ConfirmationModal.vue';
 import { db, auth } from '@/firebase';
 import { doc, getDoc, Timestamp, updateDoc } from 'firebase/firestore';
+import { useToast } from 'vue-toastification';
 
 export default {
     components: {
@@ -142,9 +142,13 @@ export default {
                     redeemed_at: Timestamp.now(),
                 });
                 this.reward.status = 'REDEEMED';
-                alert('Redeemed reward successfully!')
+                const toast = useToast();
+                toast.success(`Redeemed "${this.reward.reward_name}" successfully!`);
+
             } catch (error) {
                 console.error('Error redeeming reward:', error);
+                const toast = useToast();
+                toast.error('Failed to redeem reward. Please try again later.');
             }
         }
     }
@@ -163,11 +167,7 @@ export default {
     }
 
     .reward-detail-box {
-        background-color: #DDEBFB;
         flex-direction: column;
-        border-radius: var(--radius);
-        border: 1px solid var(--black1);
-        padding: 15px;
         width: 600px;
         flex-shrink: 0;
     }
@@ -211,7 +211,9 @@ export default {
         color: var(--primary);
         font-size: 14px;
         cursor: pointer;
-        margin-bottom: 10px;
+        position: relative; 
+        top: 15px;
+        margin-bottom: 20px;
     }
 
     .back-button:hover {

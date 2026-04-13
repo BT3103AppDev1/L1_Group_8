@@ -74,8 +74,22 @@
             </div>
 
         </div>
-    </div>
 
+        <!-- Analytics Section -->
+        <div class="analytics-card">
+            <div class="analytics-total">
+                <span class="analytics-number">{{ totalClicks }}</span>
+                <span class="analytics-label">Total Views</span>
+            </div>
+            <p class="analytics-subtitle">No. of times people clicked to view your listing details</p>
+            <div class="chart-toggle">
+                <button :class="['toggle-btn', { active: activeView === 'today' }]" @click="activeView = 'today'">Today</button>
+                <button :class="['toggle-btn', { active: activeView === 'week' }]" @click="activeView = 'week'">Last 7 Days</button>
+            </div>
+            <Line v-if="activeView === 'week'" :data="weekChartData" :options="chartOptions" />
+            <Line v-else :data="todayChartData" :options="chartOptions" />
+        </div>
+    </div>
 </template>
 
 
@@ -83,12 +97,14 @@
 import { ref, computed } from 'vue'
 import { db } from "../firebase.js";
 import { getCurrentUser } from '@/auth.js';
-import { addDoc, collection, doc, getDoc, updateDoc } from "firebase/firestore";
+import { collection, doc, getDoc, updateDoc } from "firebase/firestore";
 import defaultPic from '@/assets/listing_pics/default_list_pic.jpg'
 import axios from 'axios';
 import Cropper from "cropperjs";
 import "cropperjs/dist/cropper.min.css";
-import { User } from 'lucide-vue-next';
+import { Line } from 'vue-chartjs'
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Tooltip } from 'chart.js'
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip)
 
 
 const CLOUDINARY_CLOUD_NAME = "dwr4f7ae0";
@@ -96,11 +112,12 @@ const CLOUDINARY_UPLOAD_PRESET = "nusos-listing-pics";
 
 export default {
     name: 'EditListing',
+    components: { Line },
     data(){
         return {
             listing_id: null,
-            listing_pic: defaultPic, //only for display
-            file_to_upload: null, //for upload only
+            listing_pic: defaultPic,
+            file_to_upload: null,
             cropper: null,
             title: "",
             description: "",
@@ -109,19 +126,74 @@ export default {
             location_text: "",
             submitted: false,
             submitting: false,
-            //cropper helpers using in destroyCropper function to reset states    
-            cropperReady: false, 
+            cropperReady: false,
             isSaving: false,
+            clicksByDay: {},
+            clicksByHour: {},
+            activeView: 'week',
         }
     },
 
     computed: {
-    //Word Count Functon for description field
-    wordCount() {
-      if (!this.description) return 0;
-      return this.description.trim().split(/\s+/).length;
+        wordCount() {
+            if (!this.description) return 0;
+            return this.description.trim().split(/\s+/).length;
+        },
+        totalClicks() {
+            return Object.values(this.clicksByDay).reduce((sum, v) => sum + v, 0);
+        },
+        weekChartData() {
+            const days = [];
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const key = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Singapore', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
+                days.push(key);
+            }
+            return {
+                labels: days.map(date => {
+                    const [,, day] = date.split('-');
+                    return `${parseInt(day)} ${new Date(date).toLocaleString('en-GB', { month: 'short' })}`;
+                }),
+                datasets: [{
+                    data: days.map(date => this.clicksByDay[date] ?? 0),
+                    borderColor: '#003D7C',
+                    backgroundColor: 'rgba(0,61,124,0.1)',
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 4,
+                }],
+            };
+        },
+        todayChartData() {
+            const todayKey = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Singapore', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+            const hours = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+            return {
+                labels: hours.map(h => {
+                    const hr = parseInt(h);
+                    if (hr === 0) return '12am';
+                    if (hr < 12) return `${hr}am`;
+                    if (hr === 12) return '12pm';
+                    return `${hr - 12}pm`;
+                }),
+                datasets: [{
+                    data: hours.map(h => this.clicksByHour[`${todayKey}_${h}`] ?? 0),
+                    borderColor: '#7C3AED',
+                    backgroundColor: 'rgba(124,58,237,0.1)',
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 3,
+                }],
+            };
+        },
+        chartOptions() {
+            return {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+            };
+        },
     },
-  },
 
     // get rdy to get the old data
     async mounted() {
@@ -147,10 +219,12 @@ export default {
                     const data = docgetlist.data();
                     this.title = data.title;
                     this.description = data.description;
-                    this.payment_mode = data.payment_mode,
-                    this.listing_category = data.listing_category,
-                    this.location_text= data.location_text,
-                    this.listing_pic = data.picture_url || defaultPic //this one i got to edit after that following xinyan's stroage for the pics
+                    this.payment_mode = data.payment_mode;
+                    this.listing_category = data.listing_category;
+                    this.location_text = data.location_text;
+                    this.listing_pic = data.picture_url || defaultPic;
+                    this.clicksByDay = data.clicks_by_day ?? {};
+                    this.clicksByHour = data.clicks_by_hour ?? {};
                 }
 
             }
@@ -407,6 +481,63 @@ textarea {
   background-color: bisque;
 }
 
+
+/* analytics */
+.analytics-card {
+    margin-top: 32px;
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.analytics-total {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 4px;
+}
+.analytics-number {
+    font-size: 48px;
+    font-weight: 700;
+    color: #003D7C;
+    line-height: 1;
+}
+.analytics-label {
+    font-size: 16px;
+    font-weight: 600;
+    color: #6E6E6E;
+}
+.analytics-subtitle {
+    font-size: 12px;
+    color: #9CA3AF;
+    margin-bottom: 16px;
+}
+.no-data {
+    color: #9CA3AF;
+    font-size: 13px;
+    text-align: center;
+    padding: 24px 0;
+}
+.chart-toggle {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 12px;
+}
+.toggle-btn {
+    padding: 4px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid #003D7C;
+    border-radius: 999px;
+    background: none;
+    color: #003D7C;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+.toggle-btn.active {
+    background: #003D7C;
+    color: #fff;
+}
 
 /* button */
 .btn-listing{

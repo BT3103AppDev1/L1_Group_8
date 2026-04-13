@@ -172,8 +172,9 @@
 <script>
 import ConfirmModal from '@/components/ConfirmModal.vue'
 import { db } from '@/firebase.js'
-import { collection, query, where, getDocs, getDoc, doc, updateDoc, arrayUnion } from 'firebase/firestore'
+import { collection, query, where, getDocs, getDoc, doc, updateDoc, arrayUnion, writeBatch } from 'firebase/firestore'
 import { getCurrentUser } from '@/auth.js'
+import { addCreateNotifToBatch } from '@/utils/notifications'
 
 export default {
   name: 'MyListingsView',
@@ -238,7 +239,9 @@ export default {
 
       snapshot.forEach(docSnap => {
         const d = docSnap.data()
-        const enrichedApplicants = (d.applicants ?? []).map(uid => userProfiles[uid] ?? { id: uid, name: uid, profilePic: null })
+        const enrichedApplicants = (d.applicants ?? [])
+          .map(uid => ({ ...(userProfiles[uid] ?? { id: uid, name: uid, profilePic: null }), appliedAt: d.applied_at?.[uid]?.toDate() ?? new Date(0) }))
+          .sort((a, b) => a.appliedAt - b.appliedAt)
         const providerProfile = d.provider_id ? (userProfiles[d.provider_id] ?? { id: d.provider_id, name: d.provider_id, profilePic: null }) : null
 
         const listing = {
@@ -318,7 +321,30 @@ export default {
               updateData.rejected_applicant_ids = arrayUnion(...otherIds)
               updateData.rejected_at = rejectedAt
             }
-            await updateDoc(doc(db, 'listings', listing.id), updateData)
+            
+            const batch = writeBatch(db)
+            batch.update(doc(db, 'listings', listing.id), updateData)
+
+            // notify accepted provider
+            addCreateNotifToBatch(batch, {
+              uid: applicant.id,
+              type: 'application_success',
+              listing_title: listing.title,
+              listing_id: listing.id,
+            })
+
+            // notify rejected applicants
+            otherIds.forEach(uid => {
+              addCreateNotifToBatch(batch, {
+                uid,
+                type: 'application_fail',
+                listing_title: listing.title,
+                listing_id: listing.id,
+              })
+            })
+
+            await batch.commit();
+            
             const idx = this.listings.awaiting.findIndex(l => l.id === listing.id)
             if (idx !== -1) {
               const moved = { ...listing, provider: applicant, applicants: [] }
@@ -351,9 +377,8 @@ export default {
               const moved = { ...listing }
               this.listings.ongoing.splice(idx, 1)
               this.listings.completed.unshift(moved)
-              this.activeTab = 'completed'
             }
-            this.showToast('Service marked as completed!')
+            this.$router.push({ path: '/rating', query: { listingId: listing.id, providerId: listing.provider?.id } })
           } catch (e) {
             console.error('Failed to mark complete:', e)
             this.showToast('Something went wrong. Please try again.')
