@@ -12,10 +12,7 @@
                     :class="['input-field', { 'input-field--invalid': errors.email }]"
                     autocomplete="email"
                 />
-                <p v-if="errors.email" class="input-info input-info--invalid">
-                    {{ errors.email }}
-                    <span v-if="promptSignUp"> Don't have an account? <RouterLink to="/sign-up" class="text-link">Sign Up</RouterLink></span>
-                </p>
+                <p v-if="errors.email" class="input-info input-info--invalid">{{ errors.email }}</p>
             </div>
 
             <div class="input-container">
@@ -37,7 +34,10 @@
                 <RouterLink to="/forgot-password" class="forgot-link">Forget password?</RouterLink>
             </div>
 
-            <div v-if="generalError" class="general-error">{{ generalError }}</div>
+            <div v-if="generalError" class="general-error">
+                {{ generalError }}
+                <span v-if="promptSignUp"> New to NUSOS? <RouterLink to="/sign-up" class="error-link">Sign Up</RouterLink></span>
+            </div>
 
             <button type="submit" class="btn btn-secondary full-btn" :disabled="loading">
                 <span v-if="loading">Signing in…</span>
@@ -71,7 +71,6 @@ import {
     signInWithEmailAndPassword,
     signInWithPopup,
     GoogleAuthProvider,
-    fetchSignInMethodsForEmail,
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '@/firebase.js';
@@ -114,23 +113,8 @@ export default {
                 }
                 // Let App.vue's Firestore listener handle routing based on onboarding state
             } catch (err) {
-                if (err.code === 'auth/wrong-password') {
-                    this.errors.password = 'Incorrect password. Please try again.';
-                } else if (err.code === 'auth/invalid-credential') {
-                    // Firebase v9+ combines user-not-found and wrong-password — check which it is
-                    try {
-                        const methods = await fetchSignInMethodsForEmail(auth, this.email);
-                        if (methods.length === 0) {
-                            this.errors.email = 'No account found for this email.';
-                            this.promptSignUp = true;
-                        } else {
-                            this.errors.password = 'Incorrect password. Please try again.';
-                        }
-                    } catch {
-                        this.errors.password = 'Incorrect password. Please try again.';
-                    }
-                } else if (err.code === 'auth/user-not-found') {
-                    this.errors.email = 'No account found for this email.';
+                if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found') {
+                    this.generalError = 'Incorrect email or password. Please try again.';
                     this.promptSignUp = true;
                 } else if (err.code === 'auth/invalid-email') {
                     this.errors.email = 'Invalid email address.';
@@ -237,6 +221,12 @@ export default {
     padding: 0.5rem 0.75rem;
     font-size: 0.875rem;
     color: var(--error);
+}
+
+.error-link {
+    color: var(--error);
+    font-weight: 600;
+    text-decoration: underline;
 }
 
 .full-btn {
