@@ -5,7 +5,7 @@
         </div>
 
         <div v-else class="profile-page-content">
-            <div :class="['profile-left-container', isPrivateProfile ? 'private-margin' : 'public-margin']">
+            <div :class="['profile-left-container', isPrivateProfile ? 'private-left-margin' : 'public-left-margin']">
                 <div class="profile-left">
                     <div v-if="isPrivateProfile" class="private-profile-header">
                         <PageHeader title="My Profile" />
@@ -48,76 +48,78 @@
                             </div>
                         </div>
                     </div>
+
+                    <div v-if="isPrivateProfile" class="analytics-section">
+                        <div class="analytics-total">
+                            <span class="analytics-number">{{ totalProfileClicks }}</span>
+                            <span class="analytics-label">Total Listing Views</span>
+                        </div>
+                        <p class="analytics-subtitle">
+                            {{ activeView === 'today' ? 'Clicks by hour today across all your listings' : 'Daily clicks on your listings over the last 7 days' }}
+                        </p>
+                        <div class="chart-toggle">
+                            <button :class="['toggle-btn', { active: activeView === 'today' }]" @click="activeView = 'today'">Today</button>
+                            <button :class="['toggle-btn', { active: activeView === 'week' }]" @click="activeView = 'week'">Last 7 Days</button>
+                        </div>
+                        <Bar v-if="activeView === 'week'" :data="profileChartData" :options="profileChartOptions" />
+                        <Bar v-else :data="todayProfileChartData" :options="profileChartOptions" />
+                    </div>
                 </div>
             </div>
 
             <div class="vertical-divider"></div>
 
-            <div class="profile-right">
-                <div class="ratings-container">
-                    <div class="ratings-header">
-                        <h3 class="ratings-title">Ratings</h3>
-                        <router-link :to="ratingsHistPath" class="btn btn-secondary">
-                            Show Ratings History
-                        </router-link>
-                    </div>
-                    <div class="ratings-list">
-                        <div v-for="rating in ratings" :key="rating.category" class="rating-item">
-                            <img :src="rating.icon" :alt="`${rating.category} icon`" class="rating-icon"/>
-                            <div class="rating-text">
-                                <span class="rating-category">{{ rating.category }}: </span>
-                                <span v-if="rating.count" class="rating-value">{{ rating.value.toFixed(1) }} / 5.0 </span>
-                                <span v-else class="rating-value">N/A</span>
-                                <span class="rating-count">({{ rating.count }} ratings received)</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="points-container">
-                    <h3 class="points-title">Total Points</h3>
-                    <div class="points-content-container">
-                        <div class="points-content">
-                            <div class="points-text">
-                                <span class="points-value">{{ totalPoints }} points</span>
-                                <span v-if="totalPoints" class="points-rank">
-                                    (Top {{ (absoluteRank <= 20) ? absoluteRank : (percentageRank + '%') }})
-                                </span>
-                                <span v-else class="points-rank rank-unavailable">
-                                    (Rank unavailable)
-                                </span>
-                            </div>
-                            <router-link to="/my-points-history" class="btn btn-secondary">
-                                Show Points History
+            <div :class="['profile-right-container', isPrivateProfile ? 'private-right-margin' : 'public-right-margin']">
+                <div class="profile-right">
+                    <div class="ratings-container">
+                        <div class="ratings-header">
+                            <h3 class="ratings-title">Ratings</h3>
+                            <router-link :to="ratingsHistPath" class="btn btn-secondary">
+                                Show Ratings History
                             </router-link>
                         </div>
-                        <div v-if="!totalPoints && isPrivateProfile" class="helper-text">
-                            Only users with positive points are ranked. <br />
-                            Earn points by helping others to unlock your rank!
+                        <div class="ratings-list">
+                            <div v-for="rating in ratings" :key="rating.category" class="rating-item">
+                                <img :src="rating.icon" :alt="`${rating.category} icon`" class="rating-icon"/>
+                                <div class="rating-text">
+                                    <span class="rating-category">{{ rating.category }}: </span>
+                                    <span v-if="rating.count" class="rating-value">{{ rating.value.toFixed(1) }} / 5.0 </span>
+                                    <span v-else class="rating-value">N/A</span>
+                                    <span class="rating-count">({{ rating.count }} ratings received)</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
+
+                    <div class="points-container">
+                        <h3 class="points-title">Total Points</h3>
+                        <div class="points-content-container">
+                            <div class="points-content">
+                                <div class="points-text">
+                                    <span class="points-value">{{ totalPoints }} points</span>
+                                    <span v-if="totalPoints" class="points-rank">
+                                        (Top {{ (absoluteRank <= 20) ? absoluteRank : (percentageRank + '%') }})
+                                    </span>
+                                    <span v-else class="points-rank rank-unavailable">
+                                        (Rank unavailable)
+                                    </span>
+                                </div>
+                                <router-link to="/my-points-history" class="btn btn-secondary">
+                                    Show Points History
+                                </router-link>
+                            </div>
+                            <div v-if="!totalPoints && isPrivateProfile" class="helper-text">
+                                Only users with positive points are ranked. <br />
+                                Earn points by helping others to unlock your rank!
+                            </div>
+                        </div>
                 </div>
+            </div>
             </div>
         </div>
 
         <div v-if="!isPrivateProfile" class="awaiting-listings-section">
             <AwaitingListings :key="$route.params.uid" :uid="$route.params.uid" :username="profileData.username"/>
-        </div>
-
-        <div v-if="isPrivateProfile" class="analytics-section">
-            <div class="analytics-total">
-                <span class="analytics-number">{{ totalProfileClicks }}</span>
-                <span class="analytics-label">Total Listing Views</span>
-            </div>
-            <p class="analytics-subtitle">
-                {{ activeView === 'today' ? 'Clicks by hour today across all your listings' : 'Daily clicks on your listings over the last 7 days' }}
-            </p>
-            <div class="chart-toggle">
-                <button :class="['toggle-btn', { active: activeView === 'today' }]" @click="activeView = 'today'">Today</button>
-                <button :class="['toggle-btn', { active: activeView === 'week' }]" @click="activeView = 'week'">Last 7 Days</button>
-            </div>
-            <Bar v-if="activeView === 'week'" :data="profileChartData" :options="profileChartOptions" />
-            <Bar v-else :data="todayProfileChartData" :options="profileChartOptions" />
         </div>
 
         <div v-if="isPrivateProfile" class="my-rewards-section">
@@ -443,25 +445,25 @@ export default {
     flex: 1;
 }
 
-.private-margin {
-    margin: 4rem 0;
+.private-left-margin {
+    margin: 0;
 }
 
-.public-margin {
+.public-left-margin {
     margin: 7rem 0;
 }
 
 .profile-left {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 1rem;
     flex: 1;
 }
 
 .private-profile-header {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1rem;
 }
 
 .edit-icon {
@@ -480,7 +482,7 @@ export default {
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    gap: 3vw;
+    gap: 2vw;
 }
 
 .profile-pic-container {
@@ -492,8 +494,8 @@ export default {
 .profile-pic {
     border-radius: 50%;
     object-fit: cover;
-    width: 11vw;
-    height: 11vw;
+    width: 9vw;
+    height: 9vw;
     border: 2px solid var(--gray5);
 }
 
@@ -541,6 +543,19 @@ export default {
     border: none;
     width: 1px;
     background-color: rgba(0, 0, 0, 0.1);
+}
+
+.profile-right-container {
+    display: flex;
+    flex: 1;
+}
+
+.private-right-margin {
+    margin: 5rem 0;
+}
+
+.public-right-margin {
+    margin: 0;
 }
 
 .profile-right {
@@ -653,7 +668,8 @@ export default {
     border-radius: 12px;
     padding: 20px 24px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-    max-width: 600px;
+    max-width: 35vw;
+    margin: 0.75rem 0;
 }
 .analytics-total {
     display: flex;
