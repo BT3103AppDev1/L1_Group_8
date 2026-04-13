@@ -91,10 +91,11 @@ import { ref, computed, onMounted } from 'vue'
 import { Line } from 'vue-chartjs'
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Tooltip } from 'chart.js'
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip)
+import { addCreateNotifToBatch } from '@/utils/notifications.js'
 
 // Firebase Imports
 import { db } from '@/firebase'
-import { doc, getDoc, deleteDoc, updateDoc, arrayUnion, increment } from 'firebase/firestore'
+import { doc, getDoc, deleteDoc, updateDoc, arrayUnion, increment, writeBatch } from 'firebase/firestore'
 import { getSgtDateKey, getSgtHourKey } from '@/utils/formatSgtTime'
 import { getAuth } from 'firebase/auth'
 
@@ -189,10 +190,18 @@ const deleteListing = async () => {
 const offerHelp = async () => {
     if (!user.value) return
     try {
-        await updateDoc(doc(db, 'listings', listing.value.id), {
+        const batch = writeBatch(db);
+        batch.update(doc(db, 'listings', listing.value.id), {
             applicants: arrayUnion(user.value.uid),
             [`applied_at.${user.value.uid}`]: new Date(),
+        });
+        addCreateNotifToBatch(batch, {
+            uid: listing.value.lister_uid,
+            type: 'receive_applicant',
+            listing_title: listing.value.title,
+            listing_id: listing.value.id,
         })
+        await batch.commit();
         router.push('/my-gigs')
     } catch (e) {
         console.error('Failed to apply:', e)

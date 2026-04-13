@@ -44,9 +44,9 @@
             </DropdownMenuRoot>
             </div>  
         </div>
-        <RewardNotification />
-         <!-- temporary for testing reward notification -->
-        <button @click="testNotification">Test Notif</button>
+        <transition name="fade" mode="out-in">
+            <Notification v-if="currNotif" :key="currNotif.timestamp.seconds":notif="currNotif" @closeNotif="closeNotif" />
+        </transition>
     </header>
 </template>
 
@@ -54,8 +54,14 @@
 import defaultProfilePic from '@/assets/default-profile-pic.png';
 import { Menu as MenuIcon } from 'lucide-vue-next';
 import { DropdownMenuContent, DropdownMenuItem, DropdownMenuRoot, DropdownMenuTrigger } from 'radix-vue';
-import RewardNotification from './RewardNotification.vue';
+import Notification from './Notification.vue';
 import { assignMonthlyRewardsIfNeeded } from '@/utils/assignReward';
+import { getMsToSgtNextMonth } from '@/utils/formatSgtTime';
+import { addResetPointNotifs } from '@/utils/notifications';
+import { getCurrentUser } from '@/auth';
+import { db } from '@/firebase';
+import { collection, onSnapshot, query, updateDoc, where } from 'firebase/firestore';
+import { mergeApplicantNotifs, mergeApplicationStatusNotifs, mergeReceiveRewardNotifs, mergePointsChangeNotifs } from '@/utils/notifications';
 
 export default {
     name: 'TheHeader',
@@ -76,6 +82,17 @@ export default {
                 { name: 'My Gigs', path: '/my-gigs' },
                 { name: 'Leaderboard', path: '/leaderboard' },
             ],
+            refreshTimer: null,
+            receiveApplicantNotif: null,
+            applicationSuccessNotif: null,
+            applicationFailNotif: null,
+            receiveRewardNotif: null,
+            pointsChangeNotif: null,
+            currNotif: null,
+            isShowingNotif: false,
+            notifTimer: null,
+            unsubscribeNotifsListener: null,
+            transitionTimer: null,
         }
     },
 
@@ -102,12 +119,30 @@ export default {
         DropdownMenuContent,
         DropdownMenuItem,
         MenuIcon,
-        RewardNotification,
+        Notification,
     },
 
     async mounted() {
-        assignMonthlyRewardsIfNeeded();
+        await assignMonthlyRewardsIfNeeded();
+        await addResetPointNotifs();
+        this.scheduleMonthlyRefresh();
+        await this.startNotifsListener();
+    },
 
+    beforeUnmount() {
+        if (this.refreshTimer) {
+            clearTimeout(this.refreshTimer);
+        }
+        if (this.notifTimer) {
+            clearTimeout(this.notifTimer);
+        }
+        if (this.unsubscribeNotifsListener) {
+            this.unsubscribeNotifsListener();
+        }
+
+        if (this.transitionTimer) {
+            clearTimeout(this.transitionTimer);
+        }
     },
 
     methods: {
@@ -116,24 +151,112 @@ export default {
                 this.$route.path.startsWith(path + '/');
         },
 
-        async testNotification() {
-            const { addDoc, collection, Timestamp } = await import('firebase/firestore')
-            const { db, auth } = await import('@/firebase')
-            await addDoc(collection(db, 'notifications'), {
-                uid: auth.currentUser?.uid,
-                type: 'receive_reward',
-                is_sent: false,
-                created_at: Timestamp.now(),
-                listing_title: null,
-                listing_id: null,
-                rating: null,
-                increase_in_points: null,
-            })
-            alert('Test notification created! Refresh the page.')
-        }           
-    }
+        scheduleMonthlyRefresh() {
+            const msUntilNextMonth = getMsToSgtNextMonth();
+            if (this.refreshTimer) {
+                clearTimeout(this.refreshTimer);
+            }
+            this.refreshTimer = setTimeout(async () => {
+                await assignMonthlyRewardsIfNeeded();
+                await addResetPointNotifs();
+                this.scheduleMonthlyRefresh(); // reschedule for the following month
+            }, msUntilNextMonth);
+        },
 
-    // temporary for testing reward notification
+        async startNotifsListener() {
+            const currentUser = await getCurrentUser();
+            if (!currentUser) return;
+            const uid = currentUser.uid;
+            const q = query(collection(db, 'notifications'), where('uid', '==', uid), where('is_sent', '==', false));
+
+            this.unsubscribeNotifsListener = onSnapshot(q, (snapshot) => {
+                const newNotifs = [];
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === 'added') {
+                        newNotifs.push({ id: change.doc.id, ref: change.doc.ref, ...change.doc.data() });
+                    }
+                });
+                if (newNotifs.length > 0) {
+                    const newReceiveApplicantNotifs = newNotifs.filter(n => n.type === 'receive_applicant');
+                    const newApplicationSuccessNotifs = newNotifs.filter(n => n.type === 'application_success');
+                    const newApplicationFailNotifs = newNotifs.filter(n => n.type === 'application_fail');
+                    const newReceiveRewardNotifs = newNotifs.filter(n => n.type === 'receive_reward');
+                    const newPointsChangeNotifs = newNotifs.filter(n => n.type === 'receive_rating' || n.type === 'points_reset');
+                    this.receiveApplicantNotif = newReceiveApplicantNotifs.length 
+                        ? mergeApplicantNotifs(this.receiveApplicantNotif, newReceiveApplicantNotifs) 
+                        : this.receiveApplicantNotif;
+                    this.applicationSuccessNotif = newApplicationSuccessNotifs.length 
+                        ? mergeApplicationStatusNotifs(this.applicationSuccessNotif, newApplicationSuccessNotifs, 'application_success') 
+                        : this.applicationSuccessNotif;
+                    this.applicationFailNotif = newApplicationFailNotifs.length 
+                        ? mergeApplicationStatusNotifs(this.applicationFailNotif, newApplicationFailNotifs, 'application_fail') 
+                        : this.applicationFailNotif;
+                    this.receiveRewardNotif = newReceiveRewardNotifs.length 
+                        ? mergeReceiveRewardNotifs(this.receiveRewardNotif, newReceiveRewardNotifs) 
+                        : this.receiveRewardNotif;
+                    this.pointsChangeNotif = newPointsChangeNotifs.length 
+                        ? mergePointsChangeNotifs(this.pointsChangeNotif, newPointsChangeNotifs) 
+                        : this.pointsChangeNotif;                  
+                    if (!this.isShowingNotif) {
+                        this.showNextNotif();
+                    }
+                    // do nothing if there is a notif currently being shown, show next notif will be triggered automatically
+                }
+            });
+        },
+
+        showNextNotif() {
+            clearTimeout(this.notifTimer);
+
+            const candidateNotifs = [
+                this.receiveApplicantNotif, 
+                this.applicationSuccessNotif, 
+                this.applicationFailNotif, 
+                this.receiveRewardNotif, 
+                this.pointsChangeNotif
+            ].filter(n => n != null); // filter out nulls
+
+            if (candidateNotifs.length === 0) {
+                this.currNotif = null;
+                return;
+            }
+
+            // pick earliest notif
+            this.currNotif = candidateNotifs.reduce((earliest, notif) => {
+                return notif.timestamp.seconds < earliest.timestamp.seconds ? notif : earliest;
+            });
+            if (this.currNotif.type === 'receive_applicant') {
+                this.receiveApplicantNotif = null;
+            } else if (this.currNotif.type === 'application_success') {
+                this.applicationSuccessNotif = null;
+            } else if (this.currNotif.type === 'application_fail') {
+                this.applicationFailNotif = null;
+            } else if (this.currNotif.type === 'receive_reward') {
+                this.receiveRewardNotif = null;
+            } else if (this.currNotif.type === 'points_change') {
+                this.pointsChangeNotif = null;
+            }
+            this.isShowingNotif = true;
+            this.notifTimer = setTimeout(() => {
+                this.closeNotif()
+            }, 15000); // show each notif for 15 seconds if not dismissed
+        },
+
+        async closeNotif() {
+            if (this.currNotif?.refs) {
+                for (const ref of this.currNotif.refs) {
+                    updateDoc(ref, { is_sent: true }).catch(console.error);
+                }
+            }
+            this.currNotif = null;
+            this.isShowingNotif = false;
+            clearTimeout(this.notifTimer);
+            clearTimeout(this.transitionTimer);
+            this.transitionTimer = setTimeout(() => {
+                this.showNextNotif()
+            }, 150); // add slight delay before showing next notif to allow fade out transition
+        },   
+    },
  
 }
 </script>
@@ -266,5 +389,20 @@ export default {
 .menu-item[data-highlighted] {
     font-weight: bold;
     background-color: #99B1CB;
+}
+
+/* Fade transition */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.1s ease, transform 0.1s ease;
+}
+
+.fade-enter-from {
+  opacity: 0;
+  transform: translateY(5px);
+}
+
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-5px);
 }
 </style>

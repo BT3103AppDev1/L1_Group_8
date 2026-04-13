@@ -36,8 +36,19 @@ export function getSgtYearMonth() {
     return sgtYrMonth;
 }
 
-// Get milliseconds until the first day of next month midnight 00:00:00 in Singapore Timezone
-export function getMsToSgtNextMonth() {
+// Get last month in "YYYY-MM" format in Singapore Timezone
+export function getLastMonthKey() {
+    const sgtYrMonth = getSgtYearMonth();
+    const [year, month] = sgtYrMonth.split('-').map(Number);
+
+    const lastMonth = month === 1 ? 12 : month - 1;
+    const lastYear = month === 1 ? year - 1 : year;
+
+    return `${lastYear}-${String(lastMonth).padStart(2, '0')}`;
+}
+
+// Get milliseconds until the first day of next month in Singapore Timezone with a buffer (default 1 minute) to ensure it's next month in SGT when the timer triggers
+export function getMsToSgtNextMonth(bufferMs = 60000) {
     const now = new Date();
     const sgtYrMonth = getSgtYearMonth();
     const [year, month] = sgtYrMonth.split('-').map(Number);
@@ -46,7 +57,7 @@ export function getMsToSgtNextMonth() {
     const nextYear = month === 12 ? year + 1 : year;
 
     const nextMonthDate = new Date(nextYear, nextMonth - 1, 1); 
-    return nextMonthDate - now;
+    return nextMonthDate - now + bufferMs; // add buffer to ensure it's next month in SGT
 }
 
 // format USC timestamp to "DD/MM/YYYY HH:mm:ss" in Singapore Timezone
@@ -76,4 +87,11 @@ export function formatTimestamp(timestamp) {
     }).formatToParts(date);
     const getPart = (type) => parts.find(p => p.type === type)?.value ?? '-';
     return `${getPart('day')}/${getPart('month')}/${getPart('year')} ${getPart('hour')}:${getPart('minute')}:${getPart('second')}`;
+}
+
+// Convert "YYYY-MM" string to a more readable format like "Month YYYY"
+export function getMonthYearString(sgtYearMonth) {
+    const [year, month] = sgtYearMonth.split('-');
+    const monthName = new Date(year, month - 1).toLocaleString('en-SG', { month: 'long' });
+    return `${monthName} ${year}`;
 }

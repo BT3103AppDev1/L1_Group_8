@@ -1,16 +1,7 @@
 import { db } from '@/firebase'
-import { collection, doc, getDocs, setDoc, addDoc, getDoc, Timestamp } from 'firebase/firestore'
-
-function getLastMonthKey() {
-    const now = new Date();
-    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    return `${lastMonth.getFullYear()}-${String(lastMonth.getMonth() + 1).padStart(2, '0')}`;
-}
-
-function getCurrentMonthKey() {
-    const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-}
+import { collection, doc, getDocs, setDoc, getDoc, Timestamp, writeBatch } from 'firebase/firestore'
+import { getLastMonthKey } from '@/utils/formatSgtTime';
+import { addCreateNotifToBatch } from '@/utils/notifications';
 
 export async function assignMonthlyRewardsIfNeeded() {
     const monthKey = getLastMonthKey();
@@ -28,20 +19,16 @@ export async function assignMonthlyRewardsIfNeeded() {
 
     if (rewards.length === 0) return;
 
-    const lastMonth = new Date();
-    lastMonth.setMonth(lastMonth.getMonth() - 1);
-    const monthSeed = lastMonth.getMonth();
+    const [year, month] = monthKey.split('-').map(Number);
+    const monthSeed = month - 1;
     const reward = rewards[monthSeed % rewards.length];
 
     // 2. Get all users and find top 20 by absolute_rank
     const usersSnap = await getDocs(collection(db, 'users'));
     const winners = [];
-    const allUserIds = [];
 
     usersSnap.forEach(docSnap => {
         const data = docSnap.data();
-        allUserIds.push(docSnap.id);
-
         const absoluteRank = data.absolute_rank?.[monthKey];
         if (absoluteRank !== null && absoluteRank !== undefined && absoluteRank <= 20) {
             winners.push({
@@ -52,9 +39,11 @@ export async function assignMonthlyRewardsIfNeeded() {
     });
 
     // 3. Assign reward + create notification for each winner
+    const batch = writeBatch(db);
     for (const winner of winners) {
         // Create reward_redemption
-        await addDoc(collection(db, 'reward_redemption'), {
+        const rewardRedemptionRef = doc(collection(db, 'reward_redemption'));
+        batch.set(rewardRedemptionRef, {
             reward_id:   reward.id,
             user_id:     winner.uid,
             status:      'NOT REDEEMED',
@@ -62,23 +51,20 @@ export async function assignMonthlyRewardsIfNeeded() {
         });
 
         // Create notification
-        await addDoc(collection(db, 'notifications'), {
-            uid:                winner.uid,
-            type:               'receive_reward',
-            listing_title:      null,
-            listing_id:         null,
-            rating:             null,
-            increase_in_points: null,
-            is_sent:            false,
-            created_at:         Timestamp.now(),
+        addCreateNotifToBatch(batch, {
+            uid: winner.uid,
+            type: 'receive_reward',
+            sgt_year_month: monthKey,
         });
     }
 
     // 4. Mark assignment as done
-    await setDoc(flagRef, {
+    batch.set(flagRef, {
         assigned_at: Timestamp.now(),
-        month:       monthKey,
-        reward_id:   reward.id,
-        winners:     winners.length,
+        month: monthKey,
+        reward_id: reward.id,
+        winners: winners.length,
     });
+
+    await batch.commit();
 }
