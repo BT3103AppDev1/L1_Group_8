@@ -52,6 +52,7 @@ import ContactMethodsInput from '@/components/ContactMethodsInput.vue';
 import { VueSpinner } from 'vue3-spinners';
 import { getCurrentUser } from '@/auth.js';
 import { db } from '@/firebase.js';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { doc, getDoc, getDocs, query, writeBatch, where, collection } from 'firebase/firestore';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '@/firebase.js';
@@ -238,18 +239,8 @@ export default {
             }
         },
 
-        async handleResetPassword() {
-            try {
-                const user = getCurrentUser();
-                if (!user) {
-                    throw new Error("No user found!");
-                }
-                await sendPasswordResetEmail(auth, user.email);
-                alert("An email with password reset instructions has been sent to your email address. Please check your inbox and follow the instructions in the email.");
-            } catch (error) {
-                console.error("Error sending password reset email:", error);
-                alert("Something went wrong while sending the password reset email. Please try again.");
-            }
+        handleResetPassword() {
+            this.$router.push('/change-password');
         }
     }
 }

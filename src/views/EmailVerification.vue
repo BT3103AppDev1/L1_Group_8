@@ -1,16 +1,6 @@
 <template>
     <PublicPageLayout>
-        <template v-if="verified">
-            <h3 class="form-title">Email Verified!</h3>
-            <p class="info-text">
-                Your email has been successfully verified.<br />
-                You can now sign in to continue.
-            </p>
-            <button class="btn btn-secondary full-btn" @click="goToSignIn">Go to Sign In</button>
-        </template>
-
-        <template v-else>
-            <h3 class="form-title">Verify Your Email</h3>
+        <h3 class="form-title">Verify Your Email</h3>
             <p class="info-text">
                 We sent a verification link to<br />
                 <strong class="email-highlight">{{ userEmail }}</strong>
@@ -18,6 +8,9 @@
             <p class="info-text info-text--secondary">
                 Click the link in the email to verify your account.
                 This page will update automatically once verified.
+            </p>
+            <p class="info-text info-text--secondary">
+                Don't see the email? Check your spam or junk folder.
             </p>
 
             <p v-if="resendSuccess" class="input-info input-info--valid resend-msg">
@@ -40,9 +33,9 @@
             <button type="button" class="btn btn-outline full-btn" @click="goToSignIn">
                 Back to Sign In
             </button>
-        </template>
     </PublicPageLayout>
 </template>
+
 
 <script>
 import { sendEmailVerification, signOut } from 'firebase/auth';
@@ -58,7 +51,6 @@ export default {
     data() {
         return {
             userEmail: '',
-            verified: false,
             resendLoading: false,
             resendSuccess: false,
             resendError: '',
@@ -74,7 +66,7 @@ export default {
             this.$router.replace({ name: 'SignIn' });
             return;
         }
-        this.userEmail = user.email || ''; 
+        this.userEmail = user.email || '';
         this.startPolling();
     },
 
@@ -100,12 +92,11 @@ export default {
                         try {
                             await updateDoc(doc(db, 'users', user.uid), { email_verified: true });
                         } catch { /* ignore */ }
-                        this.verified = true;
                         await signOut(auth).catch(() => {});
                         this.$router.replace({ name: 'SignIn' });
                     }
                 } catch { /* ignore */ }
-            }, 3000);
+            }, 1000);
         },
 
         async handleResend() {
@@ -117,7 +108,7 @@ export default {
             this.resendError = '';
 
             try {
-                await sendEmailVerification(user, { url: window.location.origin + '/sign-in' });
+                await sendEmailVerification(user, { url: window.location.origin + '/auth/action' });
                 this.resendSuccess = true;
                 this.startCooldown(60);
             } catch (err) {
@@ -161,14 +152,14 @@ export default {
 .info-text {
     font-size: 1rem;
     color: var(--gray2);
-    line-height: 1.6;
-    margin-bottom: 0.75rem;
+    line-height: 1.8;
+    margin-bottom: 0.875rem;
 }
 
 .info-text--secondary {
     font-size: 0.875rem;
     color: var(--gray3);
-    margin-bottom: 1rem;
+    margin-bottom: 0.875rem;
 }
 
 .email-highlight {
