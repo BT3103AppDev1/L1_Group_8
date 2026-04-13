@@ -108,7 +108,7 @@ export function mergeApplicantNotifs(existing, newNotifs) {
     });
 
     const timestamp = findEarliestTimestamp(existing, newNotifs);
-    return {listings, refs, timestamp};
+    return {type: 'receive_applicant', listings, refs, timestamp};
 }
 
 export function mergeApplicationStatusNotifs(existing, newNotifs, type) {
@@ -139,8 +139,8 @@ export function mergePointsChangeNotifs(existing, newNotifs) {
     // find latest reset notif among newNotifs to determine sgtYearMonth for this batch of notifications
     const resetNotifs = newNotifs.filter(n => n.type === 'points_reset');
     const newSgtYearMonth = resetNotifs.length > 0 ? resetNotifs.reduce((latest, notif) => {
-        return notif.sgt_year_month > latest.sgt_year_month
-            ? notif.sgt_year_month : latest.sgt_year_month
+        return notif.sgt_year_month > latest
+            ? notif.sgt_year_month : latest
     }, resetNotifs[0].sgt_year_month) : null;
     
     const existingSgtYearMonth = existing?.sgtYearMonth;
@@ -172,13 +172,14 @@ export function mergePointsChangeNotifs(existing, newNotifs) {
     } else {
         // in the case where there is no existing month and no new reset notif, we will use the earliest month from new notifs
         const backupSgtYearMonth = newNotifs.reduce((latest, notif) => {
-            return notif.sgt_year_month > latest.sgt_year_month
-                ? notif.sgt_year_month : latest.sgt_year_month
+            return notif.sgt_year_month > latest
+                ? notif.sgt_year_month : latest
         }, newNotifs[0].sgt_year_month);
         // if no reset notifs or all reset notifs are from an older month, then we keep existing month and aggregate receive_rating notifs from newNotifs that are from the same month as existing month
         sgtYearMonth = existingSgtYearMonth || newSgtYearMonth || backupSgtYearMonth;
         reset = existing?.reset ? true : false; 
         timestamp = existing?.timestamp;
+        receive = existing?.receive ? {...existing.receive} : null;
         newNotifs.forEach(n => {
             if (n.sgt_year_month === sgtYearMonth) {
                 if (n.type === 'points_reset') {
@@ -186,18 +187,18 @@ export function mergePointsChangeNotifs(existing, newNotifs) {
                     reset = true;
                     timestamp = n.created_at;
                 } else {
-                    if (!existing?.receive) {
-                        existing.receive = {
+                    if (!receive) {
+                        receive = {
                             'rating': n.rating,
                             'listing_title': n.listing_title,
                             'ratingCounts': 1,
                             'points': n.increase_in_points
                         };
                     } else {
-                        existing.receive['rating'] = null; // if multiple ratings then we won't show specific rating, just show total count and points
-                        existing.receive['listing_title'] = null; // if multiple listings then we won't show specific listing title
-                        existing.receive['ratingCounts'] += 1;
-                        existing.receive['points'] += n.increase_in_points;
+                        receive['rating'] = null; // if multiple ratings then we won't show specific rating, just show total count and points
+                        receive['listing_title'] = null; // if multiple listings then we won't show specific listing title
+                        receive['ratingCounts'] += 1;
+                        receive['points'] += n.increase_in_points;
                     }
                     if (!timestamp) {
                         timestamp = n.created_at;
@@ -208,7 +209,6 @@ export function mergePointsChangeNotifs(existing, newNotifs) {
                 }
             }
         })
-        receive = existing.receive;
     } 
     return {type: 'points_change', refs, reset, receive, sgtYearMonth, timestamp};
 }

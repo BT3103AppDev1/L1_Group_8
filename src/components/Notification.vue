@@ -1,7 +1,10 @@
 <template>
     <div class="notification-banner">
         <div v-if="notif.type === 'receive_applicant'" class="notification-content">
-            <p class="notification-title">📢 New {{ singleApplicant ? 'Applicant' : 'Applicants' }}!</p>
+            <p class="notification-title">
+                <span class="title-icon">📢</span>
+                <span class="title-text">New {{ singleApplicant ? 'Applicant' : 'Applicants' }}</span>
+            </p>
             <p class="notification-message">
                 {{ applicantMsg }}
             </p>
@@ -11,7 +14,10 @@
         </div>
 
         <div v-else-if="notif.type === 'application_success'" class ="notification-content">
-            <p class="notification-title">✅ {{ singleSuccess ? 'Application' : 'Applications' }} Successful!</p>
+            <p class="notification-title">
+                <span class="title-icon">✅</span>
+                <span class="title-text">{{ singleSuccess ? 'Application' : 'Applications' }} Successful</span>
+            </p>
             <p class="notification-message">
                 {{ successMsg }}
             </p>
@@ -21,15 +27,23 @@
         </div>
         
         <div v-else-if="notif.type === 'application_fail'" class ="notification-content">
-            <p class="notification-title">❌ {{ singleFail ? 'Application' : 'Applications' }} Unsuccessful</p>
+            <p class="notification-title">
+                <span class="title-icon">❌</span>
+                <span class="title-text">{{ singleFail ? 'Application' : 'Applications' }} Unsuccessful</span>
+            </p>
             <p class="notification-message">
                 {{ failMsg }}
             </p>
-            <router-link to="/my-gigs" class="notification-cta" @click="$emit('closeNotif')">See in My Gigs →</router-link>
+            <router-link to="/my-gigs" class="notification-cta" @click="$emit('closeNotif')">
+                See in My Gigs →
+            </router-link>
         </div>
 
         <div v-else-if="notif.type === 'receive_reward'" class="notification-content">
-            <p class="notification-title">🎉 Congratulations!</p>
+            <p class="notification-title">
+                <span class="title-icon">🎉</span>
+                <span class="title-text">Congratulations</span>
+            </p>
             <p class="notification-message">
                 {{ rewardMsg }}
             </p>
@@ -37,17 +51,22 @@
         </div>
 
         <div v-else-if="notif.type === 'points_change'" class="notification-content">
-            <p class="notification-title">{{ pointsTitle }}</p>
+            <p class="notification-title">
+                <span class="title-icon" v-if="isPointsEarnedIcon">💰</span>
+                <span class="title-icon" v-else>🌱</span>
+                <span class="title-text">{{ pointsTitle }}</span>
+            </p>
             <p class="notification-message">
                 {{ pointsMsg }}
             </p>
             <router-link to="/my-profile" class="notification-cta" @click="$emit('closeNotif')">See in Profile page →</router-link>
         </div>
-        <button class="notification-close" @click.stop="$emit('closeNotif')">✕</button>
+        <button class="notification-close" @click.stop="$emit('closeNotif')">&times;</button>
     </div>
 </template>
 
 <script>
+import { getMonthYearString } from '@/utils/formatSgtTime';
 export default {
     name: 'Notification',
 
@@ -121,21 +140,25 @@ export default {
         rewardMsg() {
             if (this.notif.type === "receive_reward") {
                 if (this.notif.months.length === 1) {
-                    return `You are top 20 on the leaderboard in ${this.notif.months[0]}. Check your reward in your profile page.`;
+                    return `You are top 20 on the leaderboard in ${getMonthYearString(this.notif.months[0])}. Check your reward in your profile page.`;
                 } else {
-                    return `You are top 20 on the leaderboard in the following months: ${this.notif.months.join(', ')}. Check your rewards in your profile page.`;
+                    return `You are top 20 on the leaderboard in the following months: ${this.notif.months.map(getMonthYearString).join(', ')}. Check your rewards in your profile page.`;
                 }
             } else {
                 return '';
             }
         },
 
+        isPointsEarnedIcon() {
+            return this.notif.type === "points_change" && !this.notif.reset;
+        },
+
         pointsTitle() {
             if (this.notif.type === "points_change") {
                 if (this.notif.reset) {
-                    return '🌱 New Month, Fresh Start!';
+                    return 'New Month, Fresh Start';
                 } else {
-                    return '💰 Points Earned!'
+                    return 'Points Earned';
                 }
             } else {
                 return '';
@@ -145,9 +168,7 @@ export default {
         pointsMsg() {
             let msg = '';
             if (this.notif.type === "points_change") {
-                const [year, month] = this.notif.sgtYearMonth.split('-');
-                const monthName = new Date(year, month - 1).toLocaleString('en-SG', { month: 'long' });
-                const monthYearStr = `${monthName} ${year}`;
+                const monthYearStr = getMonthYearString(this.notif.sgtYearMonth);
                 if (this.notif.reset) {
                     if (!this.notif.receive) {
                         return `${monthYearStr} has begun and your points have been reset to 0. Keep helping others to earn points and climb the leaderboard this month!`;
@@ -190,23 +211,29 @@ export default {
 
 .notification-content {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
 .notification-title {
     font-weight: bold;
-    font-size: 16px;
+    font-size: 1rem;
     margin-bottom: 6px;
+    display: flex;  
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .notification-message {
-    font-size: 13px;
+    font-size: 0.875rem;
     margin-bottom: 8px;
     line-height: 1.4;
 }
 
 .notification-cta {
-    font-size: 12px;
-    color: var(--secondary);
+    font-size: 0.875rem;
+    color: #f4a754;
     font-weight: bold;
     text-decoration: none;
 }
@@ -214,8 +241,8 @@ export default {
 .notification-close {
     background: none;
     border: none;
-    color: white;
-    font-size: 16px;
+    color: var(--white);
+    font-size: 1.125rem;
     cursor: pointer;
     padding: 0;
     flex-shrink: 0;

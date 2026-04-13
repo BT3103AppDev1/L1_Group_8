@@ -44,7 +44,9 @@
             </DropdownMenuRoot>
             </div>  
         </div>
-        <Notification v-if="currNotif" :notif="currNotif" @closeNotif="closeNotif" />
+        <transition name="fade" mode="out-in">
+            <Notification v-if="currNotif" :key="currNotif.timestamp.seconds":notif="currNotif" @closeNotif="closeNotif" />
+        </transition>
     </header>
 </template>
 
@@ -90,6 +92,7 @@ export default {
             isShowingNotif: false,
             notifTimer: null,
             unsubscribeNotifsListener: null,
+            transitionTimer: null,
         }
     },
 
@@ -135,6 +138,10 @@ export default {
         }
         if (this.unsubscribeNotifsListener) {
             this.unsubscribeNotifsListener();
+        }
+
+        if (this.transitionTimer) {
+            clearTimeout(this.transitionTimer);
         }
     },
 
@@ -189,7 +196,7 @@ export default {
                         : this.receiveRewardNotif;
                     this.pointsChangeNotif = newPointsChangeNotifs.length 
                         ? mergePointsChangeNotifs(this.pointsChangeNotif, newPointsChangeNotifs) 
-                        : this.pointsChangeNotif;
+                        : this.pointsChangeNotif;                  
                     if (!this.isShowingNotif) {
                         this.showNextNotif();
                     }
@@ -230,7 +237,6 @@ export default {
                 this.pointsChangeNotif = null;
             }
             this.isShowingNotif = true;
-    
             this.notifTimer = setTimeout(() => {
                 this.closeNotif()
             }, 15000); // show each notif for 15 seconds if not dismissed
@@ -245,8 +251,11 @@ export default {
             this.currNotif = null;
             this.isShowingNotif = false;
             clearTimeout(this.notifTimer);
-            this.showNextNotif(); 
-        },         
+            clearTimeout(this.transitionTimer);
+            this.transitionTimer = setTimeout(() => {
+                this.showNextNotif()
+            }, 150); // add slight delay before showing next notif to allow fade out transition
+        },   
     },
  
 }
@@ -380,5 +389,20 @@ export default {
 .menu-item[data-highlighted] {
     font-weight: bold;
     background-color: #99B1CB;
+}
+
+/* Fade transition */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.1s ease, transform 0.1s ease;
+}
+
+.fade-enter-from {
+  opacity: 0;
+  transform: translateY(5px);
+}
+
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-5px);
 }
 </style>

@@ -88,3 +88,10 @@ export function formatTimestamp(timestamp) {
     const getPart = (type) => parts.find(p => p.type === type)?.value ?? '-';
     return `${getPart('day')}/${getPart('month')}/${getPart('year')} ${getPart('hour')}:${getPart('minute')}:${getPart('second')}`;
 }
+
+// Convert "YYYY-MM" string to a more readable format like "Month YYYY"
+export function getMonthYearString(sgtYearMonth) {
+    const [year, month] = sgtYearMonth.split('-');
+    const monthName = new Date(year, month - 1).toLocaleString('en-SG', { month: 'long' });
+    return `${monthName} ${year}`;
+}
