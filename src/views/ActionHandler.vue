@@ -63,9 +63,8 @@ export default {
             await updateDoc(doc(db, 'users', auth.currentUser.uid), { email_verified: true });
           } catch { /* ignore */ }
         }
-        this.status = 'success';
         await signOut(auth);
-        setTimeout(() => this.$router.replace({ name: 'SignIn' }), 1500);
+        this.$router.replace({ name: 'SignIn' });
       } catch {
         this.status = 'error';
       }

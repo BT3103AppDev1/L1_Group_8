@@ -52,10 +52,7 @@ import ContactMethodsInput from '@/components/ContactMethodsInput.vue';
 import { VueSpinner } from 'vue3-spinners';
 import { getCurrentUser } from '@/auth.js';
 import { db } from '@/firebase.js';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { doc, getDoc, getDocs, query, writeBatch, where, collection } from 'firebase/firestore';
-import { sendPasswordResetEmail } from 'firebase/auth';
-import { auth } from '@/firebase.js';
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 
