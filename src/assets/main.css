@@ -218,5 +218,8 @@ body {
 }
 
 .detail-box {
-  background-color: #DDEBFB;
+    background-color: #DDEBFB;
+    border-radius: var(--radius);
+    border: 1px solid var(--black1);
+    padding: 15px;
 }

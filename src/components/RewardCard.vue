@@ -2,10 +2,15 @@
     <div class="reward-card" :class="{ expired: isExpired, redeemed: isRedeemed}">
         <div class="reward-content">
             <h2 class="reward-title">{{ reward.reward_name }}</h2>
-            <h3 class="expiry-date">Expiry Date: {{ formattedExpiryDate }}</h3>
-            <h3 class="redemption-status">Status: {{ reward.status }}</h3>
+            <p class="expiry-date">Expiry Date: {{ formattedExpiryDate }}</p>
+            <p class="redemption-status">Status: {{ reward.status }}</p>
         </div>
-        <button class="reward-detail-button btn-secondary:hover" @click="viewRewardDetail">View Details</button>
+        <button 
+            class="reward-detail-button" 
+            :class="{ 'reward-detail-button-inactive': isExpired || isRedeemed }"
+            @click="viewRewardDetail">
+            View Details
+        </button>
     </div>
 </template>
 
@@ -99,6 +104,10 @@ export default {
         transition: 0.15s ease;
     }
 
+    .reward-detail-button-inactive {
+        background: var(--gray4);
+        cursor: default;
+    }
 
 
 </style>

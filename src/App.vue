@@ -5,7 +5,7 @@
     <main :class="['main-content', {'main-content-with-header': $route.meta.showHeader}]">
       <RouterView v-slot="{ Component }">
         <transition name="fade" mode="out-in">
-          <component :is="Component" :key="$router.fullPath"/>
+          <component :is="Component" :key="$route.fullPath"/>
         </transition>
       </RouterView>
     </main>
@@ -59,7 +59,7 @@ export default {
         this._firestoreUnsubscribe = onSnapshot(userDocRef, (doc) => {
           if (doc.exists()) {
             const data = doc.data();
-            this.profilePicUrl = data.profilePicUrl || null;
+            this.profilePicUrl = data.profile_pic_url || null;
 
             const route = this.$route.path;
             if (!data.email_verified) {

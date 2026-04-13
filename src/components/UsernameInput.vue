@@ -57,6 +57,9 @@ export default {
             type: Boolean,
             default: false,
         },
+        uid : {
+            type: String,
+        }
     },
 
     emits: ["status-object"], // {status, value}
@@ -149,6 +152,12 @@ export default {
                     return false; // user has changed the input while we were checking, so ignore this result
                 }
                 if (!querySnapshot.empty) {
+                    const takenByUid = querySnapshot.docs[0].id;
+                    if (takenByUid === this.uid) {
+                        this.status = "valid"; // username belongs to current user, so it's valid
+                        this.errorMessage = "";
+                        return true;
+                    }
                     this.setError("This username is already taken.");
                     return false;
                 }

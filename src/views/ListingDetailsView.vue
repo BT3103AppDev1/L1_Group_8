@@ -58,6 +58,21 @@
                     <button class="btn btn-primary" @click="editListing">Edit Listing</button>
                     <button class="btn btn-danger" @click="deleteListing">Delete Listing</button>
                 </div>
+
+                <!-- Analytics (only for lister) -->
+                <div v-if="isLister" class="analytics-card">
+                    <div class="analytics-total">
+                        <span class="analytics-number">{{ totalClicks }}</span>
+                        <span class="analytics-label">Total Views</span>
+                    </div>
+                    <p class="analytics-subtitle">No. of times people clicked to view your listing details</p>
+                    <div class="chart-toggle">
+                        <button :class="['toggle-btn', { active: activeView === 'today' }]" @click="activeView = 'today'">Today</button>
+                        <button :class="['toggle-btn', { active: activeView === 'week' }]" @click="activeView = 'week'">Last 7 Days</button>
+                    </div>
+                    <Line v-if="activeView === 'week'" :data="weekChartData" :options="chartOptions" />
+                    <Line v-else :data="todayChartData" :options="chartOptions" />
+                </div>
                 <!-- Help Button (only for non-lister when listing is awaiting) -->
                 <div v-if="canHelp" class="help-button">
                     <button class="btn btn-secondary" @click="offerHelp">I can help :)</button>
@@ -73,10 +88,15 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { Line } from 'vue-chartjs'
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Tooltip } from 'chart.js'
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip)
+import { addCreateNotifToBatch } from '@/utils/notifications.js'
 
 // Firebase Imports
 import { db } from '@/firebase'
-import { doc, getDoc, deleteDoc, updateDoc, arrayUnion } from 'firebase/firestore'
+import { doc, getDoc, deleteDoc, updateDoc, arrayUnion, increment, writeBatch } from 'firebase/firestore'
+import { getSgtDateKey, getSgtHourKey } from '@/utils/formatSgtTime'
 import { getAuth } from 'firebase/auth'
 
 // Router Imports
@@ -90,6 +110,59 @@ const auth = getAuth()
 // Listing Data
 const listing = ref(null)
 const defaultImage = "@/assets/default-listing.jpg"
+const clicksByDay = ref({})
+const clicksByHour = ref({})
+const activeView = ref('week')
+
+const totalClicks = computed(() => Object.values(clicksByDay.value).reduce((sum, v) => sum + v, 0))
+
+const weekChartData = computed(() => {
+    const days = []
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date()
+        d.setDate(d.getDate() - i)
+        const key = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Singapore', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d)
+        days.push(key)
+    }
+    return {
+        labels: days.map(date => {
+            const [,, day] = date.split('-')
+            return `${parseInt(day)} ${new Date(date).toLocaleString('en-GB', { month: 'short' })}`
+        }),
+        datasets: [{
+            data: days.map(date => clicksByDay.value[date] ?? 0),
+            borderColor: '#003D7C',
+            backgroundColor: 'rgba(0,61,124,0.1)',
+            tension: 0.3,
+            fill: true,
+            pointRadius: 4,
+        }],
+    }
+})
+
+const todayChartData = computed(() => {
+    const todayKey = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Singapore', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date())
+    const hours = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'))
+    return {
+        labels: hours.map(h => {
+            const hr = parseInt(h)
+            if (hr === 0) return '12am'
+            if (hr < 12) return `${hr}am`
+            if (hr === 12) return '12pm'
+            return `${hr - 12}pm`
+        }),
+        datasets: [{
+            data: hours.map(h => clicksByHour.value[`${todayKey}_${h}`] ?? 0),
+            borderColor: '#7C3AED',
+            backgroundColor: 'rgba(124,58,237,0.1)',
+            tension: 0.3,
+            fill: true,
+            pointRadius: 3,
+        }],
+    }
+})
+
+const chartOptions = { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
 
 //Computed Property to check if the current user is the lister of this listing
 const user = computed(() => auth.currentUser)
@@ -117,9 +190,18 @@ const deleteListing = async () => {
 const offerHelp = async () => {
     if (!user.value) return
     try {
-        await updateDoc(doc(db, 'listings', listing.value.id), {
-            applicants: arrayUnion(user.value.uid)
+        const batch = writeBatch(db);
+        batch.update(doc(db, 'listings', listing.value.id), {
+            applicants: arrayUnion(user.value.uid),
+            [`applied_at.${user.value.uid}`]: new Date(),
+        });
+        addCreateNotifToBatch(batch, {
+            uid: listing.value.lister_uid,
+            type: 'receive_applicant',
+            listing_title: listing.value.title,
+            listing_id: listing.value.id,
         })
+        await batch.commit();
         router.push('/my-gigs')
     } catch (e) {
         console.error('Failed to apply:', e)
@@ -154,6 +236,17 @@ onMounted(async () => {
     const userData = userSnapShot.data()
 
     //Merge listing and user data into one single object for easier handling 
+    clicksByDay.value = listingData.clicks_by_day ?? {}
+    clicksByHour.value = listingData.clicks_by_hour ?? {}
+
+    // Record click for non-listers
+    if (auth.currentUser && auth.currentUser.uid !== listingData.lister_id) {
+        updateDoc(doc(db, 'listings', listingId), {
+            [`clicks_by_day.${getSgtDateKey()}`]: increment(1),
+            [`clicks_by_hour.${getSgtHourKey()}`]: increment(1),
+        }).catch(() => {})
+    }
+
     listing.value = {
 
         // Listing fields
@@ -278,5 +371,59 @@ onMounted(async () => {
   margin: 4px 0;
 }
 
-
+.analytics-card {
+  margin-top: 20px;
+  background: #F8F9FB;
+  border: 1px solid #E5E9EF;
+  border-radius: 8px;
+  padding: 16px;
+}
+.analytics-total {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+.analytics-number {
+  font-size: 36px;
+  font-weight: 700;
+  color: #003D7C;
+  line-height: 1;
+}
+.analytics-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #6E6E6E;
+}
+.analytics-subtitle {
+  font-size: 11px;
+  color: #9CA3AF;
+  margin-bottom: 12px;
+}
+.no-data {
+  color: #9CA3AF;
+  font-size: 13px;
+  text-align: center;
+  padding: 16px 0;
+}
+.chart-toggle {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+.toggle-btn {
+  padding: 4px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid #003D7C;
+  border-radius: 999px;
+  background: none;
+  color: #003D7C;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.toggle-btn.active {
+  background: #003D7C;
+  color: #fff;
+}
 </style>
