@@ -19,32 +19,37 @@
         </div>
 
         <div v-else class="table-and-btn">
-            <!-- Points Table -->
-            <div class="table-container">
-                <table class="points-history-table">
-                    <thead>
-                        <tr>
-                            <th>No</th>
-                            <th>Timestamp (SGT)</th>
-                            <th>Points Change</th>
-                            <th>New Total Points</th>
-                            <th>Associated Service</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(pointsLog, index) in pointsLogs" :key="pointsLog.id" :class="{ 'even-row': index % 2 === 1 }">
-                            <td :title="`No: ${index + 1}`">{{ index + 1 }}</td>
-                            <td :title="`Timestamp (SGT): ${formatTimestamp(pointsLog.time)}`">{{ formatTimestamp(pointsLog.time) }}</td>
-                            <td :title="`Points Change: ${pointsLog.increase_in_points}`">{{ pointsLog.increase_in_points }}</td>
-                            <td :title="`New Total Points: ${pointsLog.new_total_points}`">{{ pointsLog.new_total_points }}</td>
-                            <td class="associated-service-cell">
-                                <router-link :to="`/listing/${pointsLog.listing_id}`" class="listing-title" :title="`Associated Service: ${pointsLog.listing_title}`">
-                                    {{ pointsLog.listing_title }}
-                                </router-link>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="table-and-text">
+                <p v-if="lastFetchedAt" class="fetch-time-text"> 
+                    Last fetched at: {{ formatTimestamp(lastFetchedAt) }} (SGT)
+                </p>
+                <!-- Points Table -->
+                <div class="table-container">
+                    <table class="points-history-table">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Timestamp (SGT)</th>
+                                <th>Points Change</th>
+                                <th>New Total Points</th>
+                                <th>Associated Service</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(pointsLog, index) in pointsLogs" :key="pointsLog.id" :class="{ 'even-row': index % 2 === 1 }">
+                                <td :title="`No: ${index + 1}`">{{ index + 1 }}</td>
+                                <td :title="`Timestamp (SGT): ${formatTimestamp(pointsLog.time)}`">{{ formatTimestamp(pointsLog.time) }}</td>
+                                <td :title="`Points Change: ${pointsLog.increase_in_points}`">{{ pointsLog.increase_in_points }}</td>
+                                <td :title="`New Total Points: ${pointsLog.new_total_points}`">{{ pointsLog.new_total_points }}</td>
+                                <td class="associated-service-cell">
+                                    <router-link :to="`/listing/${pointsLog.listing_id}`" class="listing-title" :title="`Associated Service: ${pointsLog.listing_title}`">
+                                        {{ pointsLog.listing_title }}
+                                    </router-link>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- View More Button -->
@@ -66,6 +71,7 @@ import { getCurrentUser } from '@/auth.js';
 import { VueSpinner } from 'vue3-spinners';
 import PageHeader from '@/components/PageHeader.vue';
 import { formatTimestamp, getSgtYearMonth, getMsToSgtNextMonth } from '@/utils/formatSgtTime.js';
+import { last } from 'firebase/firestore/pipelines';
 
 const MAX_LOGS_PER_LOAD = 20;
 
@@ -89,6 +95,7 @@ export default {
             errorMessage: "",
             uid: "",
             currYearMonth: getSgtYearMonth(),
+            lastFetchedAt: null,
         };
     },
 
@@ -130,6 +137,7 @@ export default {
                 const sliced = hasMore ? docs.slice(0, MAX_LOGS_PER_LOAD) : docs;
                 this.lastDocs = sliced.length > 0 ? sliced[sliced.length - 1] : null;
                 this.pointsLogs = sliced.map(doc => ({id: doc.id, ...doc.data()}));
+                this.lastFetchedAt = new Date();
             } catch (e) {
                 console.error('Error fetching points history:', e);
                 this.hasError = true;
@@ -226,6 +234,21 @@ export default {
 
 .empty-state {
     color: var(--black);
+}
+
+/* fetch time text */
+.fetch-time-text {
+    width: 100%;
+    text-align: left;
+    font-size: 0.875rem;
+    color: var(--gray2);
+}
+
+.table-and-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
 }
 
 /* table */

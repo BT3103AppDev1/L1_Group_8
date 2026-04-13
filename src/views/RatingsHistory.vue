@@ -24,6 +24,10 @@
                 </div>
             </div>
 
+            <p v-if="lastFetchedAt[activeTab]" class="fetch-time-text"> 
+                Last fetched at: {{ formatTimestamp(lastFetchedAt[activeTab]) }} (SGT). 
+            </p>
+
             <transition name="fade" mode="out-in">
                 <div :key="activeTab + (isRatingsLoading ? '-loading' : '')">
                     <div v-if="isRatingsLoading" class="ratings-loading">
@@ -139,6 +143,11 @@ export default {
                 Education: EduIcon,
                 Buddy: BuddyIcon,
                 Survival: SurvivalIcon
+            },
+            lastFetchedAt: {
+                Education: null,
+                Buddy: null,
+                Survival: null
             }
         };
     },
@@ -200,6 +209,7 @@ export default {
                 const sliced = hasMore ? docs.slice(0, MAX_RATINGS_PER_LOAD) : docs;
                 this.lastDocs[category] = sliced.length > 0 ? sliced[sliced.length - 1] : null;
                 this.allRatings[category] = sliced.map(doc => ({id: doc.id, ...doc.data()}));
+                this.lastFetchedAt[category] = new Date();
             } catch (e) {
                 console.error('Error fetching ratings:', e);
                 this.hasError = true;
@@ -369,6 +379,15 @@ export default {
 
 .empty-state {
     color: var(--black);
+}
+
+/* fetch time text */
+.fetch-time-text {
+    width: 100%;
+    text-align: left;
+    font-size: 0.875rem;
+    color: var(--gray2);
+    margin-bottom: 0.5rem;
 }
 
 /* table */

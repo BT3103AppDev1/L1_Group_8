@@ -1,13 +1,18 @@
 import { auth } from './firebase.js';
 import { onAuthStateChanged } from "firebase/auth";
 
-let currentUser = auth.currentUser;
+let currentUser = { uid: "zrxX7Bt3kZSaPYpyBuaokbJz47i1" };
+
+
+// let currentUser = auth.currentUser;
 const listeners = [];
 
+/*
 onAuthStateChanged(auth, (user) => {
   currentUser = user;
   listeners.forEach(listener => listener(user));
 });
+*/
 
 async function getCurrentUser() {
   await auth.authStateReady();
