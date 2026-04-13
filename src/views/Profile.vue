@@ -130,6 +130,11 @@
             </button>
         </div>
 
+        <div v-if="!isPrivateProfile && isOwnProfilePublicView" class="info-banner">
+            This is how your profile appears to others. 
+            Go to <router-link to="/my-profile" class="text-btn">My Profile</router-link> to edit your profile and view your rewards.
+        </div>
+
         <!-- sign out confirmation modal -->
         <confirmation-modal v-model:showModal="showSignOutModal" title="Sign out?">
             Are you sure you want to sign out?
@@ -170,6 +175,7 @@ import AwaitingListings from '@/components/AwaitingListings.vue';
 import { getSgtYearMonth, getMsToSgtNextMonth } from '@/utils/formatSgtTime';
 import { Bar } from 'vue-chartjs'
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Tooltip } from 'chart.js'
+import { uid } from 'chart.js/helpers';
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip)
 
 export default {
@@ -191,6 +197,7 @@ export default {
             refreshTimer: null,
             isLoading: true,
 
+            uid: null,
             defaultProfilePic,
             profileData: null,
 
@@ -208,6 +215,10 @@ export default {
     computed: {
         isPrivateProfile() {  
             return this.$route.name === "PrivateProfile";
+        },
+
+        isOwnProfilePublicView() {
+            return this.$route.params.uid === this.uid;
         },
 
         ratingsHistPath() {
@@ -331,6 +342,7 @@ export default {
 
         async setUserListener() {
             const uid = await this.getUid();
+            this.uid = uid; // store uid for later use
             if (!uid) {
                 this.isLoading = false;
                 return;
@@ -712,6 +724,30 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.info-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--primary);
+    color: white;
+    padding: 1rem max(2rem, 7vw);
+    z-index: 1000;
+    font-size: 1rem;
+}
+
+.text-btn {
+    margin: 0 0.4rem;
+    color: var(--white);
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
 }
 
 .cancel-btn {
