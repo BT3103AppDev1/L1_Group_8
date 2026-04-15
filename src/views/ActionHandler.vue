@@ -1,36 +1,20 @@
 <template>
-  <div class="auth-page">
-    <main class="auth-main">
-      <div class="brand-panel" aria-hidden="true">
-        <div class="brand-circle">
-          <img src="@/assets/logomark.png" alt="" class="brand-logomark" />
-        </div>
-        <img src="@/assets/logotype.png" alt="NUSOS" class="brand-logotype" />
+    <PublicPageLayout>
+      <div v-if="status === 'processing'">
+        <p class="status-text">Verifying your email…</p>
       </div>
-
-      <div class="form-card">
-        <div v-if="status === 'processing'">
-          <p class="status-text">Verifying your email…</p>
-        </div>
-        <div v-else-if="status === 'success'">
-          <p class="form-title">Email Verified!</p>
-          <p class="status-text">Your email has been verified. Redirecting you to sign in…</p>
-        </div>
-        <div v-else>
-          <p class="form-title">Link Expired</p>
-          <p class="status-text">This verification link is invalid or has expired.</p>
-          <button class="btn-submit" @click="$router.replace({ name: 'SignIn' })">
-            Back to Sign In
-          </button>
-        </div>
+      <div v-else-if="status === 'success'" class="action-container">
+        <p class="form-title">Email Verified!</p>
+        <p class="status-text">Your email has been verified. Redirecting you to sign in…</p>
       </div>
-    </main>
-
-    <footer class="auth-footer">
-      <span>© 2026 NUSOS</span>
-      <span>Contact: nusos@gmail.com</span>
-    </footer>
-  </div>
+      <div v-else class="action-container">
+        <p class="form-title">Link Expired</p>
+        <p class="status-text">This verification link is invalid or has expired.</p>
+        <button class="btn btn-secondary" @click="$router.replace({ name: 'AuthPage' })">
+          Back to Sign In
+        </button>
+      </div>
+  </PublicPageLayout>
 </template>
 
 <script>
@@ -38,9 +22,14 @@ import { applyActionCode, signOut } from 'firebase/auth';
 import { auth } from '@/firebase.js';
 import { db } from '@/firebase.js';
 import { doc, updateDoc } from 'firebase/firestore';
+import PublicPageLayout from '@/components/PublicPageLayout.vue';
 
 export default {
   name: 'ActionHandler',
+
+  components: {
+    PublicPageLayout
+  },
 
   data() {
     return {
@@ -64,7 +53,7 @@ export default {
           } catch { /* ignore */ }
         }
         await signOut(auth);
-        this.$router.replace({ name: 'SignIn' });
+        this.$router.replace({ name: 'AuthPage' });
       } catch {
         this.status = 'error';
       }
@@ -72,79 +61,27 @@ export default {
       // Hand off to the reset password page with the code
       this.$router.replace({ name: 'ResetPassword', query: { oobCode } });
     } else {
-      this.$router.replace({ name: 'SignIn' });
+      this.$router.replace({ name: 'AuthPage' });
     }
   },
 };
 </script>
 
 <style scoped>
-.auth-page {
+.action-container {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  background: var(--primary);
-}
-
-.auth-main {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4rem;
-  padding: 3rem 2rem;
-}
-
-.brand-panel {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.25rem;
-  flex-shrink: 0;
-}
-
-.brand-circle {
-  width: 220px;
-  height: 220px;
-  border-radius: 50%;
-  background: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.18);
-}
-
-.brand-logomark {
-  width: 150px;
-  height: 150px;
-  object-fit: contain;
-}
-
-.brand-logotype {
-  height: 36px;
-  width: auto;
-  filter: brightness(0) invert(1);
-}
-
-.form-card {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.18);
-  padding: 2.5rem 2rem;
-  width: 100%;
-  max-width: 400px;
-  text-align: center;
+  gap: 1.5rem;
 }
 
 .form-title {
   font-size: 1.375rem;
   font-weight: 700;
   color: var(--secondary);
-  margin-bottom: 0.75rem;
 }
 
 .status-text {
-  font-size: 0.95rem;
+  font-size: 1rem;
   color: var(--gray3);
   line-height: 1.6;
 }
