@@ -3,10 +3,6 @@
       <div v-if="status === 'processing'">
         <p class="status-text">Processing…</p>
       </div>
-      <div v-else-if="status === 'success'" class="action-container">
-        <p class="form-title">Email Verified!</p>
-        <p class="status-text">Your email has been verified. Redirecting you to sign in…</p>
-      </div>
       <div v-else class="action-container">
         <p class="form-title">Link Expired</p>
         <p class="status-text">This verification link is invalid or has expired.</p>
@@ -33,8 +29,7 @@ export default {
 
   data() {
     return {
-      status: 'processing', // 'processing' | 'success' | 'error'
-      redirectTimer: null,
+      status: 'processing', // 'processing' | 'error'
     };
   },
 
@@ -47,18 +42,12 @@ export default {
       try {
         await applyActionCode(auth, oobCode);
         if (auth.currentUser) {
-          await auth.currentUser.reload();
           // Update Firestore so App.vue redirect logic picks up email_verified: true
           try {
             await updateDoc(doc(db, 'users', auth.currentUser.uid), { email_verified: true });
+            await signOut(auth);
           } catch { /* ignore */ }
         }
-        this.status = 'success';
-        this.redirectTimer = setTimeout(() => {
-          this.$router.replace({ name: 'AuthPage' });
-        }, 3000);
-        await signOut(auth);
-        this.$router.replace({ name: 'AuthPage' });
       } catch {
         this.status = 'error';
       }
@@ -67,12 +56,6 @@ export default {
       this.$router.replace({ name: 'ResetPassword', query: { oobCode } });
     } else {
       this.$router.replace({ name: 'AuthPage' });
-    }
-  },
-
-  beforeUnmount() {
-    if (this.redirectTimer) {
-      clearTimeout(this.redirectTimer);
     }
   },
 };
@@ -95,6 +78,11 @@ export default {
   font-size: 1rem;
   color: var(--gray3);
   line-height: 1.6;
+}
+
+.btn {
+  padding: 1rem 0;
+  width: 100%;
 }
 
 .btn-submit {
