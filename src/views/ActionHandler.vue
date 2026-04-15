@@ -36,6 +36,8 @@
 <script>
 import { applyActionCode, signOut } from 'firebase/auth';
 import { auth } from '@/firebase.js';
+import { db } from '@/firebase.js';
+import { doc, updateDoc } from 'firebase/firestore';
 
 export default {
   name: 'ActionHandler',
@@ -54,14 +56,15 @@ export default {
     if (mode === 'verifyEmail' && oobCode) {
       try {
         await applyActionCode(auth, oobCode);
-        // Reload user so emailVerified flag updates
         if (auth.currentUser) {
           await auth.currentUser.reload();
+          // Update Firestore so App.vue redirect logic picks up email_verified: true
+          try {
+            await updateDoc(doc(db, 'users', auth.currentUser.uid), { email_verified: true });
+          } catch { /* ignore */ }
         }
-        this.status = 'success';
-        // Sign out so the user lands on a clean sign-in page
         await signOut(auth);
-        setTimeout(() => this.$router.replace({ name: 'SignIn' }), 1500);
+        this.$router.replace({ name: 'SignIn' });
       } catch {
         this.status = 'error';
       }
