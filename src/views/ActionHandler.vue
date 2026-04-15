@@ -1,7 +1,7 @@
 <template>
     <PublicPageLayout>
       <div v-if="status === 'processing'">
-        <p class="status-text">Verifying your email…</p>
+        <p class="status-text">Processing…</p>
       </div>
       <div v-else-if="status === 'success'" class="action-container">
         <p class="form-title">Email Verified!</p>
@@ -34,6 +34,7 @@ export default {
   data() {
     return {
       status: 'processing', // 'processing' | 'success' | 'error'
+      redirectTimer: null,
     };
   },
 
@@ -52,6 +53,10 @@ export default {
             await updateDoc(doc(db, 'users', auth.currentUser.uid), { email_verified: true });
           } catch { /* ignore */ }
         }
+        this.status = 'success';
+        this.redirectTimer = setTimeout(() => {
+          this.$router.replace({ name: 'AuthPage' });
+        }, 3000);
         await signOut(auth);
         this.$router.replace({ name: 'AuthPage' });
       } catch {
@@ -62,6 +67,12 @@ export default {
       this.$router.replace({ name: 'ResetPassword', query: { oobCode } });
     } else {
       this.$router.replace({ name: 'AuthPage' });
+    }
+  },
+
+  beforeUnmount() {
+    if (this.redirectTimer) {
+      clearTimeout(this.redirectTimer);
     }
   },
 };

@@ -1,13 +1,13 @@
 <template>
     <PublicPageLayout>
         <!-- Invalid / expired link -->
-        <template v-if="!oobCode">
+        <template v-if="!oobCode || isExpired">
             <h3 class="form-title">Invalid Link</h3>
             <p class="info-text info-text--secondary">
                 This password reset link is invalid or has expired.
                 Please request a new one.
             </p>
-            <RouterLink to="/forgot-password" class="btn btn-secondary full-btn">Request New Link</RouterLink>
+            <RouterLink to="/forgot-password" class="btn btn-secondary redirect-btn">Back to Forgot Password</RouterLink>
         </template>
 
         <!-- Success state -->
@@ -17,7 +17,7 @@
                 Your password has been updated successfully.
                 You can now sign in with your new password.
             </p>
-            <RouterLink to="/auth" class="btn btn-secondary full-btn">Go to Sign In</RouterLink>
+            <RouterLink to="/auth" class="btn btn-secondary redirect-btn">Go to Sign In</RouterLink>
         </template>
 
         <!-- Reset form -->
@@ -75,7 +75,7 @@
 
                 <p v-if="generalError" class="general-error">{{ generalError }}</p>
 
-                <button type="submit" class="btn btn-secondary full-btn" :disabled="loading">
+                <button type="submit" class="btn btn-secondary" :disabled="loading">
                     <span v-if="loading">Submitting…</span>
                     <span v-else>Submit</span>
                 </button>
@@ -106,6 +106,7 @@ export default {
             generalError: '',
             loading: false,
             success: false,
+            isExpired: false,
         };
     },
 
@@ -159,7 +160,7 @@ export default {
                 this.success = true;
             } catch (err) {
                 if (err.code === 'auth/expired-action-code' || err.code === 'auth/invalid-action-code') {
-                    this.generalError = 'This reset link has expired or already been used. Please request a new one.';
+                    this.isExpired = true;
                 } else if (err.code === 'auth/weak-password') {
                     this.errors.password = 'Password is too weak. Please choose a stronger password.';
                 } else {
@@ -185,19 +186,6 @@ export default {
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
-    margin-top: 1rem;
-}
-
-.info-text {
-    font-size: 1rem;
-    color: var(--gray2);
-    line-height: 1.8;
-    margin-bottom: 0.5rem;
-}
-
-.info-text--secondary {
-    font-size: 0.875rem;
-    color: var(--gray3);
 }
 
 .input-field--valid {
@@ -215,7 +203,7 @@ export default {
 
 .eye-btn {
     position: absolute;
-    right: 0.75rem;
+    right: 1rem;
     top: 50%;
     transform: translateY(-50%);
     background: none;
@@ -239,21 +227,14 @@ export default {
     padding: 0.5rem 0.75rem;
     font-size: 0.875rem;
     color: var(--error);
-}
-
-.full-btn {
-    width: 100%;
+    display: flex;
+    flex-direction: column;
     justify-content: center;
-    padding: 1rem 0;
-    font-size: 1rem;
-    margin-top: 0.5rem;
-    text-align: center;
-    text-decoration: none;
+    gap: 0.125rem;
+    margin-bottom: 0.5rem;
 }
 
-.full-btn:disabled {
-    background-color: var(--gray5);
-    border-color: var(--gray5);
-    cursor: not-allowed;
+.redirect-btn {
+    margin-top: 1.5rem;
 }
 </style>

@@ -9,7 +9,7 @@
             <p class="info-text info-text--secondary">
                 Don't see the email? Check your spam or junk folder.
             </p>
-            <RouterLink to="/auth" class="btn btn-secondary full-btn">Back to Sign In</RouterLink>
+            <RouterLink to="/auth" class="btn btn-secondary redirect-btn">Back to Sign In</RouterLink>
         </template>
 
         <template v-else>
@@ -27,11 +27,13 @@
                         :class="['input-field', { 'input-field--invalid': error }]"
                         placeholder="Enter the NUS email address you used to sign up"
                         autocomplete="email"
+                        @blur="onEmailBlur"
+                        @input="onEmailInput"
                     />
                     <p v-if="error" class="input-info input-info--invalid">{{ error }}</p>
                 </div>
 
-                <button type="submit" class="btn btn-secondary full-btn" :disabled="loading">
+                <button type="submit" class="btn btn-secondary redirect-btn" :disabled="loading">
                     <span v-if="loading">Sending…</span>
                     <span v-else>Submit</span>
                 </button>
@@ -49,6 +51,8 @@ import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '@/firebase.js';
 import PublicPageLayout from '@/components/PublicPageLayout.vue';
 
+const NUS_EMAIL_DOMAINS = ['@u.nus.edu', '@nus.edu.sg'];
+
 export default {
     name: 'ForgotPassword',
 
@@ -57,6 +61,7 @@ export default {
     data() {
         return {
             email: '',
+            touched: false,
             error: '',
             loading: false,
             submitted: false,
@@ -64,13 +69,24 @@ export default {
     },
 
     methods: {
+        validateEmail() {
+            if (!this.email) {
+                this.error = 'Email is required!';
+            } else if (!NUS_EMAIL_DOMAINS.some(d => this.email.endsWith(d))) {
+                this.error = 'Must be a valid NUS email (@u.nus.edu or @nus.edu.sg)!';
+            } else {
+                this.error = '';
+            }
+        },
+
+        onEmailBlur() { this.touched = true; this.validateEmail(); },
+        onEmailInput() { if (this.touched) this.validateEmail(); },
+
         async handleSubmit() {
             this.error = '';
 
-            if (!this.email) {
-                this.error = 'Email is required.';
-                return;
-            }
+            this.validateEmail();
+            if (this.error) return;
 
             this.loading = true;
             try {
@@ -100,7 +116,7 @@ export default {
     font-size: 2rem;
     font-weight: bold;
     color: var(--secondary);
-    margin-bottom: 1rem;
+    margin-bottom: 1.25rem;
 }
 
 .auth-form {
@@ -114,7 +130,7 @@ export default {
     font-size: 1rem;
     color: var(--gray2);
     line-height: 1.8;
-    margin-bottom: 0.5rem;
+    margin-bottom: 1rem;
 }
 
 .info-text--secondary {
@@ -127,30 +143,19 @@ export default {
     font-weight: 700;
 }
 
-.full-btn {
-    width: 100%;
-    justify-content: center;
-    padding: 1rem 0;
-    font-size: 1rem;
-    margin-top: 0.5rem;
-    text-align: center;
-    text-decoration: none;
-}
-
-.full-btn:disabled {
-    background-color: var(--gray5);
-    border-color: var(--gray5);
-    cursor: not-allowed;
+.redirect-btn {
+    margin-top: 0.75rem;
 }
 
 .switch-text {
     text-align: center;
     font-size: 0.875rem;
+    margin-top: 0.5rem;
 }
 
 .text-link {
     color: var(--primary);
-    font-weight: 600;
-    text-decoration: underline;
+    font-weight: bold;
+    text-decoration: none;
 }
 </style>
