@@ -56,7 +56,7 @@
                 <div v-if="isLister" class="lister-actions">
                     <p> This is your listing! Feel free to edit or delete it at any time.</p>
                     <button class="btn btn-primary" @click="editListing">Edit Listing</button>
-                    <button class="btn btn-danger" @click="deleteListing">Delete Listing</button>
+                    <button class="btn btn-danger" @click="showDeleteModal = true">Delete Listing</button>
                 </div>
 
                 <!-- Analytics (only for lister) -->
@@ -82,6 +82,21 @@
                 </div>
             </div>
         </div>
+            <ConfirmationModal v-model:showModal="showDeleteModal" title="Delete Confirmation">
+            
+            This action cannot be undone!
+
+            
+            <template #buttons>
+                <!-- cancel button -->
+                 <button @click="showDeleteModal = false">Cancel</button>
+                <!-- delete button -->
+                 <button @click="deleteListing" class="btn-secondary">Confirm</button>
+            </template>
+
+
+            </ConfirmationModal>
+
     </div>
 </template>
 
@@ -91,7 +106,8 @@ import { ref, computed, onMounted } from 'vue'
 import { Line } from 'vue-chartjs'
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Tooltip } from 'chart.js'
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip)
-import { addCreateNotifToBatch } from '@/utils/notifications.js'
+import { addCreateNotifToBatch } from '@/utils/notifications.js';
+import ConfirmationModal from '@/components/ConfirmationModal.vue';
 
 // Firebase Imports
 import { db } from '@/firebase'
@@ -109,7 +125,7 @@ const auth = getAuth()
 
 // Listing Data
 const listing = ref(null)
-const defaultImage = "@/assets/default-listing.jpg"
+const defaultImage = "@/assets/listing_pics/default_list_pic.jpg"
 const clicksByDay = ref({})
 const clicksByHour = ref({})
 const activeView = ref('week')
@@ -180,10 +196,19 @@ const editListing = () => {
     router.push(`/edit-listing/${listing.value.id}`)
 }
 
+const showDeleteModal = ref(false)
+
 const deleteListing = async () => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this listing?")
-    if (!confirmDelete) return
+    // have placed this into the modal instead 
+    // const confirmDelete = window.confirm("Are you sure you want to delete this listing?")
+    // if (!confirmDelete) return
+
     await deleteDoc(doc(db, "listings", listing.value.id))
+
+    window.alert("Listing deleted successfully!")
+
+    showDeleteModal.value = false 
+
     router.push("/explore")
 }
 
