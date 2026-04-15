@@ -107,6 +107,10 @@ export default {
 </script>
 
 <style scoped>
+.main-content {
+  flex: 1;
+}
+
 .main-content-with-header {
   margin-top: 4.5rem; /* height of header */
   padding: 1rem max(2rem, 7vw);

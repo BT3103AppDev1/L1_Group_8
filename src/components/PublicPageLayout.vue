@@ -28,7 +28,7 @@ export default {
     display: flex;
     padding: 2rem;
     background-color: var(--primary);
-    min-height: 88vh;
+    min-height: 91vh;
     position: relative;
 }
 
@@ -40,6 +40,7 @@ export default {
     height: 100%;
     overflow: hidden;
     z-index: 0;
+    flex: 1;
 }
 
 .bg-decoration {

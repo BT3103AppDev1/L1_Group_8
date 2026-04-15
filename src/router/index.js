@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { getCurrentUser } from '@/auth.js'
 import SignIn from '@/views/SignIn.vue'
-import SignUp from '@/views/SignUp.vue'
+import AuthPage from '@/views/AuthPage.vue'
 import EmailVerification from '@/views/EmailVerification.vue'
 import ForgotPassword from '@/views/ForgotPassword.vue'
 import ResetPassword from '@/views/ResetPassword.vue'
@@ -24,15 +24,9 @@ import PointsHistory from '@/views/PointsHistory.vue'
 
 const routes = [
     {
-        path: '/sign-in',
-        name: 'SignIn',
-        component: SignIn,
-        meta: { showHeader: false, requiresAuth: false }
-    },
-    {
-        path: '/sign-up',
-        name: 'SignUp',
-        component: SignUp,
+        path: '/auth',
+        name: 'AuthPage',
+        component: AuthPage,
         meta: { showHeader: false, requiresAuth: false }
     },
     {
