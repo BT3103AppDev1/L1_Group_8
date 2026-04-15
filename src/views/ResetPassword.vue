@@ -201,6 +201,11 @@ export default {
     padding-right: 2.75rem;
 }
 
+.btn {
+  padding: 1rem 0;
+  width: 100%;
+}
+
 .eye-btn {
     position: absolute;
     right: 1rem;

@@ -523,9 +523,6 @@ export default {
 }
 
 .btn {
-    display: flex;
-    justify-content: center;
-    align-content: center;
     padding: 0.75rem 0;
     width: 15vw;
 }

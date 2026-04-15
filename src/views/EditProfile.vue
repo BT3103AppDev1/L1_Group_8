@@ -274,18 +274,8 @@ export default {
 }
 
 .btn {
-    display: flex;
-    justify-content: center;
-    align-content: center;
     padding: 1rem 0;
     width: 100%;
-}
-
-.btn:disabled {
-    background-color: var(--gray5);
-    border: var(--gray5);
-    color: var(--white);
-    cursor: not-allowed;
 }
 
 .text-link {

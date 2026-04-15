@@ -143,6 +143,11 @@ export default {
     font-weight: 700;
 }
 
+.btn {
+  padding: 1rem 0;
+  width: 100%;
+}
+
 .redirect-btn {
     margin-top: 0.75rem;
 }

@@ -491,6 +491,11 @@ export default {
     white-space: nowrap;
 }
 
+.btn {
+  padding: 1rem 0;
+  width: 100%;
+}
+
 .btn-google {
     display: flex;
     align-items: center;

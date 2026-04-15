@@ -67,14 +67,14 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 1rem 0;
-  width: 100%;
+  padding: 9px 20px;
 }
 .btn:disabled {
   background-color: var(--gray5);
   border: var(--gray5);
   color: var(--white);
   cursor: not-allowed;
+  pointer-events: none;
 }
 .btn:active { opacity: 0.82; }
 .btn-sm { font-size: 13px; padding: 6px 14px; }

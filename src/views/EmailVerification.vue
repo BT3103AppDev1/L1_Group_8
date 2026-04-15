@@ -171,6 +171,11 @@ export default {
     margin-bottom: 0.75rem;
 }
 
+.btn {
+  padding: 1rem 0;
+  width: 100%;
+}
+
 .resend-btn {
     margin: 0.25rem 0 1.5rem 0;
 }

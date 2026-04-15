@@ -263,18 +263,8 @@ export default {
 }
 
 .btn {
-    display: flex;
-    justify-content: center;
-    align-content: center;
     padding: 0.75rem 0;
     width: 15vw;
-}
-
-.btn:disabled {
-    background-color: var(--gray5);
-    border: var(--gray5);
-    color: var(--white);
-    cursor: not-allowed;
 }
 
 .btn-or-spinner {

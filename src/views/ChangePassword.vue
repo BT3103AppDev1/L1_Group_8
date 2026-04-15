@@ -155,6 +155,11 @@ export default {
     margin-bottom: 0.75rem;
 }
 
+.btn {
+  padding: 1rem 0;
+  width: 100%;
+}
+
 .send-btn {
     margin-top: 1.25rem;
 }
