@@ -117,7 +117,7 @@ export default {
                         //Normalisee category to ensure it fit category button 
                         category: data.listing_category?.trim(),
                         //Make sure there is user table and then use the corresponding user_name
-                        listedBy: data.lister_name ?? "Unknown User",
+                        lister_name: data.lister_name ?? "Unknown User",
                         //Update date format into something more readable
                         postedOn: data.created_at?.toDate().toLocaleDateString("en-SG", {
                             year: "numeric",
