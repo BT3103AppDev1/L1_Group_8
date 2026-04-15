@@ -56,6 +56,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  font: inherit;
   font-weight: 600;
   font-size: 14px;
   padding: 9px 20px;
@@ -147,7 +148,7 @@ body {
 }
 
 .input-label {
-  font-size: 1rem;
+  font-size: 0.875rem;
   font-weight: bold;
   color: var(--gray2);
   line-height: 1.5;
@@ -166,7 +167,7 @@ body {
   padding: 0.875rem 0.75rem;
   border: 1px solid var(--gray4);
   border-radius: var(--radius);
-  font-size: 1rem;
+  font-size: 0.875rem;
   color: var(--gray2);
   background: var(--white);
   transition: border-color 0.15s, box-shadow 0.15s;
@@ -189,7 +190,7 @@ body {
 }
 
 .input-info {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   color: var(--gray3);
   line-height: 1.5;
   letter-spacing: 0.02em;
@@ -218,8 +219,8 @@ body {
 }
 
 .detail-box {
-    background-color: #DDEBFB;
-    border-radius: var(--radius);
-    border: 1px solid var(--black1);
-    padding: 15px;
+  background-color: #DDEBFB;
+  border-radius: var(--radius);
+  border: 1px solid var(--black1);
+  padding: 15px;
 }

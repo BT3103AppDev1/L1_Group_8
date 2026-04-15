@@ -30,7 +30,7 @@
                             <input
                                 id="su-password"
                                 v-model="signUp.password"
-                                :type="showPassword ? 'text' : 'password'"
+                                :type="signUp.showPassword ? 'text' : 'password'"
                                 :class="['input-field', {
                                     'input-field--invalid': signUp.errors.password,
                                     'input-field--valid': signUp.touched.password && !signUp.errors.password && signUp.password,
@@ -74,7 +74,7 @@
 
                     <p v-if="signUp.generalError" class="general-error">{{ signUp.generalError }}</p>
 
-                    <button type="submit" class="btn btn-secondary full-btn" :disabled="signUp.loading">
+                    <button type="submit" class="btn btn-secondary" :disabled="signUp.loading">
                         <span v-if="signUp.loading">Creating account…</span>
                         <span v-else>Create Account</span>
                     </button>
@@ -83,7 +83,7 @@
                         <hr class="divider" /><span class="divider-label">or</span><hr class="divider" />
                     </div>
 
-                    <button type="button" class="btn-google" @click="handleGoogleSignIn" :disabled="signUp.loading">
+                    <button type="button" class="btn btn-google" @click="handleGoogleSignIn" :disabled="signUp.loading">
                         <svg class="google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -105,7 +105,7 @@
 
                 <form @submit.prevent="handleSignIn" novalidate class="auth-form">
                     <div class="input-container">
-                        <label for="si-email" class="input-label">NUS Email</label>
+                        <label for="si-email" class="input-label">NUS Email (or Test Email)</label>
                         <input
                             id="si-email"
                             v-model.trim="signIn.email"
@@ -137,10 +137,12 @@
 
                     <div v-if="signIn.generalError" class="general-error">
                         {{ signIn.generalError }}
-                        <span v-if="signIn.promptSignUp"> New to NUSOS? <button @click="switchMode('sign-up')" class="error-link">Sign Up</button></span>
+                        <div v-if="signIn.promptSignUp" class="prompt-container">
+                            New to NUSOS? <button @click="switchMode('sign-up')" class="error-link">Sign Up</button>
+                        </div>
                     </div>
 
-                    <button type="submit" class="btn btn-secondary full-btn" :disabled="signIn.loading">
+                    <button type="submit" class="btn btn-secondary" :disabled="signIn.loading">
                         <span v-if="signIn.loading">Signing in…</span>
                         <span v-else>Sign In</span>
                     </button>
@@ -149,7 +151,7 @@
                         <hr class="divider" /><span class="divider-label">or</span><hr class="divider" />
                     </div>
 
-                    <button type="button" class="btn-google" @click="handleGoogleSignIn" :disabled="signIn.loading">
+                    <button type="button" class="btn btn-google" @click="handleGoogleSignIn" :disabled="signIn.loading">
                         <svg class="google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -219,9 +221,9 @@ export default {
         validateEmail() {
             if (this.mode === 'sign-in') return;
             if (!this.signUp.email) {
-                this.signUp.errors.email = 'Email is required.';
+                this.signUp.errors.email = 'Email is required!';
             } else if (!NUS_EMAIL_DOMAINS.some(d => this.signUp.email.endsWith(d))) {
-                this.signUp.errors.email = 'Must be a valid NUS email (@u.nus.edu or @nus.edu.sg).';
+                this.signUp.errors.email = 'Must be a valid NUS email (@u.nus.edu or @nus.edu.sg)!';
             } else {
                 this.signUp.errors.email = '';
             }
@@ -231,11 +233,11 @@ export default {
             if (this.mode === 'sign-in') return;
             const pw = this.signUp.password;
             if (!pw) {
-                this.signUp.errors.password = 'Password is required.';
+                this.signUp.errors.password = 'Password is required!';
             } else if (pw !== pw.trim()) {
-                this.signUp.errors.password = 'Password must not start or end with spaces.';
+                this.signUp.errors.password = 'Password must not start or end with spaces!';
             } else if (pw.length < 12) {
-                this.signUp.errors.password = 'Must be at least 12 characters.';
+                this.signUp.errors.password = 'Must be at least 12 characters!';
             } else {
                 this.signUp.errors.password = '';
             }
@@ -244,9 +246,9 @@ export default {
         validateConfirm() {
             if (this.mode === 'sign-in') return;
             if (!this.signUp.confirmPassword) {
-                this.signUp.errors.confirmPassword = 'Please confirm your password.';
+                this.signUp.errors.confirmPassword = 'Please confirm your password!';
             } else if (this.signUp.confirmPassword !== this.signUp.password) {
-                this.signUp.errors.confirmPassword = 'Passwords do not match.';
+                this.signUp.errors.confirmPassword = 'Passwords do not match!';
             } else {
                 this.signUp.errors.confirmPassword = '';
             }
@@ -301,7 +303,7 @@ export default {
 
             } catch (err) {
                 if (err.code === 'auth/email-already-in-use') {
-                    this.signUp.errors.email = 'This email is already registered.';
+                    this.signUp.errors.email = 'This email is already registered! Please sign in instead.';
                     this.signUp.touched.email = true;
                 } else {
                     this.signUp.generalError = 'Registration failed. Please try again.';
@@ -458,18 +460,33 @@ export default {
     padding: 0.5rem 0.75rem;
     font-size: 0.875rem;
     color: var(--error);
-}
-
-.full-btn {
-    width: 100%;
+    display: flex;
+    flex-direction: column;
     justify-content: center;
-    padding: 1rem 0;
-    font-size: 1rem;
+    gap: 0.125rem;
+    margin-bottom: 0.5rem;
 }
 
-.full-btn:disabled {
+.prompt-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    padding: 1rem 0;
+    width: 100%;
+    font-weight: bold;
+}
+
+.btn:disabled {
     background-color: var(--gray5);
-    border-color: var(--gray5);
+    border: var(--gray5);
+    color: var(--white);
     cursor: not-allowed;
 }
 
@@ -495,17 +512,10 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.6rem;
-    width: 100%;
-    padding: 0.7rem 0;
+    gap: 0.75rem;
     background: #fff;
     border: 1px solid rgba(0, 0, 0, 0.2);
-    border-radius: var(--radius);
-    font-size: 0.95rem;
-    font-family: inherit;
-    font-weight: 500;
     color: #3c4043;
-    cursor: pointer;
     transition: background 0.15s, box-shadow 0.15s;
 }
 
@@ -520,8 +530,9 @@ export default {
 }
 
 .google-icon {
-    width: 1.1rem;
-    height: 1.1rem;
+    display: block;
+    width: 1.25rem;
+    height: 1.25rem;
 }
 
 .switch-text {
@@ -531,11 +542,15 @@ export default {
 }
 
 .text-link {
+    margin-left: 0.25rem;
     background-color: transparent;
     border: none;
     color: var(--primary);
     font-weight: bold;
-    text-decoration: underline;
+}
+
+.text-link:hover {
+    color: var(--primary-hover);
 }
 
 .forgot-link {
@@ -544,11 +559,11 @@ export default {
     font-size: 0.875rem;
     color: var(--primary);
     text-decoration: none;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .forgot-link:hover {
-    text-decoration: underline;
+    color: var(--primary-hover);
 }
 
 .error-link {
@@ -556,7 +571,11 @@ export default {
     border: none;
     color: var(--primary);
     font-weight: bold;
-    text-decoration: underline;
+    text-decoration: none;
+}
+
+.error-link:hover {
+    color: var(--primary-hover);
 }
 
 /* Fade transition */
