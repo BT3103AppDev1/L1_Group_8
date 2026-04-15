@@ -81,7 +81,7 @@ export default {
               if (route !== '/consent') this.$router.replace('/consent');
             } else if (!data.onboarded) {
               if (route !== '/onboarding') this.$router.replace('/onboarding');
-            } else if (route === '/email-verification' || route === '/consent' || route === '/onboarding' || route === '/sign-in' || route === '/sign-up') {
+            } else if (route === '/email-verification' || route === '/consent' || route === '/onboarding' || route === '/auth') {
               this.$router.replace('/');
             }
           } else {
@@ -91,7 +91,7 @@ export default {
       } else {
         this.profilePicUrl = null;
         if (this.$route.meta.requiresAuth) {
-          this.$router.replace('/sign-in');
+          this.$router.replace('/auth');
         }
       }
     });

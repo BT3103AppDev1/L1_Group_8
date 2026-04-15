@@ -434,7 +434,7 @@ export default {
 
 .eye-btn {
     position: absolute;
-    right: 0.75rem;
+    right: 1rem;
     top: 50%;
     transform: translateY(-50%);
     background: none;

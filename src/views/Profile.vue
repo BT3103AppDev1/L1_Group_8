@@ -391,7 +391,7 @@ export default {
             this.isSigningOut = true;
             try {
                 await signOut(auth);
-                this.$router.replace('/sign-in');
+                this.$router.replace('/auth');
             } catch (error) {
                 console.error('Error signing out:', error);
                 alert("Something went wrong while signing out. Please try again.")

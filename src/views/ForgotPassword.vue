@@ -9,7 +9,7 @@
             <p class="info-text info-text--secondary">
                 Don't see the email? Check your spam or junk folder.
             </p>
-            <RouterLink to="/sign-in" class="btn btn-secondary full-btn">Back to Sign In</RouterLink>
+            <RouterLink to="/auth" class="btn btn-secondary full-btn">Back to Sign In</RouterLink>
         </template>
 
         <template v-else>
@@ -37,7 +37,7 @@
                 </button>
 
                 <p class="switch-text">
-                    <RouterLink to="/sign-in" class="text-link">Back to Sign In</RouterLink>
+                    <RouterLink to="/auth" class="text-link">Back to Sign In</RouterLink>
                 </p>
             </form>
         </template>

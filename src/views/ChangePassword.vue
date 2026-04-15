@@ -24,7 +24,7 @@
                 <p class="info-text info-text--secondary">
                     Don't see the email? Check your spam or junk folder.
                 </p>
-                <RouterLink to="/sign-in" class="btn btn-secondary full-btn">Go to Sign In</RouterLink>
+                <RouterLink to="/auth" class="btn btn-secondary full-btn">Go to Sign In</RouterLink>
             </template>
 
             <!-- Default: confirm to send reset email -->
@@ -68,7 +68,7 @@ export default {
     async created() {
         const user = await getCurrentUser();
         if (!user) {
-            this.$router.replace('/sign-in');
+            this.$router.replace('/auth');
             return;
         }
         this.userEmail = user.email || '';

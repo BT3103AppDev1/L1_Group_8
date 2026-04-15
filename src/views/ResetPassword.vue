@@ -17,7 +17,7 @@
                 Your password has been updated successfully.
                 You can now sign in with your new password.
             </p>
-            <RouterLink to="/sign-in" class="btn btn-secondary full-btn">Go to Sign In</RouterLink>
+            <RouterLink to="/auth" class="btn btn-secondary full-btn">Go to Sign In</RouterLink>
         </template>
 
         <!-- Reset form -->

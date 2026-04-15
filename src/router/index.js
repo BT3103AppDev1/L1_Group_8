@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { getCurrentUser } from '@/auth.js'
-import SignIn from '@/views/SignIn.vue'
 import AuthPage from '@/views/AuthPage.vue'
 import EmailVerification from '@/views/EmailVerification.vue'
 import ForgotPassword from '@/views/ForgotPassword.vue'
@@ -187,7 +186,7 @@ router.beforeEach(async (to) => {
     const user = true; */
 
     if (to.meta.requiresAuth && !user) {
-        return '/sign-in';
+        return '/auth';
     } 
 
     return true;
