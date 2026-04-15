@@ -1,25 +1,35 @@
 <template>
   <div id="app">
-    <TheHeader v-if="$route.meta.showHeader" :profilePicUrl="profilePicUrl"/>
+    <template v-if="!authReady">
+      <div class="loading-container">
+        <VueSpinner size="50" color="var(--secondary)" aria-label="Loading authentication status..." />
+      </div>
+    </template>
 
-    <main :class="['main-content', {'main-content-with-header': $route.meta.showHeader}]">
-      <RouterView v-slot="{ Component }">
-        <transition name="fade" mode="out-in">
-          <component :is="Component" :key="$route.fullPath"/>
-        </transition>
-      </RouterView>
-    </main>
-    <TheFooter />
+    <template v-else>
+      <TheHeader v-if="$route.meta.showHeader" :profilePicUrl="profilePicUrl"/>
+
+      <main :class="['main-content', {'main-content-with-header': $route.meta.showHeader}]">
+        <RouterView v-slot="{ Component }">
+          <transition name="fade" mode="out-in">
+            <component :is="Component" :key="$route.fullPath"/>
+          </transition>
+        </RouterView>
+      </main>
+
+      <TheFooter />
+    </template>
   </div>
 </template>
 
 <script>
 import TheFooter from '@/components/TheFooter.vue';
 import TheHeader from './components/TheHeader.vue';
-import { getCurrentUser, onAuthUserChanged } from './auth.js';
+import { onAuthUserChanged } from './auth.js';
 import { db } from '@/firebase.js';
 import { doc, onSnapshot } from 'firebase/firestore';
 import '@/assets/main.css';
+import { VueSpinner } from 'vue3-spinners';
 
 export default {
   name: 'App',
@@ -27,6 +37,7 @@ export default {
   components: {
     TheFooter,
     TheHeader,
+    VueSpinner,
   },
 
   data() {
@@ -34,12 +45,14 @@ export default {
       profilePicUrl: null,
       user: null,
       _firestoreUnsubscribe: null,
+      authReady: false,
     }
   },
 
   created() {
     // Listen for auth state changes
     onAuthUserChanged((user) => {
+      this.authReady = true;
       this.user = user;
       // Unsubscribe from previous Firestore listener if it exists
       if (this._firestoreUnsubscribe) {
@@ -97,6 +110,13 @@ export default {
 .main-content-with-header {
   margin-top: 4.5rem; /* height of header */
   padding: 1rem max(2rem, 7vw);
+  flex: 1;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   flex: 1;
 }
 
