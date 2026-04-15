@@ -109,12 +109,6 @@ export default {
                 this.isEmailPasswordProvider = providerData.some(provider => provider.providerId === "password");
                 this.uid = user.uid; 
 
-                /* // Stimulate isEmailPasswordProvider for testing without auth
-                this.isEmailPasswordProvider = true;
-
-                // Simulate user ID for testing without auth
-                const uid = "zrxX7Bt3kZSaPYpyBuaokbJz47i1"; */
-
                 const userDocRef = doc(db, "users", this.uid);
                 const userDocSnap = await getDoc(userDocRef);
                 if (!userDocSnap.exists()) {
