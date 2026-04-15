@@ -473,23 +473,6 @@ export default {
     gap: 0.5rem;
 }
 
-.btn {
-    display: flex;
-    justify-content: center;
-    align-content: center;
-    align-items: center;
-    padding: 1rem 0;
-    width: 100%;
-    font-weight: bold;
-}
-
-.btn:disabled {
-    background-color: var(--gray5);
-    border: var(--gray5);
-    color: var(--white);
-    cursor: not-allowed;
-}
-
 .divider-row {
     display: flex;
     align-items: center;

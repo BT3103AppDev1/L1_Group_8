@@ -53,13 +53,10 @@ body {
 
 /* ── Buttons ── */
 .btn {
-  display: inline-flex;
-  align-items: center;
   gap: 6px;
   font: inherit;
-  font-weight: 600;
+  font-weight: bold;
   font-size: 14px;
-  padding: 9px 20px;
   border-radius: 6px;
   border: none;
   cursor: pointer;
@@ -67,6 +64,18 @@ body {
   white-space: nowrap;
   text-decoration: none;
   letter-spacing: 0.05em;
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  align-items: center;
+  padding: 1rem 0;
+  width: 100%;
+}
+.btn:disabled {
+  background-color: var(--gray5);
+  border: var(--gray5);
+  color: var(--white);
+  cursor: not-allowed;
 }
 .btn:active { opacity: 0.82; }
 .btn-sm { font-size: 13px; padding: 6px 14px; }
