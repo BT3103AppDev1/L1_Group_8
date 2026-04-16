@@ -182,7 +182,7 @@ export default {
 
   data() {
     return {
-      activeTab: 'awaiting',
+      activeTab: this.$route?.query?.['initial-tab'] || 'awaiting',
       tabs: [
         { key: 'awaiting',  label: 'Awaiting' },
         { key: 'ongoing',   label: 'Ongoing' },

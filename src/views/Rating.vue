@@ -2,19 +2,20 @@
     <div>
         <ConfirmationModal :showModal="showRatingModal" @update:show-modal="onModalClose">
         
-        <h1>Rate the Service Provider</h1>
-        <!-- star rating timeee -->
-        <div class="rating_stars">
-            <span v-for="star in 5" :key ="star" class="star" :class="{ active: star <= selectedRating }" @click="selectedRating= star">★</span>
+            <h1>Rate the Service Provider</h1>
+            <!-- star rating timeee -->
+            <div class="rating_stars">
+                <span v-for="star in 5" :key ="star" class="star" :class="{ active: star <= selectedRating }" @click="selectedRating= star">★</span>
 
-        </div>
-        
-        <p>Rating is compulsory and can only be done once</p>
+            </div>
 
-        <!-- done button -->
-        <template #buttons>
-        <button class="btn-secondary" :disabled="selectedRating === 0" @click="confirmRating">Done</button>
-        </template>
+            <p v-if="errorMessage" class="text-danger">{{ errorMessage }}</p>
+            <p v-else>Rating is compulsory and can only be done once.</p>
+
+            <!-- done button -->
+            <template #buttons>
+                <button class="btn btn-secondary" :disabled="selectedRating === 0" @click="confirmRating">Done</button>
+            </template>
 
         </ConfirmationModal>
     </div>
@@ -34,6 +35,7 @@ export default {
         return {
             showRatingModal: true,
             selectedRating: 0,
+            errorMessage: '',
         };
     },
 
@@ -41,11 +43,12 @@ export default {
         onModalClose() {
             // Rating is compulsory — closing without rating returns to My Listings.
             // The listing stays Ongoing so the lister can trigger rating again.
-            this.$router.push('/my-listings');
+            this.$router.push({ path: '/my-listings', query: { 'initial-tab': 'ongoing' } });
         },
 
         async confirmRating() {
             const { listingId, providerId } = this.$route.query;
+            this.errorMessage = '';
             try {
                 // Write status + rating atomically — only mark Completed if rating succeeds
                 await Promise.all([
@@ -53,10 +56,10 @@ export default {
                     updateDoc(doc(db, 'listings', listingId), { status: 'Completed' }),
                 ]);
                 this.showRatingModal = false;
-                this.$router.push('/my-listings');
+                this.$router.push({ path: '/my-listings', query: { 'initial-tab': 'completed' } });
             } catch (e) {
                 console.error('Failed to save rating:', e);
-                alert('An error occurred while saving your rating. Please try again.');
+                this.errorMessage = "An error occurred while saving your rating. Please try again.";
             }
         }
     },
@@ -77,6 +80,6 @@ export default {
 }
 
 .star.active {
-    color: yellow;
+    color: #FBBF24;
 }
 </style>
