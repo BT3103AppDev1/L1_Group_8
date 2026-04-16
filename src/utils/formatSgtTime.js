@@ -112,11 +112,11 @@ export function getMonthKeyFromOffset(offset) {
 
 export function getMonthLabelsFromOffset() {
     const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const monthBeforePrev = getYearMonthFromOffset(-2).month;
     const prevMonth = getYearMonthFromOffset(-1).month;
     const currentMonth = getYearMonthFromOffset(0).month;
-    const nextMonth = getYearMonthFromOffset(1).month;
+    const monthBeforePrevLabel = months[monthBeforePrev - 1];
     const prevMonthLabel = months[prevMonth - 1];
     const currentMonthLabel = months[currentMonth - 1];
-    const nextMonthLabel = months[nextMonth - 1];
-    return [prevMonthLabel, currentMonthLabel, nextMonthLabel];
+    return [monthBeforePrevLabel, prevMonthLabel, currentMonthLabel];
 }

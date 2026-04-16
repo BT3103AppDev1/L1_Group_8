@@ -2,11 +2,11 @@
     <div class="leaderboard">
         <div class="headerRow">
             <PageHeader title="Leaderboard" />
-            <button class="viewRewardButton" @click="viewReward=true">View Reward</button>
+            <button class="viewRewardButton" @click="viewReward=true">{{actualCurrMonth}}'s Reward</button>
         </div>
         
         <InfoModal v-model:showModal="viewReward">
-            <div class="modalDetail">
+            <div class="modalDetail">  
                 <h2 class="modalTitle">Current Month Reward</h2>
                 <div v-if="currentMonthReward">
                     <p class="modalLabel">{{ currentMonthReward.reward_name }}</p>
@@ -103,6 +103,7 @@ export default {
             defaultProfilePic,
             currentUserProfilePic: '',
             viewReward: false,
+            actualCurrMonth: MONTH_LABELS[CURRENT_MONTH_INDEX],
             currentMonthIndex: CURRENT_MONTH_INDEX,
             currentUserRowVisible: false,
             observer: null,
