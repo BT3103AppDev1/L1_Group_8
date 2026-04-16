@@ -144,28 +144,37 @@
     <div v-if="toast.show" class="toast">{{ toast.message }}</div>
 
     <!-- Confirm Modal -->
-    <ConfirmModal
-      v-if="modal.show"
-      :icon="modal.icon"
-      :title="modal.title"
-      :message="modal.message"
-      :confirmLabel="modal.confirmLabel"
-      :confirmClass="modal.confirmClass"
-      @confirm="handleConfirm"
-      @cancel="modal.show = false"
-    />
+    <confirmation-modal v-model:showModal="modal.show" :title="modal.title">
+      {{ modal.message }}
+      <template #buttons>
+        <button class="btn cancel-btn modal-btn" :disabled="isConfirming" @click="modal.show = false">
+          Cancel
+        </button>
+        <div class="btn-or-spinner">
+          <button
+            v-if="!isConfirming"
+            :class="['btn', modal.confirmClass, 'modal-btn']"
+            @click="handleConfirm"
+          >
+            {{ modal.confirmLabel }}
+          </button>
+          <VueSpinner v-else size="30" color="var(--secondary)" aria-label="Processing..." />
+        </div>
+      </template>
+    </confirmation-modal>
   </div>
 </template>
 
 <script>
-import ConfirmModal from '@/components/ConfirmModal.vue'
+import ConfirmationModal from '@/components/ConfirmationModal.vue'
+import { VueSpinner } from 'vue3-spinners'
 import { db } from '@/firebase.js'
 import { collection, query, where, getDocs, doc, updateDoc, arrayRemove } from 'firebase/firestore'
 import { getCurrentUser } from '@/auth.js'
 
 export default {
   name: 'MyGigsView',
-  components: { ConfirmModal },
+  components: { ConfirmationModal, VueSpinner },
 
   data() {
     return {
@@ -177,6 +186,7 @@ export default {
       ],
       toast: { show: false, message: '' },
       modal: { show: false, icon: '', title: '', message: '', confirmLabel: 'Confirm', confirmClass: 'btn-primary', _fn: null },
+      isConfirming: false,
       loading: false,
       currentUserId: null,
 
@@ -292,8 +302,10 @@ export default {
       this._toastTimer = setTimeout(() => { this.toast.show = false }, 2200)
     },
 
-    handleConfirm() {
-      this.modal._fn?.()
+    async handleConfirm() {
+      this.isConfirming = true
+      await this.modal._fn?.()
+      this.isConfirming = false
       this.modal.show = false
     },
 
