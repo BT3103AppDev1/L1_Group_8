@@ -172,7 +172,7 @@
 <script>
 import ConfirmModal from '@/components/ConfirmModal.vue'
 import { db } from '@/firebase.js'
-import { collection, query, where, getDocs, getDoc, doc, updateDoc, arrayUnion, writeBatch } from 'firebase/firestore'
+import { collection, query, where, getDocs, getDoc, doc, arrayUnion, writeBatch, onSnapshot } from 'firebase/firestore'
 import { getCurrentUser } from '@/auth.js'
 import { addCreateNotifToBatch } from '@/utils/notifications'
 
@@ -191,6 +191,7 @@ export default {
       toast: { show: false, text: '' },
       modal: { show: false, icon: '', title: '', message: '', confirmLabel: '', confirmClass: '', _fn: null },
       loading: false,
+      _unsubscribe: null,
 
       listings: {
         awaiting:  [],
@@ -204,73 +205,79 @@ export default {
     const user = await getCurrentUser()
     if (!user) return
     this.loading = true
-    try {
-      const q = query(
-        collection(db, 'listings'),
-        where('lister_id', '==', user.uid)
-      )
-      const snapshot = await getDocs(q)
-      const awaiting = [], ongoing = [], completed = []
 
-      // Collect all unique applicant UIDs across all listings
-      const allUids = new Set()
-      snapshot.forEach(docSnap => {
-        const d = docSnap.data()
-        ;(d.applicants ?? []).forEach(uid => allUids.add(uid))
-        if (d.provider_id) allUids.add(d.provider_id)
-      })
+    const q = query(collection(db, 'listings'), where('lister_id', '==', user.uid))
 
-      // Fetch user profiles in parallel
-      const userProfiles = {}
-      await Promise.all([...allUids].map(async uid => {
-        try {
-          const userSnap = await getDoc(doc(db, 'users', uid))
-          if (userSnap.exists()) {
-            const u = userSnap.data()
-            userProfiles[uid] = {
-              id: uid,
-              name: u.username ?? 'Unknown',
-              profilePic: u.profile_pic_url ?? null,
+    this._unsubscribe = onSnapshot(q, async (snapshot) => {
+      try {
+        // Collect all unique UIDs for enrichment
+        const allUids = new Set()
+        snapshot.forEach(docSnap => {
+          const d = docSnap.data()
+          ;(d.applicants ?? []).forEach(uid => allUids.add(uid))
+          if (d.provider_id) allUids.add(d.provider_id)
+        })
+
+        // Fetch user profiles in parallel
+        const userProfiles = {}
+        await Promise.all([...allUids].map(async uid => {
+          try {
+            const userSnap = await getDoc(doc(db, 'users', uid))
+            if (userSnap.exists()) {
+              const u = userSnap.data()
+              userProfiles[uid] = {
+                id: uid,
+                name: u.username ?? 'Unknown',
+                profilePic: u.profile_pic_url ?? null,
+              }
             }
-            console.log(uid, 'profile_pic_url:', u.profile_pic_url)
+          } catch (_) {}
+        }))
+
+        const awaiting = [], ongoing = [], completed = []
+        snapshot.forEach(docSnap => {
+          const d = docSnap.data()
+          const enrichedApplicants = (d.applicants ?? [])
+            .map(uid => ({ ...(userProfiles[uid] ?? { id: uid, name: uid, profilePic: null }), appliedAt: d.applied_at?.[uid]?.toDate() ?? new Date(0) }))
+            .sort((a, b) => a.appliedAt - b.appliedAt)
+          const providerProfile = d.provider_id ? (userProfiles[d.provider_id] ?? { id: d.provider_id, name: d.provider_id, profilePic: null }) : null
+
+          const listing = {
+            id: docSnap.id,
+            title: d.title,
+            category: d.listing_category,
+            location: d.location_text,
+            createdAt: d.created_at?.toDate().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) ?? '',
+            createdAtRaw: d.created_at?.toDate() ?? new Date(0),
+            applicants: enrichedApplicants,
+            provider: providerProfile,
+            ratingGiven: d.rating_given ?? null,
           }
-        } catch (_) {}
-      }))
+          const status = (d.status ?? '').trim().toLowerCase()
+          if (status === 'ongoing') ongoing.push(listing)
+          else if (status === 'completed') completed.push(listing)
+          else awaiting.push(listing)
+        })
 
-      snapshot.forEach(docSnap => {
-        const d = docSnap.data()
-        const enrichedApplicants = (d.applicants ?? [])
-          .map(uid => ({ ...(userProfiles[uid] ?? { id: uid, name: uid, profilePic: null }), appliedAt: d.applied_at?.[uid]?.toDate() ?? new Date(0) }))
-          .sort((a, b) => a.appliedAt - b.appliedAt)
-        const providerProfile = d.provider_id ? (userProfiles[d.provider_id] ?? { id: d.provider_id, name: d.provider_id, profilePic: null }) : null
-
-        const listing = {
-          id: docSnap.id,
-          title: d.title,
-          category: d.listing_category,
-          location: d.location_text,
-          createdAt: d.created_at?.toDate().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) ?? '',
-          createdAtRaw: d.created_at?.toDate() ?? new Date(0),
-          applicants: enrichedApplicants,
-          provider: providerProfile,
-          ratingGiven: d.rating_given ?? null,
+        const byDateDesc = (a, b) => b.createdAtRaw - a.createdAtRaw
+        this.listings = {
+          awaiting:  awaiting.sort(byDateDesc),
+          ongoing:   ongoing.sort(byDateDesc),
+          completed: completed.sort(byDateDesc),
         }
-        const status = (d.status ?? '').trim().toLowerCase()
-        if (status === 'ongoing') ongoing.push(listing)
-        else if (status === 'completed') completed.push(listing)
-        else awaiting.push(listing)
-      })
-      const byDateDesc = (a, b) => b.createdAtRaw - a.createdAtRaw
-      this.listings = {
-        awaiting:  awaiting.sort(byDateDesc),
-        ongoing:   ongoing.sort(byDateDesc),
-        completed: completed.sort(byDateDesc),
+      } catch (e) {
+        console.error('Failed to load listings:', e)
+      } finally {
+        this.loading = false
       }
-    } catch (e) {
-      console.error('Failed to load listings:', e)
-    } finally {
+    }, (e) => {
+      console.error('Snapshot error:', e)
       this.loading = false
-    }
+    })
+  },
+
+  beforeUnmount() {
+    if (this._unsubscribe) this._unsubscribe()
   },
 
   computed: {
@@ -367,22 +374,9 @@ export default {
         title: 'Mark as Completed?',
         message: 'Confirm that the service has been fulfilled. You will then be prompted to rate your provider.',
         confirmLabel: 'Mark Completed', confirmClass: 'btn-primary',
-        _fn: async () => {
-          try {
-            await updateDoc(doc(db, 'listings', listing.id), {
-              status: 'Completed',
-            })
-            const idx = this.listings.ongoing.findIndex(l => l.id === listing.id)
-            if (idx !== -1) {
-              const moved = { ...listing }
-              this.listings.ongoing.splice(idx, 1)
-              this.listings.completed.unshift(moved)
-            }
-            this.$router.push({ path: '/rating', query: { listingId: listing.id, providerId: listing.provider?.id } })
-          } catch (e) {
-            console.error('Failed to mark complete:', e)
-            this.showToast('Something went wrong. Please try again.')
-          }
+        _fn: () => {
+          // Status is written to Firestore only after rating is confirmed in Rating.vue
+          this.$router.push({ path: '/rating', query: { listingId: listing.id, providerId: listing.provider?.id } })
         },
       }
     },
@@ -454,14 +448,14 @@ export default {
 /* ── Card ── */
 .card {
   background: #fff;
-  border-radius: 8px;
-  border: 1px solid #E5E9EF;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+  border-radius: var(--radius);
+  border: 1px solid var(--black3);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
   margin-bottom: 20px;
   overflow: hidden;
   transition: box-shadow 0.2s;
 }
-.card:hover { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.11); }
+.card:hover { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.13); }
 
 .card-head {
   display: flex;
@@ -551,6 +545,11 @@ export default {
   color: #9CA3AF;
   white-space: nowrap;
 }
+
+/* ── Category tag color overrides (match Explore solid style) ── */
+.tag-education { background: var(--primary)  !important; color: #fff !important; }
+.tag-buddy     { background: var(--info)     !important; color: #fff !important; }
+.tag-survival  { background: var(--success)  !important; color: #fff !important; }
 
 /* ── Toast ── */
 .toast {
