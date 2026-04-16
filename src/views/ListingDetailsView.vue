@@ -55,8 +55,8 @@
                 </div>
                 <hr>
                 <!-- Edit + Delete buttons (only for lister) -->
-                <div v-if="isLister" class="lister-actions">
-                    <p> This is your listing! Feel free to edit or delete it at any time.</p>
+                <div v-if="isLister && isAwaiting" class="lister-actions">
+                    <p> This is your listing! Feel free to edit or delete it.</p>
                     <div class="action-btns">
                         <button class="btn btn-secondary" @click="editListing">Edit Listing</button>
                         <button class="btn btn-danger" @click="showDeleteModal = true">Delete Listing</button>
@@ -89,6 +89,11 @@
                         </p>
                     </div>
                 </div>
+                <div v-if="isProvider">
+                    <p class="help-notice">
+                        You are the provider for this listing.
+                    </p>
+                </div>
             </div>
         </div>
 
@@ -113,7 +118,7 @@
 
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, provide } from 'vue'
 import { Line } from 'vue-chartjs'
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Tooltip } from 'chart.js'
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip)
@@ -199,15 +204,23 @@ const user = computed(() => auth.currentUser)
 const isLister = computed(() => {
     return user.value && listing.value && user.value.uid === listing.value.lister_uid
 })
+const isAwaiting = computed(() => {
+    return listing.value?.status?.toLowerCase() === "awaiting"
+})
+
 const canHelp = computed(() => {
     if (!user.value || !listing.value) return false
-    const isAwaiting = listing.value?.status?.toLowerCase() === "awaiting"
-    return !isLister.value && isAwaiting
+    return !isLister.value && isAwaiting.value
 })
 
 const alreadyApplied = computed(() => {
     if (!user.value || !listing.value) return false
     return listing.value?.applicants?.includes(user.value.uid)
+})
+
+const isProvider = computed(() => {
+    if (!user.value || !listing.value) return false
+    return listing.value?.provider_id === user.value.uid
 })
 
 //button handlers
@@ -305,6 +318,7 @@ onMounted(async () => {
         photoURL: listingData.picture_url,
         payment_mode: listingData.payment_mode?.trim() || "N/A",
         applicants: listingData.applicants || [],
+        provider_id: listingData.provider_id,
 
         // Format created_at into readable date
         postedOn: listingData.created_at

@@ -72,7 +72,7 @@
                 <div class="applicant-info">
                   <span class="applicant-name" @click="$router.push('/users/' + a.id)">{{ a.name }}</span>
                 </div>
-                <button class="btn btn-primary" @click="openChoose(listing, a)">Choose This Provider</button>
+                <button class="btn btn-primary btn-sm" @click="openChoose(listing, a)">Choose This Provider</button>
               </div>
             </div>
           </div>
@@ -587,5 +587,37 @@ export default {
 @media (max-width: 768px) {
   .card-head { flex-direction: column; }
   .applicant-row { flex-wrap: wrap; }
+}
+
+.btn-or-spinner {
+  width: 15vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cancel-btn {
+  background: var(--gray4);
+  color: var(--white);
+}
+
+.cancel-btn:hover {
+  background-color: var(--gray5);
+}
+
+.modal-btn {
+  padding: 0.75rem 0;
+  width: 15vw;
+  width: 15vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-btn:disabled {
+  background-color: var(--gray5);
+  border: var(--gray5);
+  color: var(--white);
+  cursor: not-allowed;
 }
 </style>
