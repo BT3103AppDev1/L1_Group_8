@@ -104,7 +104,7 @@
           </div>
 
           <div class="card-body">
-            <span class="waiting-pill">Waiting for Lister Confirmation</span>
+            <span class="waiting-pill">Waiting for Service Completion</span>
           </div>
         </article>
       </template>
@@ -247,8 +247,21 @@ export default {
 
       const byDateDesc = (a, b) => b.createdAtRaw - a.createdAtRaw
       const pendingGigs = awaitingSnap.docs.map(mapGig)
-      const rejectedGigs = rejectedSnap.docs.map(mapRejected)
-      this.gigs.awaiting  = [...pendingGigs, ...rejectedGigs].sort(byDateDesc)
+
+      // Auto-remove expired rejected gigs from Firestore, keep the rest
+      const allRejected = rejectedSnap.docs.map(mapRejected)
+      const expiredGigs = allRejected.filter(g => g.daysUntilRemoval === 0)
+      const activeRejected = allRejected.filter(g => g.daysUntilRemoval > 0)
+
+      if (expiredGigs.length > 0) {
+        await Promise.all(expiredGigs.map(g =>
+          updateDoc(doc(db, 'listings', g.id), {
+            rejected_applicant_ids: arrayRemove(user.uid),
+          }).catch(() => {})
+        ))
+      }
+
+      this.gigs.awaiting  = [...pendingGigs, ...activeRejected].sort(byDateDesc)
       this.gigs.ongoing   = ongoingSnap.docs.map(mapGig).sort(byDateDesc)
       this.gigs.completed = completedSnap.docs.map(mapGig).sort(byDateDesc)
     } catch (e) {
@@ -394,14 +407,14 @@ export default {
 .card {
   position: relative;
   background: #fff;
-  border-radius: 8px;
-  border: 1px solid #E5E9EF;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+  border-radius: var(--radius);
+  border: 1px solid var(--black3);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
   margin-bottom: 20px;
   overflow: hidden;
   transition: box-shadow 0.2s;
 }
-.card:hover { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.11); }
+.card:hover { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.13); }
 
 /* Dismiss X button (rejected cards) */
 .card-dismiss {
@@ -483,6 +496,11 @@ export default {
   border-radius: 999px;
   border: 1px solid #E5E7EB;
 }
+
+/* ── Category tag color overrides (match Explore solid style) ── */
+.tag-education { background: var(--primary)  !important; color: #fff !important; }
+.tag-buddy     { background: var(--info)     !important; color: #fff !important; }
+.tag-survival  { background: var(--success)  !important; color: #fff !important; }
 
 /* ── Toast ── */
 .toast {
