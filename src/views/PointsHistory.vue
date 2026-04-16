@@ -5,6 +5,11 @@
         
         <transition name="fade" mode="out-in">
             <div :key="lastFetchedAt" class="points-history-content">
+                <p v-if="lastFetchedAt" class="fetch-time-text"> 
+                    Last fetched at: {{ formatTimestamp(lastFetchedAt) }} (SGT). Unable to see your latest ratings? 
+                    <button class="refresh-button" @click="refresh">Click to Refresh</button>
+                </p>
+
                 <!-- Loading State -->
                 <div v-if="isLoading" class="loading">
                     <VueSpinner size="30" color="var(--secondary)" aria-label="Loading points history..." />
@@ -17,15 +22,11 @@
 
                 <!-- Empty State -->
                 <div v-else-if="pointsLogs.length === 0" class="empty-state">
-                    <p>No points yet for {{ activeTab }} services.</p>
+                    <p>You have not received any points yet for this month.</p>
                 </div>
 
                 <div v-else class="table-and-btn">
                 <div class="table-and-text">
-                    <p v-if="lastFetchedAt" class="fetch-time-text"> 
-                        Last fetched at: {{ formatTimestamp(lastFetchedAt) }} (SGT). Unable to see your latest ratings? 
-                        <button class="refresh-button" @click="refresh">Click to Refresh</button>
-                    </p>
                     <!-- Points Table -->
                         <div class="table-container" :key="this.lastFetchedAt">
                             <table class="points-history-table">
