@@ -6,23 +6,27 @@
             <!--Left Column-->
             <div class="left-column">
                 <div class="image-section">
-                    <img :src="listing?.photoURL" alt="Listing Image" class="listing-image"/>
+                    <img :src="listing?.photoURL || defaultImage" alt="Listing Image" class="listing-image"/>
                 </div>
-                <div class="category">
-                    <p :class="listing?.category?.toLowerCase()">{{ listing?.category }}</p>
+                <div class="left-header">
+                    <div class="cat-and-title">
+                        <div class="category">
+                            <p :class="listing?.category?.toLowerCase()">{{ listing?.category }}</p>
+                        </div>
+                        <div class="title">
+                            <h2>{{ listing?.title }}</h2>
+                        </div>
+                    </div>
+                    <!--Meta Section-->
+                    <div class="meta-section">
+                        <p>
+                            Posted by {{ listing?.lister_name }} •
+                            {{ listing?.postedOn }} •
+                            {{ listing?.location }}
+                        </p>
+                    </div>
+                    <hr>
                 </div>
-                <div class="title">
-                    <h2>{{ listing?.title }}</h2>
-                </div>
-                <!--Meta Section-->
-                <div class="meta-section">
-                    <p>
-                        Posted by {{ listing?.lister_name }} •
-                        {{ listing?.postedOn }} •
-                        {{ listing?.location }}
-                    </p>
-                </div>
-                <hr>
                 <div class="description">
                     <h3>Description</h3>
                     <p>{{ listing?.description }}</p>
@@ -40,23 +44,23 @@
             <div class="right-column">
                 <div class="lister-info">
                     <h3>Lister Information</h3>
-                    <div class="lister-profile">
-                        <img :src="listing?.profile_picture" alt="Profile Picture" class="profile-picture"/>
-                        <p>{{ listing?.lister_name }}</p>
-                    </div>
-                </div>
-                <hr>
-                <div class="contact-info">
-                    <h3>Contact Information</h3>
-                    <p><strong>Phone:</strong> {{ listing?.dial_code }} {{ listing?.phone_number }}</p>
-                    <p><strong>Telegram:</strong> {{ listing?.telegram_handle }}</p>
+                    <router-link :to="`/users/${listing?.lister_uid}`" class="lister-link" title="View Lister's Profile">
+                        <div class="lister-profile">
+                            <img :src="listing?.profile_picture || defaultProfilePic" alt="Profile Picture" class="profile-picture"/>
+                            <p>{{ listing?.lister_name }}</p>
+                        </div>
+                     </router-link>
+                    <p v-if="listing?.phone_number"><strong>Phone:</strong> {{ listing?.dial_code }} {{ listing?.phone_number }}</p>
+                    <p v-if="listing?.telegram_handle"><strong>Telegram:</strong> @{{ listing?.telegram_handle }}</p>
                 </div>
                 <hr>
                 <!-- Edit + Delete buttons (only for lister) -->
                 <div v-if="isLister" class="lister-actions">
                     <p> This is your listing! Feel free to edit or delete it at any time.</p>
-                    <button class="btn btn-primary" @click="editListing">Edit Listing</button>
-                    <button class="btn btn-danger" @click="showDeleteModal = true">Delete Listing</button>
+                    <div class="action-btns">
+                        <button class="btn btn-secondary" @click="editListing">Edit Listing</button>
+                        <button class="btn btn-danger" @click="showDeleteModal = true">Delete Listing</button>
+                    </div>
                 </div>
 
                 <!-- Analytics (only for lister) -->
@@ -108,6 +112,9 @@ import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip)
 import { addCreateNotifToBatch } from '@/utils/notifications.js';
 import ConfirmationModal from '@/components/ConfirmationModal.vue';
+import defaultImage from '@/assets/listing_pics/default_list_pic.jpg'
+import defaultProfilePic from '@/assets/default-profile-pic.png'
+import { SquareArrowOutUpRight } from 'lucide-vue-next'
 
 // Firebase Imports
 import { db } from '@/firebase'
@@ -125,7 +132,6 @@ const auth = getAuth()
 
 // Listing Data
 const listing = ref(null)
-const defaultImage = "@/assets/listing_pics/default_list_pic.jpg"
 const clicksByDay = ref({})
 const clicksByHour = ref({})
 const activeView = ref('week')
@@ -281,7 +287,7 @@ onMounted(async () => {
         category: listingData.listing_category?.trim(),
         location: listingData.location_text,
         status: listingData.status?.trim(),
-        photoURL: listingData.picture_url || defaultImage,
+        photoURL: listingData.picture_url,
         payment_mode: listingData.payment_mode?.trim() || "N/A",
 
         // Format created_at into readable date
@@ -297,30 +303,43 @@ onMounted(async () => {
         // User fields
         lister_uid: listingData.lister_id,
         lister_name: userData.username?.trim() || "Unknown",
-        profile_picture: userData.profile_pic_url || defaultImage,
+        profile_picture: userData.profile_pic_url || defaultProfilePic,
         dial_code: userData.dial_code || "+65",
-        phone_number: userData.mobile_number || "N/A",
-        telegram_handle: userData.telegram_handle || "N/A"
+        phone_number: userData.mobile_number,
+        telegram_handle: userData.telegram_handle 
     }
 })
 </script>
 
 <style scoped>
-
 .listing-details-container {
-  max-width: 1100px;
   margin: 0 auto;
-  padding: 24px 12px;
 }
 
 .layout {
   display: flex;
   gap: 32px;
   align-items: flex-start;
+  margin-top: 16px;
 }
 
 .left-column {
   flex: 4;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.left-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cat-and-title {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .right-column {
@@ -331,18 +350,23 @@ onMounted(async () => {
   border-radius: var(--radius);
   box-shadow: var(--card-shadow);
   border: 1px solid rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;  
 }
 
 .image-section {
-  max-height: 500px;
   overflow: hidden;
-  border-radius: var(--radius);
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
 }
 
 .listing-image {
-  width: 100%;
-  height: 480px;
-  object-fit: center;
+  width: 50%;
+  height: auto;
+  overflow: hidden;
+  border-radius: var(--radius);
 }
 
 .category p {
@@ -352,7 +376,6 @@ onMounted(async () => {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.05em;
-  margin-bottom: 6px;
 }
 
 /* Category colors */
@@ -378,26 +401,59 @@ onMounted(async () => {
 }
 
 /* Lister profile */
+.lister-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.lister-info h3 {
+    margin-bottom: 4px;
+}
+
 .lister-profile {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 
 .profile-picture {
   width: 55px;
   height: 55px;
   border-radius: 50%;
+  border: 2px solid var(--gray5);
   object-fit: cover;
 }
 
-/* Contact info */
-.contact-info p {
-  margin: 4px 0;
+.lister-link {
+    color: var(--primary);
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: none;
 }
 
+/* Action buttons */
+.lister-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.btn {
+    padding: 12px 20px;
+    width: 50%;
+}
+
+.action-btns {
+    display: flex;
+    gap: 16px;
+    justify-content: space-between;
+    width: 100%;
+}
+
+/* Analytics card */
 .analytics-card {
-  margin-top: 20px;
+  margin-top: 16px;
   background: #F8F9FB;
   border: 1px solid #E5E9EF;
   border-radius: 8px;
@@ -433,7 +489,7 @@ onMounted(async () => {
 }
 .chart-toggle {
   display: flex;
-  gap: 4px;
+  gap: 10px;
   margin-bottom: 12px;
 }
 .toggle-btn {

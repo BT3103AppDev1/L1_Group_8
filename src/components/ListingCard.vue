@@ -121,6 +121,7 @@ const categoryClass = (cat) => {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  margin-bottom: 0.25rem;
 }
 
 .listing-info {
@@ -131,7 +132,7 @@ const categoryClass = (cat) => {
 
 /* Button — now stable and aligned */
 .btn {
-  margin-top: 0.4rem;
+  margin-top: auto;
   width: 100%;
 }
 </style>

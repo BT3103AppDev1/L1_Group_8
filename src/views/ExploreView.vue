@@ -15,13 +15,23 @@
       </button>
     </div>
 
+    <!-- loading spinner -->
+    <div v-if="isLoading">
+        <div v-if="isLoading" class="loading">
+            <VueSpinner size="40" color="var(--secondary)" :aria-label="`Loading all awaiting listings...`" />
+        </div>
+    </div>
     <!--Listing Cards Imported from ListingCard component-->
-    <div v-if = "filteredListings.length > 0" class="listing-grid"> 
+    <div v-else-if = "filteredListings.length > 0" class="listing-grid"> 
       <ListingCard v-for="item in filteredListings" :key="item.id" :listing="item"/>
+    </div>
+    <!-- Error State -->
+    <div v-else-if="!isLoading && hasError" class="error-state">
+      <p class="error-text">Error loading awaiting listings. Please try again later.</p>
     </div>
     <!--Empty State where there is no relevant listings to display-->
     <div v-else class="empty-state">
-      <p>No available listings...</p>
+      <p>No awaiting listings...</p>
     </div>
   </div>
 </template>
@@ -30,6 +40,7 @@
 import { ref, computed, onMounted } from 'vue'
 import ListingCard from '@/components/ListingCard.vue'
 import PageHeader from '@/components/PageHeader.vue'
+import { VueSpinner } from 'vue3-spinners'
 
 // Firebase imports
 import { db } from '@/firebase'
@@ -41,56 +52,65 @@ const selectedCategory = ref(null)
 const categories = ['Education', 'Buddy', 'Survival']
 
 const listings = ref([])
+const isLoading = ref(true)
+const hasError = ref(false)
 
 // Fetch listings
 onMounted(async () => {
-  const snapshot = await getDocs(collection(db, 'listings'))
-  const temp = []
+  try {
+    const snapshot = await getDocs(collection(db, 'listings'))
+    const temp = []
 
-  for (const d of snapshot.docs) {
-    const data = d.data()
+    for (const d of snapshot.docs) {
+      const data = d.data()
 
-    // Fetch username from users/{lister_id}
-    let username = "Unknown User"
-    if (data.lister_id) {
-      const userSnap = await getDoc(doc(db, "users", data.lister_id))
-      if (userSnap.exists()) {
-        const userData = userSnap.data()
-        username = String(userData.username ?? "Unknown User").trim()
+      // Fetch username from users/{lister_id}
+      let username = "Unknown User"
+      if (data.lister_id) {
+        const userSnap = await getDoc(doc(db, "users", data.lister_id))
+        if (userSnap.exists()) {
+          const userData = userSnap.data()
+          username = String(userData.username ?? "Unknown User").trim()
+        }
       }
+
+      // Normalize created_at safely
+      let createdAt = null
+      if (data.created_at?.toDate) {
+        createdAt = data.created_at.toDate()
+      }
+
+      temp.push({
+        id: d.id,
+        title: String(data.title ?? "").trim(),
+        description: String(data.description ?? "").trim(),
+        category: String(data.listing_category ?? "").trim(),
+        lister_name: username,
+        postedOn: createdAt
+          ? createdAt.toLocaleDateString("en-SG", {
+              year: "numeric",
+              month: "short",
+              day: "numeric"
+            })
+          : "Unknown date",
+        createdAt: createdAt,
+        location: String(data.location_text ?? "").trim() || "No location provided",
+        status: String(data.status ?? "").trim()
+      })
     }
 
-    // Normalize created_at safely
-    let createdAt = null
-    if (data.created_at?.toDate) {
-      createdAt = data.created_at.toDate()
-    }
-
-    temp.push({
-      id: d.id,
-      title: String(data.title ?? "").trim(),
-      description: String(data.description ?? "").trim(),
-      category: String(data.listing_category ?? "").trim(),
-      lister_name: username,
-      postedOn: createdAt
-        ? createdAt.toLocaleDateString("en-SG", {
-            year: "numeric",
-            month: "short",
-            day: "numeric"
-          })
-        : "Unknown date",
-      createdAt: createdAt,
-      location: String(data.location_text ?? "").trim() || "No location provided",
-      status: String(data.status ?? "").trim()
+    // Safe sorting
+    listings.value = temp.sort((a, b) => {
+      const dateA = a.createdAt ? new Date(a.createdAt) : 0
+      const dateB = b.createdAt ? new Date(b.createdAt) : 0
+      return dateB - dateA
     })
+  } catch (error) {
+    console.error("Error fetching listings:", error)
+    hasError.value = true
+  } finally {
+    isLoading.value = false
   }
-
-  // Safe sorting
-  listings.value = temp.sort((a, b) => {
-    const dateA = a.createdAt ? new Date(a.createdAt) : 0
-    const dateB = b.createdAt ? new Date(b.createdAt) : 0
-    return dateB - dateA
-  })
 })
 
 // Toggle category
@@ -126,6 +146,23 @@ const filteredListings = computed(() => {
 </script>
 
 <style scoped>
+.loading {
+  display: flex;
+  margin-top: 3rem;
+  justify-content: center;
+}
+
+.error-state {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.error-text {
+  font-weight: bold;
+  font-size: 1.25rem;
+  color: var(--error);
+}
+
 .header {
   margin-bottom: 1rem;
 }

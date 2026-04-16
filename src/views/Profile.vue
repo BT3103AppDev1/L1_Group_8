@@ -694,7 +694,7 @@ export default {
 }
 .chart-toggle {
     display: flex;
-    gap: 4px;
+    gap: 10px;
     margin-bottom: 12px;
 }
 .toggle-btn {
