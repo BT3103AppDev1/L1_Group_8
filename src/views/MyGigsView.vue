@@ -53,7 +53,7 @@
               </div>
             </div>
             <div class="card-actions">
-              <button class="btn btn-secondary btn-sm" @click="$router.push('/listing/' + gig.id)">View Listing Details</button>
+              <button class="btn btn-secondary" @click="$router.push('/listing/' + gig.id)">View Listing Details</button>
               <button
                 v-if="gig.status === 'rejected'"
                 class="card-dismiss"
@@ -65,7 +65,7 @@
 
           <!-- Pending: Withdraw button -->
           <div v-if="gig.status === 'pending'" class="card-body">
-            <button class="btn btn-danger-outline btn-sm" @click="openWithdraw(gig)">Withdraw</button>
+            <button class="btn btn-danger-outline" @click="openWithdraw(gig)">Withdraw</button>
           </div>
 
           <!-- Rejected: status + auto-remove -->
@@ -100,7 +100,7 @@
                 </span>
               </div>
             </div>
-            <button class="btn btn-secondary btn-sm" @click="$router.push('/listing/' + gig.id)">View Listing Details</button>
+            <button class="btn btn-secondary" @click="$router.push('/listing/' + gig.id)">View Listing Details</button>
           </div>
 
           <div class="card-body">
@@ -133,7 +133,7 @@
                 </span>
               </div>
             </div>
-            <button class="btn btn-secondary btn-sm" @click="$router.push('/listing/' + gig.id)">View Listing Details</button>
+            <button class="btn btn-secondary" @click="$router.push('/listing/' + gig.id)">View Listing Details</button>
           </div>
         </article>
       </template>

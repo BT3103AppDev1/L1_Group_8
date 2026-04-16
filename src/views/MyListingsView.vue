@@ -53,7 +53,7 @@
                 </span>
               </div>
             </div>
-            <button class="btn btn-secondary btn-sm" @click="$router.push('/listing/' + listing.id)">View Listing Details</button>
+            <button class="btn btn-secondary" @click="$router.push('/listing/' + listing.id)">View Listing Details</button>
           </div>
 
           <!-- Applicants -->
@@ -72,7 +72,7 @@
                 <div class="applicant-info">
                   <span class="applicant-name" @click="$router.push('/users/' + a.id)">{{ a.name }}</span>
                 </div>
-                <button class="btn btn-primary btn-sm" @click="openChoose(listing, a)">Choose This Provider</button>
+                <button class="btn btn-primary" @click="openChoose(listing, a)">Choose This Provider</button>
               </div>
             </div>
           </div>
@@ -92,7 +92,7 @@
                 </span>
               </div>
             </div>
-            <button class="btn btn-secondary btn-sm" @click="$router.push('/listing/' + listing.id)">View Listing Details</button>
+            <button class="btn btn-secondary" @click="$router.push('/listing/' + listing.id)">View Listing Details</button>
           </div>
 
           <!-- Assigned provider -->
@@ -114,7 +114,7 @@
           </div>
 
           <div class="card-footer card-footer-right">
-            <button class="btn btn-primary btn-sm" @click="openMarkComplete(listing)">Mark as Completed</button>
+            <button class="btn btn-primary" @click="openMarkComplete(listing)">Mark as Completed</button>
           </div>
         </article>
       </template>
@@ -134,7 +134,7 @@
                 </span>
               </div>
             </div>
-            <button class="btn btn-secondary btn-sm" @click="$router.push('/listing/' + listing.id)">View Listing Details</button>
+            <button class="btn btn-secondary" @click="$router.push('/listing/' + listing.id)">View Listing Details</button>
           </div>
 
           <div class="applicants">
@@ -292,7 +292,7 @@ export default {
 
   computed: {
     tabTitle() {
-      return { awaiting: 'Awaiting Services', ongoing: 'Ongoing Services', completed: 'Completed Services' }[this.activeTab]
+      return { awaiting: 'Awaiting Applicants', ongoing: 'Ongoing Listings', completed: 'Completed Listings' }[this.activeTab]
     },
     emptyMsg() {
       return {

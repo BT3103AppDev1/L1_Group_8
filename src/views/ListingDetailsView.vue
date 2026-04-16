@@ -79,10 +79,15 @@
                 </div>
                 <!-- Help Button (only for non-lister when listing is awaiting) -->
                 <div v-if="canHelp" class="help-button">
-                    <button class="btn btn-secondary" @click="offerHelp">I can help :)</button>
-                    <p class="help-notice">
-                        By clicking "I can help", you will be expressing your interest to help the lister
+                    <p v-if="alreadyApplied" class="help-notice">
+                        You have already expressed your interest to help the lister. The lister will reach out to you if they find you suitable!
                     </p>
+                    <div v-else class="help-button">
+                        <button class="btn btn-secondary" @click="offerHelp">I can help :)</button>
+                        <p class="help-notice">
+                            By clicking "I can help", you will be expressing your interest to help the lister
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -200,6 +205,11 @@ const canHelp = computed(() => {
     return !isLister.value && isAwaiting
 })
 
+const alreadyApplied = computed(() => {
+    if (!user.value || !listing.value) return false
+    return listing.value?.applicants?.includes(user.value.uid)
+})
+
 //button handlers
 const editListing = () => {
     router.push(`/edit-listing/${listing.value.id}`)
@@ -294,6 +304,7 @@ onMounted(async () => {
         status: listingData.status?.trim(),
         photoURL: listingData.picture_url,
         payment_mode: listingData.payment_mode?.trim() || "N/A",
+        applicants: listingData.applicants || [],
 
         // Format created_at into readable date
         postedOn: listingData.created_at
