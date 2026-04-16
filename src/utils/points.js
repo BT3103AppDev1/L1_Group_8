@@ -23,7 +23,7 @@ export async function addRatingsAndPoints(receiverUid, rating, listing_id) {
         const userSnap = await transaction.get(doc(db, 'users', receiverUid));
         const listingSnap = await transaction.get(doc(db, 'listings', listing_id));
         const listing_title = listingSnap.data()?.title;
-        const listing_cat = listingSnap.data()?.category;
+        const listing_cat = listingSnap.data()?.listing_category;
         const listing_cat_abbrev = listing_cat === 'Education' ? 'edu' : (listing_cat === 'Buddy' ? 'buddy' : 'survival');
         const currentPoints = userSnap.data()?.total_points?.[monthKey] ?? 0;
         const currentAvgRating = userSnap.data()?.[`${listing_cat_abbrev}_avg_rating`] ?? null;

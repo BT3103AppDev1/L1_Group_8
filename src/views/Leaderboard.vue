@@ -2,11 +2,11 @@
     <div class="leaderboard">
         <div class="headerRow">
             <PageHeader title="Leaderboard" />
-            <button class="viewRewardButton" @click="viewReward=true">View Reward</button>
+            <button class="viewRewardButton" @click="viewReward=true">{{actualCurrMonth}}'s Reward</button>
         </div>
         
         <InfoModal v-model:showModal="viewReward">
-            <div class="modalDetail">
+            <div class="modalDetail">  
                 <h2 class="modalTitle">Current Month Reward</h2>
                 <div v-if="currentMonthReward">
                     <p class="modalLabel">{{ currentMonthReward.reward_name }}</p>
@@ -88,26 +88,11 @@ import { db, auth } from '@/firebase'
 import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore' 
 import InfoModal from "@/components/InfoModal.vue";
 import defaultProfilePic from '@/assets/default-profile-pic.png'
-import { getSgtYearMonth } from "@/utils/formatSgtTime"; 
+import { getMonthKeyFromOffset, getMonthLabelsFromOffset } from "@/utils/formatSgtTime"; 
 
-function buildMonthLabels() {
-    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    const now = new Date();
-    return [months[new Date(now.getFullYear(), now.getMonth() - 2, 1).getMonth()],
-            months[new Date(now.getFullYear(), now.getMonth() - 1, 1).getMonth()],
-            months[now.getMonth()]];
-}
-
-function getMonthRange(offset) {
-    const now = new Date();
-    const start = new Date(now.getFullYear(), now.getMonth() + offset, 1);
-    const end = new Date(now.getFullYear(), now.getMonth() + offset + 1, 1);
-    return { start, end };
-}
-
-const MONTH_LABELS = buildMonthLabels();
-const CURRENT_MONTH_INDEX = 2; //This is used such that the month can be viewed by users is only 3 months
-const DISPLAY_LIMIT = 20; //Number of users to be displayed in the main list
+const MONTH_LABELS = getMonthLabelsFromOffset();
+const CURRENT_MONTH_INDEX = 2; 
+const DISPLAY_LIMIT = 20;
 
 export default {
     name: "Leaderboard",
@@ -118,6 +103,7 @@ export default {
             defaultProfilePic,
             currentUserProfilePic: '',
             viewReward: false,
+            actualCurrMonth: MONTH_LABELS[CURRENT_MONTH_INDEX],
             currentMonthIndex: CURRENT_MONTH_INDEX,
             currentUserRowVisible: false,
             observer: null,
@@ -194,7 +180,7 @@ export default {
             this.currentUserStatus = null;
             const currentUid = auth.currentUser?.uid ?? null;
 
-            const monthKey = getSgtYearMonth(this.monthOffset);
+            const monthKey = getMonthKeyFromOffset(this.monthOffset);
 
             try {
                 const usersSnap = await getDocs(collection(db, 'users'));

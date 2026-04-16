@@ -61,7 +61,7 @@
 <script>
 import PageHeader from '@/components/PageHeader.vue';
 import ConfirmationModal from '@/components/ConfirmationModal.vue';
-import { db, auth } from '@/firebase';
+import { db } from '@/firebase';
 import { doc, getDoc, Timestamp, updateDoc } from 'firebase/firestore';
 import { useToast } from 'vue-toastification';
 
