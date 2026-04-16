@@ -5,7 +5,7 @@
         <div class="layout">
             <!--Left Column-->
             <div class="left-column">
-                <div class="image-section">
+                <div class="image-section" v-if="listing?.photoURL">
                     <img :src="listing?.photoURL || defaultImage" alt="Listing Image" class="listing-image"/>
                 </div>
                 <div class="left-header">
@@ -546,5 +546,12 @@ onMounted(async () => {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.help-button {
+    margin-top: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 </style>

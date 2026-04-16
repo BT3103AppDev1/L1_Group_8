@@ -409,7 +409,7 @@ export default {
   border-radius: var(--radius);
   border: 1px solid var(--black3);
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
-  margin-bottom: 20px;
+  margin-bottom: 22px;
   overflow: hidden;
   transition: box-shadow 0.2s;
 }
