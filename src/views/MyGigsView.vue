@@ -39,14 +39,6 @@
         </div>
 
         <article v-for="gig in gigs.awaiting" :key="gig.id" class="card">
-          <!-- Dismiss X for rejected -->
-          <button
-            v-if="gig.status === 'rejected'"
-            class="card-dismiss"
-            title="Dismiss"
-            @click="openRemove(gig)"
-          >✕</button>
-
           <!-- Card head -->
           <div class="card-head">
             <div class="card-info">
@@ -60,7 +52,15 @@
                 </span>
               </div>
             </div>
-            <button class="btn btn-secondary btn-sm" @click="$router.push('/listing/' + gig.id)">View Listing Details</button>
+            <div class="card-actions">
+              <button class="btn btn-secondary btn-sm" @click="$router.push('/listing/' + gig.id)">View Listing Details</button>
+              <button
+                v-if="gig.status === 'rejected'"
+                class="card-dismiss"
+                title="Dismiss"
+                @click="openRemove(gig)"
+              >✕</button>
+            </div>
           </div>
 
           <!-- Pending: Withdraw button -->
@@ -405,7 +405,6 @@ export default {
 
 /* ── Card ── */
 .card {
-  position: relative;
   background: #fff;
   border-radius: var(--radius);
   border: 1px solid var(--black3);
@@ -417,10 +416,14 @@ export default {
 .card:hover { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.13); }
 
 /* Dismiss X button (rejected cards) */
+.card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 .card-dismiss {
-  position: absolute;
-  top: 12px;
-  right: 12px;
   width: 28px; height: 28px;
   border-radius: 6px;
   border: 1px solid #D1D5DB;
@@ -430,7 +433,7 @@ export default {
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: background 0.15s, color 0.15s;
-  z-index: 1;
+  flex-shrink: 0;
 }
 .card-dismiss:hover { background: #FEE2E2; color: #DC2626; border-color: #FCA5A5; }
 
@@ -441,8 +444,6 @@ export default {
   padding: 18px 20px 14px;
   gap: 16px;
 }
-/* Push content away from the dismiss X on rejected cards */
-.card:has(.card-dismiss) .card-head { padding-right: 52px; }
 
 .card-info { flex: 1; }
 .card-title { font-size: 16px; font-weight: 700; color: #1D1D1D; margin: 4px 0 6px; line-height: 24px; }
@@ -525,6 +526,5 @@ export default {
 
 @media (max-width: 768px) {
   .card-head { flex-direction: column; }
-  .card:has(.card-dismiss) .card-head { padding-right: 20px; }
 }
 </style>

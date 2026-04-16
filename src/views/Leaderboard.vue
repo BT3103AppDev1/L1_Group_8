@@ -427,10 +427,6 @@ export default {
 
     .currentUserBar {
         background-color: var(--secondary);
-        align-items: center;
-        justify-content: space-between;
-        padding: 10px 16px;
-        display: flex;
         flex-shrink: 0;
     }
 
@@ -439,6 +435,8 @@ export default {
         font-size: 18px;
         font-weight: bold;
     }
+
+    .myPoints { text-align: right; }
 
     .tableContainer {
         display: flex;
@@ -455,12 +453,18 @@ export default {
         min-height: 0;
     }
 
-    .tableHeaders {
-        display: flex;
-        justify-content: space-between;
-        border: none;
-        flex-shrink: 0;
+    /* ── Shared 3-column grid for header, rows, and user bar ── */
+    .tableHeaders,
+    .leaderboardTableRow,
+    .currentUserBar {
+        display: grid;
+        grid-template-columns: 120px 1fr 140px;
+        align-items: center;
         padding: 10px 16px;
+    }
+
+    .tableHeaders {
+        flex-shrink: 0;
     }
 
     .headerRank, .headerName, .headerPoints {
@@ -469,12 +473,10 @@ export default {
         font-weight: bold;
     }
 
+    .headerPoints { text-align: right; }
+
     .leaderboardTableRow {
-        display: flex;
-        align-items: center;
-        padding: 10px 16px;
         background-color: white;
-        justify-content: space-between;
     }
 
     .scrollableRows {
@@ -503,6 +505,16 @@ export default {
         padding: 10px 0;
         color: black;
     }
+
+    .colPoints { text-align: right; }
+
+    .colName, .myName {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .headerName { text-align: center; }
 
     .profilePic, .currentUserProfilePic {
         width: 36px;
