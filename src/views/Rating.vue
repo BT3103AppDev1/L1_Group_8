@@ -24,6 +24,9 @@
 <script>
 import ConfirmationModal from '@/components/ConfirmationModal.vue';
 import { addRatingsAndPoints } from "@/utils/points.js"
+import { db } from '@/firebase.js'
+import { doc, updateDoc } from 'firebase/firestore'
+
 export default {
     components: { ConfirmationModal },
 
@@ -38,7 +41,11 @@ export default {
         async confirmRating() {
             const { listingId, providerId } = this.$route.query;
             try {
-                await addRatingsAndPoints(providerId, this.selectedRating, listingId);
+                // Write status + rating atomically — only mark Completed if rating succeeds
+                await Promise.all([
+                    addRatingsAndPoints(providerId, this.selectedRating, listingId),
+                    updateDoc(doc(db, 'listings', listingId), { status: 'Completed' }),
+                ]);
                 this.showRatingModal = false;
                 this.$router.push('/my-listings');
             } catch (e) {

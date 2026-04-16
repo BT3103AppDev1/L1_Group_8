@@ -104,7 +104,7 @@
           </div>
 
           <div class="card-body">
-            <span class="waiting-pill">Waiting for Lister Confirmation</span>
+            <span class="waiting-pill">Waiting for Service Completion</span>
           </div>
         </article>
       </template>
@@ -407,14 +407,14 @@ export default {
 .card {
   position: relative;
   background: #fff;
-  border-radius: 8px;
-  border: 1px solid #E5E9EF;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+  border-radius: var(--radius);
+  border: 1px solid var(--black3);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
   margin-bottom: 20px;
   overflow: hidden;
   transition: box-shadow 0.2s;
 }
-.card:hover { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.11); }
+.card:hover { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.13); }
 
 /* Dismiss X button (rejected cards) */
 .card-dismiss {
@@ -496,6 +496,11 @@ export default {
   border-radius: 999px;
   border: 1px solid #E5E7EB;
 }
+
+/* ── Category tag color overrides (match Explore solid style) ── */
+.tag-education { background: var(--primary)  !important; color: #fff !important; }
+.tag-buddy     { background: var(--info)     !important; color: #fff !important; }
+.tag-survival  { background: var(--success)  !important; color: #fff !important; }
 
 /* ── Toast ── */
 .toast {
