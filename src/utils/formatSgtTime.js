@@ -95,3 +95,28 @@ export function getMonthYearString(sgtYearMonth) {
     const monthName = new Date(year, month - 1).toLocaleString('en-SG', { month: 'long' });
     return `${monthName} ${year}`;
 }
+
+export function getYearMonthFromOffset(offset) {
+    const sgtYrMonth = getSgtYearMonth();
+    const [year, month] = sgtYrMonth.split('-').map(Number);
+    const targetMonth = month + offset;
+    const adjustedYear = year + Math.floor((targetMonth - 1) / 12);
+    const adjustedMonth = ((targetMonth - 1) % 12 + 12) % 12 + 1;
+    return {year: adjustedYear, month: adjustedMonth};
+}
+
+export function getMonthKeyFromOffset(offset) {
+    const { year, month } = getYearMonthFromOffset(offset);
+    return `${year}-${String(month).padStart(2, '0')}`;
+}
+
+export function getMonthLabelsFromOffset() {
+    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const prevMonth = getYearMonthFromOffset(-1).month;
+    const currentMonth = getYearMonthFromOffset(0).month;
+    const nextMonth = getYearMonthFromOffset(1).month;
+    const prevMonthLabel = months[prevMonth - 1];
+    const currentMonthLabel = months[currentMonth - 1];
+    const nextMonthLabel = months[nextMonth - 1];
+    return [prevMonthLabel, currentMonthLabel, nextMonthLabel];
+}

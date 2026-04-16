@@ -88,24 +88,9 @@ import { db, auth } from '@/firebase'
 import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore' 
 import InfoModal from "@/components/InfoModal.vue";
 import defaultProfilePic from '@/assets/default-profile-pic.png'
-import { getSgtYearMonth } from "@/utils/formatSgtTime"; 
+import { getMonthKeyFromOffset, getMonthLabelsFromOffset } from "@/utils/formatSgtTime"; 
 
-function buildMonthLabels() {
-    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    const now = new Date();
-    return [months[new Date(now.getFullYear(), now.getMonth() - 2, 1).getMonth()],
-            months[new Date(now.getFullYear(), now.getMonth() - 1, 1).getMonth()],
-            months[now.getMonth()]];
-}
-
-function getMonthRange(offset) {
-    const now = new Date();
-    const start = new Date(now.getFullYear(), now.getMonth() + offset, 1);
-    const end = new Date(now.getFullYear(), now.getMonth() + offset + 1, 1);
-    return { start, end };
-}
-
-const MONTH_LABELS = buildMonthLabels();
+const MONTH_LABELS = getMonthLabelsFromOffset();
 const CURRENT_MONTH_INDEX = 2; 
 const DISPLAY_LIMIT = 20;
 
@@ -194,7 +179,7 @@ export default {
             this.currentUserStatus = null;
             const currentUid = auth.currentUser?.uid ?? null;
 
-            const monthKey = getSgtYearMonth(this.monthOffset);
+            const monthKey = getMonthKeyFromOffset(this.monthOffset);
 
             try {
                 const usersSnap = await getDocs(collection(db, 'users'));
