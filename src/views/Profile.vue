@@ -119,7 +119,7 @@
         </div>
 
         <div v-if="!isPrivateProfile" class="awaiting-listings-section">
-            <AwaitingListings :key="$route.params.uid" :uid="$route.params.uid" :username="profileData.username"/>
+            <AwaitingListings :key="$route.params.uid" :uid="$route.params.uid" :username="profileData?.username"/>
         </div>
 
         <div v-if="isPrivateProfile" class="my-rewards-section">
@@ -199,9 +199,9 @@ export default {
             refreshTimer: null,
             isLoading: true,
 
-            uid: null,
+            currUserUid: null,
             defaultProfilePic,
-            profileData: null,
+            profileData: {},
 
             unsubscribeUser: null,
 
@@ -220,7 +220,7 @@ export default {
         },
 
         isOwnProfilePublicView() {
-            return this.$route.params.uid === this.uid;
+            return this.$route.params.uid === this.currUserUid;
         },
 
         ratingsHistPath() {
@@ -334,30 +334,30 @@ export default {
         },
 
         async getUid() {
+            const user = await getCurrentUser();
+            this.currUserUid = user ? user.uid : null; // store current user's uid for later use
             if (this.isPrivateProfile) {
-                const user = await getCurrentUser();
-                return user ? user.uid : null;
+                return this.currUserUid;
             } else {
                 return this.$route.params.uid;
             }
         },
 
         async setUserListener() {
-            const uid = await this.getUid();
-            this.uid = uid; // store uid for later use
-            if (!uid) {
+            const targetUid = await this.getUid();
+            if (!targetUid) {
                 this.isLoading = false;
                 return;
             }
 
             if (this.isPrivateProfile) {
-                this.fetchListingClicks(uid);
+                this.fetchListingClicks(targetUid);
             }
 
             // Listen to profile data changes
-            const userRef = doc(db, 'users', uid);
+            const userRef = doc(db, 'users', targetUid);
             this.unsubscribeUser = onSnapshot(userRef, doc => {
-                if (doc.exists) {
+                if (doc.exists()) {
                     this.profileData = doc.data();
                     this.isLoading = false;
                 } else {
