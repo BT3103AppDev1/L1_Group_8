@@ -1,5 +1,6 @@
 <template> 
     <div>
+        //back button 
         <button class="back-button" @click="$router.push({ name: 'PrivateProfile' })">← Back</button>
         <PageHeader title="Reward Details"/>
 
@@ -40,6 +41,7 @@
                 </button>
             </div>
 
+            // Confirmation Modal for redeeming reward
             <ConfirmationModal
                 :showModal="showConfirmModal"
                 :title="`Redeem ${reward?.reward_name || ''}?`"
@@ -82,6 +84,7 @@ export default {
     },
 
     computed: {
+        // Format expiry date to "DD Month YYYY" format, e.g. "15 September 2024"
         formattedExpiryDate() {
             if (!this.reward?.expiry_date) return 'N/A';
             const date = this.reward.expiry_date.toDate?.() ?? new Date(this.reward.expiry_date);
@@ -90,6 +93,7 @@ export default {
     },
 
     methods: {
+        // Fetch reward details based on redemption ID from route params
         async fetchRewardDetails() {
             console.log("fetching reward details");
             this.loading = true;

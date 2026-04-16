@@ -106,8 +106,8 @@ function getMonthRange(offset) {
 }
 
 const MONTH_LABELS = buildMonthLabels();
-const CURRENT_MONTH_INDEX = 2; 
-const DISPLAY_LIMIT = 20;
+const CURRENT_MONTH_INDEX = 2; //This is used such that the month can be viewed by users is only 3 months
+const DISPLAY_LIMIT = 20; //Number of users to be displayed in the main list
 
 export default {
     name: "Leaderboard",
