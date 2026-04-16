@@ -421,7 +421,7 @@ export default {
 <style scoped>
 .loading {
     display: flex;
-    margin-top: 30vh;
+    align-content: center;
     justify-content: center;
 }
 
