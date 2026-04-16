@@ -247,8 +247,21 @@ export default {
 
       const byDateDesc = (a, b) => b.createdAtRaw - a.createdAtRaw
       const pendingGigs = awaitingSnap.docs.map(mapGig)
-      const rejectedGigs = rejectedSnap.docs.map(mapRejected)
-      this.gigs.awaiting  = [...pendingGigs, ...rejectedGigs].sort(byDateDesc)
+
+      // Auto-remove expired rejected gigs from Firestore, keep the rest
+      const allRejected = rejectedSnap.docs.map(mapRejected)
+      const expiredGigs = allRejected.filter(g => g.daysUntilRemoval === 0)
+      const activeRejected = allRejected.filter(g => g.daysUntilRemoval > 0)
+
+      if (expiredGigs.length > 0) {
+        await Promise.all(expiredGigs.map(g =>
+          updateDoc(doc(db, 'listings', g.id), {
+            rejected_applicant_ids: arrayRemove(user.uid),
+          }).catch(() => {})
+        ))
+      }
+
+      this.gigs.awaiting  = [...pendingGigs, ...activeRejected].sort(byDateDesc)
       this.gigs.ongoing   = ongoingSnap.docs.map(mapGig).sort(byDateDesc)
       this.gigs.completed = completedSnap.docs.map(mapGig).sort(byDateDesc)
     } catch (e) {
