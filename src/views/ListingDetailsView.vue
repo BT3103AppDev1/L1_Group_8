@@ -250,6 +250,7 @@ onMounted(async () => {
     //Will redirect back into the explore page
     if (!listingSnapShot.exists()) {
         console.error("Listing not found")
+        alert("This listing has been deleted by the lister. You will be redirected back to the home page.")
         router.push("/")   
         return
     }
@@ -261,7 +262,8 @@ onMounted(async () => {
     //Again, redirect back to explore page if user dont exist anymore
     if (!userSnapShot.exists()) {
         console.error("User not found")
-        router.push("/")
+        alert("The user who posted this listing could not be found. You will be redirected back to the home page.")
+        router.push("/")   
         return
     }
     const userData = userSnapShot.data()
