@@ -2,7 +2,7 @@
     <div class="leaderboard">
         <div class="headerRow">
             <PageHeader title="Leaderboard" />
-            <button class="viewRewardButton" @click="viewReward=true">{{actualCurrMonth}}'s Reward</button>
+            <button class="btn btn-secondary" @click="viewReward=true">{{actualCurrMonth}}'s Reward</button>
         </div>
         
         <InfoModal v-model:showModal="viewReward">
@@ -20,9 +20,9 @@
         </InfoModal>
 
         <div class="monthNavigation">
-            <button class="navigationArrow" @click="previousMonth">&lt;</button>
+            <button class="navigationArrow" @click="previousMonth" :disabled="currentMonthIndex === 0">&lt;</button>
             <span class="currentMonth">{{ currentMonth }}</span>
-            <button class="navigationArrow" @click="nextMonth">&gt;</button>
+            <button class="navigationArrow" @click="nextMonth" :disabled="currentMonthIndex === maxMonthIndex">&gt;</button>
         </div>
 
         <div class="tableContainer">
@@ -100,6 +100,7 @@ export default {
 
     data() {
         return {
+            maxMonthIndex: MONTH_LABELS.length - 1,
             defaultProfilePic,
             currentUserProfilePic: '',
             viewReward: false,
@@ -313,16 +314,6 @@ export default {
         align-items: center;
     }
 
-    .viewRewardButton {
-        background-color: var(--secondary);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        padding: 10px 20px;
-        font-size: 16px;
-        cursor: pointer;
-    }
-
     .viewRewardButton:hover {
         opacity: 0.8;
     }
@@ -408,6 +399,12 @@ export default {
     .navigationArrow:hover {
         color: var(--secondary);
         cursor: pointer;
+    }
+
+    .navigationArrow:disabled {
+        color: var(--gray4);
+        cursor: not-allowed;
+        pointer-events: none;
     }
 
     .currentMonth {
