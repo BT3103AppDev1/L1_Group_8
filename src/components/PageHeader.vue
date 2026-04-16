@@ -23,7 +23,7 @@ export default {
 
     .page-header h1 {
         margin: 0;
-        font-size: 40px;
+        font-size: 36px;
         color: var(--primary);
     }
 

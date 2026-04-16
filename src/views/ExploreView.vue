@@ -1,6 +1,8 @@
 <template>
   <div class="explore-container">
-    <h1 class="page-title">Browse Listings</h1>
+    <div class="header">
+      <PageHeader title="Browse Listings" />
+    </div>
 
     <!--Search Bar-->
     <input v-model="search" type="text" placeholder="Search Listings" class="search-bar"/>
@@ -27,6 +29,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import ListingCard from '@/components/ListingCard.vue'
+import PageHeader from '@/components/PageHeader.vue'
 
 // Firebase imports
 import { db } from '@/firebase'
@@ -123,15 +126,8 @@ const filteredListings = computed(() => {
 </script>
 
 <style scoped>
-.explore-container {
-  padding: 2rem 3rem;
-}
-
-.page-title {
-  font-size: 32px;
-  font-weight: 800;
-  margin-bottom: 1.5rem;
-  color: #003d7c;
+.header {
+  margin-bottom: 1rem;
 }
 
 .search-bar {
@@ -142,11 +138,16 @@ const filteredListings = computed(() => {
   margin-bottom: 1.5rem;
   font-size: 15px;
 }
+ 
+.search-bar:focus {
+  outline: 2px solid #002B57;
+  border: 1px solid transparent;
+} 
 
 .category-filter {
   display: flex;
-  gap: 12px;
-  margin-bottom: 2rem;
+  gap: 16px;
+  margin-bottom: 1.75rem;
 }
 
 /* Selected category colors */
@@ -176,8 +177,9 @@ const filteredListings = computed(() => {
 
 .listing-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 20px;
+  row-gap: 22px;
 }
 
 /* Empty state styling */
@@ -191,5 +193,4 @@ const filteredListings = computed(() => {
   font-size: 60px;
   color: var(--black);
 }
-
 </style>

@@ -28,7 +28,7 @@
     </div>
 
     <!-- Button -->
-    <button class="listing-btn" @click="viewListing">
+    <button class="btn btn-secondary" @click="viewListing">
       View Listing Details
     </button>
 
@@ -130,21 +130,8 @@ const categoryClass = (cat) => {
 }
 
 /* Button — now stable and aligned */
-.listing-btn {
-  margin-top: auto; 
+.btn {
+  margin-top: 0.4rem;
   width: 100%;
-  padding: 14px 0;
-  font-size: 1rem;
-  font-weight: 600;
-  background: var(--secondary);
-  color: var(--white);
-  border: none;
-  cursor: pointer;
-  transition: 0.15s ease;
-  border-radius: var(--radius) var(--radius) var(--radius) var(--radius);
-}
-
-.listing-btn:hover {
-  opacity: 0.5;
 }
 </style>

@@ -105,8 +105,9 @@ export default {
 
 <style scoped>
     .reward-grid {
-        display: flex;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
         gap: 20px;
+        row-gap: 22px;
     }
 </style>

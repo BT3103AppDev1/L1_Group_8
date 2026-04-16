@@ -12,7 +12,7 @@
       <main :class="['main-content', {'main-content-with-header': $route.meta.showHeader}]">
         <RouterView v-slot="{ Component }">
           <transition name="fade" mode="out-in">
-            <component :is="Component" :key="$route.fullPath"/>
+            <component :is="Component" :key="$route.fullPath" class="main-component"/>
           </transition>
         </RouterView>
       </main>
@@ -116,6 +116,10 @@ export default {
   padding: 1rem max(2rem, 7vw);
   flex: 1;
 }
+
+.main-component {
+  padding: 1.25rem;
+} 
 
 .loading-container {
   display: flex;
