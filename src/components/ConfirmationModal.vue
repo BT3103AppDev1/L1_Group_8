@@ -72,6 +72,7 @@ export default {
     font-size: 2rem;
     display: flex;
     align-items: center;
+    align-content: center;
     justify-content: center;
     cursor: pointer;
     line-height: 1;

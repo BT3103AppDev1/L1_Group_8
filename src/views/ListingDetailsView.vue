@@ -86,20 +86,22 @@
                 </div>
             </div>
         </div>
-            <ConfirmationModal v-model:showModal="showDeleteModal" title="Delete Confirmation">
-            
+
+        <confirmation-modal v-model:showModal="showDeleteModal" title="Delete this listing?">
             This action cannot be undone!
 
-            
             <template #buttons>
-                <!-- cancel button -->
-                 <button @click="showDeleteModal = false">Cancel</button>
-                <!-- delete button -->
-                 <button @click="deleteListing" class="btn-secondary">Confirm</button>
+                <button class="btn cancel-btn modal-btn" @click="showDeleteModal = false">
+                    Cancel
+                </button>
+                <div class="btn-or-spinner">
+                    <button class="btn btn-danger modal-btn" v-if="!isDeleting" @click="deleteListing">
+                        Confirm
+                    </button>
+                    <VueSpinner v-else size="30" color="var(--secondary)" aria-label="Deleting listing..." />
+                </div>
             </template>
-
-
-            </ConfirmationModal>
+        </confirmation-modal>
 
     </div>
 </template>
@@ -114,7 +116,7 @@ import { addCreateNotifToBatch } from '@/utils/notifications.js';
 import ConfirmationModal from '@/components/ConfirmationModal.vue';
 import defaultImage from '@/assets/listing_pics/default_list_pic.jpg'
 import defaultProfilePic from '@/assets/default-profile-pic.png'
-import { SquareArrowOutUpRight } from 'lucide-vue-next'
+import { VueSpinner } from 'vue3-spinners'
 
 // Firebase Imports
 import { db } from '@/firebase'
@@ -135,6 +137,7 @@ const listing = ref(null)
 const clicksByDay = ref({})
 const clicksByHour = ref({})
 const activeView = ref('week')
+const isDeleting = ref(false)
 
 const totalClicks = computed(() => Object.values(clicksByDay.value).reduce((sum, v) => sum + v, 0))
 
@@ -208,9 +211,9 @@ const deleteListing = async () => {
     // have placed this into the modal instead 
     // const confirmDelete = window.confirm("Are you sure you want to delete this listing?")
     // if (!confirmDelete) return
-
+    isDeleting.value = true
     await deleteDoc(doc(db, "listings", listing.value.id))
-
+    isDeleting.value = false
     window.alert("Listing deleted successfully!")
 
     showDeleteModal.value = false 
@@ -508,5 +511,40 @@ onMounted(async () => {
 .toggle-btn.active {
   background: #003D7C;
   color: #fff;
+}
+
+.btn {
+    padding: 0.75rem 0;
+    width: 15vw;
+}
+
+.btn:disabled {
+    background-color: var(--gray5);
+    border: var(--gray5);
+    color: var(--white);
+    cursor: not-allowed;
+}
+
+.btn-or-spinner {
+    width: 15vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cancel-btn {
+    background: var(--gray4);
+    color: var(--white);
+}
+
+.cancel-btn:hover {
+    background-color: var(--gray5);
+}
+
+.modal-btn {
+    width: 15vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 </style>
