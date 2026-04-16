@@ -265,7 +265,7 @@ onMounted(async () => {
     clicksByHour.value = listingData.clicks_by_hour ?? {}
 
     // Record click for non-listers
-    if (auth.currentUser && auth.currentUser.uid !== listingData.lister_id) {
+    if (auth.currentUser) {
         updateDoc(doc(db, 'listings', listingId), {
             [`clicks_by_day.${getSgtDateKey()}`]: increment(1),
             [`clicks_by_hour.${getSgtHourKey()}`]: increment(1),
