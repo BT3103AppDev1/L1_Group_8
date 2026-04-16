@@ -3,6 +3,7 @@ import { doc, increment, getDocs, collection, writeBatch, Timestamp, runTransact
 import { getSgtYearMonth } from './formatSgtTime'
 import { addCreateNotifToTransaction } from './notifications'
 
+//convert ratings to respeective point based on our point system
 export function ratingToPoints(rating) {
     if (rating <= 2) return 0
     if (rating === 3) return 10
@@ -19,8 +20,8 @@ export async function addRatingsAndPoints(receiverUid, rating, listing_id) {
 
     await runTransaction(db, async (transaction) => {
         // Read current ratings and points
-        const userSnap = await getDocs(doc(db, 'users', receiverUid));
-        const listingSnap = await getDocs(doc(db, 'listings', listing_id));
+        const userSnap = await transaction.get(doc(db, 'users', receiverUid));
+        const listingSnap = await transaction.get(doc(db, 'listings', listing_id));
         const listing_title = listingSnap.data()?.title;
         const listing_cat = listingSnap.data()?.listing_category;
         const listing_cat_abbrev = listing_cat === 'Education' ? 'edu' : (listing_cat === 'Buddy' ? 'buddy' : 'survival');
@@ -83,6 +84,7 @@ export async function addRatingsAndPoints(receiverUid, rating, listing_id) {
     await updateRankings(monthKey);
 }
 
+//update the ranking for the users once they have received points
 async function updateRankings(monthKey) {
     // 1. Fetch all users
     const usersSnap = await getDocs(collection(db, 'users'));
