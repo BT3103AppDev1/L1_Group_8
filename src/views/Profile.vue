@@ -104,7 +104,7 @@
                                         (Rank unavailable)
                                     </span>
                                 </div>
-                                <router-link to="/my-points-history" class="btn btn-secondary">
+                                <router-link v-if="isPrivateProfile" to="/my-points-history" class="btn btn-secondary">
                                     Show Points History
                                 </router-link>
                             </div>
@@ -428,8 +428,7 @@ export default {
 .profile-page {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
-    padding: 1.25rem;
+    gap: 2rem;
 }
 
 .profile-page-content {
@@ -551,7 +550,7 @@ export default {
 }
 
 .private-right-margin {
-    margin: 5rem 0;
+    margin: 4rem 0;
 }
 
 .public-right-margin {
