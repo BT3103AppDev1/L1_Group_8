@@ -124,7 +124,7 @@ import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip)
 import { addCreateNotifToBatch } from '@/utils/notifications.js';
 import ConfirmationModal from '@/components/ConfirmationModal.vue';
-import defaultImage from '@/assets/listing_pics/default_list_pic.jpg'
+import defaultImage from '@/assets/listing_pics/default_list_pic.png'
 import defaultProfilePic from '@/assets/default-profile-pic.png'
 import { VueSpinner } from 'vue3-spinners'
 
@@ -470,7 +470,6 @@ onMounted(async () => {
 }
 
 .btn {
-    padding: 12px 20px;
     width: 50%;
 }
 

@@ -1,46 +1,69 @@
 <template>
     <div class="container">
+      <h1 class="title">Create New Listing</h1>
         <div class="listing-card">
-            <h1 style="text-align: center">Create New Listing</h1>
-
             <!-- insert photo section -->
             <div class="photo">
                 <!-- <img :src="listing_pic"/>  -->
                 <img ref="cropperImg" :src="listing_pic" class="cropper-img"/>
-                <p class="text-instruct">Ensure that you photo is of .jpg, .jpeg, .png, .heic, or .heif format. Else, default photo will be used!</p>
-                <input type="file" @change="uploadlistingpic" accept="image/*"></input>
+
+                <div class="cropper-actions" v-if="isCropping">
+                    <button @click="onCancel" class="btn btn-outline cropper-btn">Cancel</button>
+                    <button @click="onSave" class="btn btn-primary cropper-btn">Save</button>
+                </div>
+
+                <div class="cropper-actions" v-else-if="file_to_upload">
+                    <button @click="onRemove" class="btn btn-danger after-crop-btn">Remove Photo</button>
+                    <button type="button" class="btn btn-primary after-crop-btn"   @click="triggerFileInput">   
+                      Change Photo
+                    </button>
+                </div>
+
+                <div class="cropper-actions" v-else>
+                  <button type="button" class="btn btn-primary"   @click="triggerFileInput">   
+                    Upload Photo
+                  </button>
+                </div>
+                <input
+                    ref="fileInput"
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.heic,.heif"
+                    style="display: none"
+                    @change="uploadlistingpic"
+                />
+
+                <p class="input-info file-requirements">
+                    Uploading a photo is optional.<br>
+                    Supported file types: jpg, jpeg, png, heic, heif. Maximum file size: 5MB. 
+                </p>
             </div>
             <!-- image/jpg, image/jpeg, image/png, image/heic, image/heif -> actly im thinking if its better to not let them select unsupported photos from the get go is better -->
 
-            <div class="cropper-actions" v-if="file_to_upload">
-                <button @click="onSave" class="btn-primary">Save</button>
-                <button @click="onRemove" class="btn-primary">Remove</button>
-            </div>
-
             <!-- service title & description -->
-            <div class="text-instruct"> 
-                <input v-model="title" placeholder="[Service Title]" required></input>
-                <p v-if="submitted && !title" class="error-message">Mandatory Title!</p>
-                <hr style="border:0; border-top: 2px solid black; background-color: black; margin: 0 0 8px 0;">        
+            <div class="title-and-desc"> 
+                <input v-model="title" placeholder="Service Title" required 
+                  type="text" class="input-field" :class="{'input-field--invalid': submitted && !title}"/>
+                <p v-if="submitted && !title" class="input-info input-info--invalid">Mandatory Title!</p>
                 
                 <!-- description -->
-                <textarea v-model="description" placeholder="Write your description here (min 10 words, max 800)!" required></textarea>
-                
+                <textarea v-model="description" placeholder="Write your description here (min 10 words, max 800)!" required 
+                  class="input-field" :class="{'input-field--invalid': submitted && !description}"/>
+                <p v-if="submitted && !description" class="input-info input-info--invalid">Mandatory Description!</p>
             </div>
 
             <!-- dropwdown selection -->
-            <div class="text-instruct">Please select one option in the all the drop-down boxes. Mandatory field! </div>
+            <div class="text-instruct">Please select one option in the all the drop-down boxes. Mandatory fields! </div>
             <div class="dropdown">
               <div class="dropdown-group">
                 <div class="dropdown-choices">
-                  <select v-model="payment_mode" class="dropdown-coloured">
-                    <option disabled value="">Payment Mode</option>
-                    <option>Cash</option>
-                    <option>Treat to Food</option>
-                    <option>Drinks on me</option>
-                    <option>Free</option>
-                    <option>Contact me</option>
-                </select>
+                    <select v-model="payment_mode" class="dropdown-coloured">
+                      <option disabled value="">Payment Mode</option>
+                      <option>Cash</option>
+                      <option>Treat to Food</option>
+                      <option>Drinks on me</option>
+                      <option>Free</option>
+                      <option>Contact me</option>
+                  </select>
                 </div>
                 
                 <div class="dropdown-choices">
@@ -69,7 +92,7 @@
 
               <!-- button -->
               <div class="button-wrapper">
-              <button @click="createlisting" class="btn-listing">UPLOAD</button>
+              <button @click="createlisting" class="btn btn-secondary">Upload</button>
               </div>
             </div>
 
@@ -83,7 +106,7 @@
 import { db } from "../firebase.js";
 import { getCurrentUser } from '@/auth.js';
 import { addDoc, collection, getDoc, doc } from "firebase/firestore";
-import defaultPic from '@/assets/listing_pics/default_list_pic.jpg';
+import defaultPic from '@/assets/listing_pics/default_list_pic.png';
 import axios from 'axios';
 import Cropper from "cropperjs";
 import "cropperjs/dist/cropper.min.css";
@@ -97,7 +120,9 @@ export default {
   data() {
     return {
       listing_pic: defaultPic,   //preview image url
+      prevFile: null,            //previous file before cropping (used for reverting if user cancels cropping)
       file_to_upload: null,       //acttual file being uploaded to cloudinary
+      isCropping: false,
       cropper: null,               //cropper instance
       //All of the form fields
       title: "",
@@ -123,6 +148,11 @@ export default {
   },
 
   methods: {
+    async triggerFileInput() {
+      this.$refs.fileInput.value = "";
+      this.$refs.fileInput.click();
+    },
+
     //Handle Image Selection
     async uploadlistingpic(event) {
       const file = event.target.files[0];
@@ -134,8 +164,10 @@ export default {
         return;
       }
 
+      this.prevFile = this.file_to_upload; 
       this.file_to_upload = file;
       this.listing_pic = URL.createObjectURL(file);
+      this.isCropping = true;
 
       //Intialised the Cropper after DOM updated with the new image
       this.$nextTick(() => {
@@ -162,15 +194,30 @@ export default {
       this.isSaving = false;
     },
 
+    onCancel() {
+      if (this.prevFile) {
+        this.file_to_upload = this.prevFile;
+        this.listing_pic = URL.createObjectURL(this.prevFile);
+        this.prevFile = null;
+      } else {
+        this.file_to_upload = null;
+        this.listing_pic = defaultPic;
+      }
+      this.destroyCropper();
+      this.$refs.fileInput.value = "";
+      this.cropper = null;
+      this.isCropping = false;
+    },
+
     //Remove the selected image 
     onRemove() {
       this.listing_pic = defaultPic;
+      this.prevFile = null;
       this.file_to_upload = null;
       if (this.cropper) this.cropper.destroy();
       this.cropper = null;
-
-      const input = document.querySelector('input[type="file"]');
-      if (input) input.value = '';
+      this.$refs.fileInput.value = "";
+      this.isCropping = false;
     },
 
     //Save Cropped Image and prepare for upload
@@ -190,6 +237,7 @@ export default {
       this.file_to_upload = blob;
       this.destroyCropper();
       this.cropper = null;
+      this.isCropping = false;
     },
 
     // upload to Cloudinary
@@ -283,7 +331,7 @@ export default {
 
         const input = document.querySelector('input[type="file"]');
         if (input) input.value = "";
-
+        this.$router.push('/my-listings'); // Redirect to mylistings after successful upload
       } catch (error) {
         console.log("Error", error);
         alert("Unsuccessful Upload...");
@@ -295,79 +343,99 @@ export default {
 </script>
 
 <style scoped>
-@import '@/assets/main.css';
+.title {
+  font-size: 36px;
+  color: var(--primary);
+  text-align: center;
+}
 
 .container {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 50px;
+    gap: 16px;
 
 }
 
 .listing-card {
-    width: 800px;
-    border-radius: 10px;
-    padding: 20px;
-    padding-bottom: 210px;
+    width: 75%;
+    padding: 36px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     justify-content: center;
     align-items: center;
-    background-color: #89CFF0;
     overflow: visible;
     position: relative;
     margin-bottom: 50px;
+    background-color: #DDEBFB;
+    border-radius: var(--radius);
+    border: 1px solid var(--primary);
 }
 
 /* photo */
 .photo {
-    width: 100%;
-    max-width: 500px;
-    margin: 0 auto 10px auto;
-    overflow: hidden;
-    border-radius: 10px;
-
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
 }
 
 .cropper-img {
-    width: 100%;
+    width: 50%;
     height: auto;
     display: block;
     object-fit: contain;
 }
 
 .cropper-actions {
-    margin: 10px 0;
     display: flex;
-    gap: 10px;
+    gap: 16px;
     justify-content: center;
+    margin-top: 8px;
 }
 
+.btn-outline {
+  background-color: white;
+}
 
+.btn-outline:hover { 
+  background: rgb(240, 243, 247); 
+}
+
+.cropper-btn {
+    width: 10rem;
+}
+
+.after-crop-btn {
+    width: 10rem;
+}
+
+.file-requirements {
+    min-height: 0;
+    text-align: center;
+}
+
+.title-and-desc {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 20px;
+}
 
 /* for text instruction */
 .text-instruct{
-    font-size: 12px;
+    font-size: 14px;
+    font-weight: bold;
     width: 100%;
-    margin-bottom: 5px;
-    font-family: Arial, Helvetica, sans-serif;
-}
-
-
-input {
-    width: 100%;
-    font-family: Arial, Helvetica, sans-serif;
-    background-color: rgb(205, 239, 251);
-
 }
 
 textarea {
     width: 100%;
-    font-size: 12px;
-    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
     resize: none; /*dont adjust the size of box */
     height: 200px;
-    background-color: rgb(205, 239, 251);
+    font-family: inherit;
 
 }
 
@@ -375,8 +443,10 @@ textarea {
 .dropdown {
   display: flex;
   gap: 30px; 
-  align-items: flex-start;
+  align-items: center;
+  justify-content: space-between;
   margin-top: 10px; 
+  width: 100%;
 }
 
 .dropdown-group {
@@ -390,32 +460,27 @@ textarea {
 
 .dropdown-coloured {
   width: 100%;
-  padding: 5px 5px;
   cursor: pointer;
-  border: 1px solid;
-  background-color: #ff944d;
-  border-color: #000;
+  background-color: #F8C38A;
+  border: 1px solid var(--gray4);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-weight: medium;
 }
 
-.dropdown-coloured option {
-  background-color: bisque;
+.dropdown-coloured:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: var(--card-shadow);
 }
-
 
 /* button */
-.btn-listing{
-  width: 100%;
-  padding: 10px 0px;
-  background-color: #ff944d;
-  color: white;
-  font-size: 15px;
-  cursor: pointer;
-}
-
 .button-wrapper {
-  flex: 1;
-  min-width: 120px;
+  display: flex;
   justify-content: flex-end;
 }
 
+.btn {
+  padding: 9px 52px;
+}
 </style>

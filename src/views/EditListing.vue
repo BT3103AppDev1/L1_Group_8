@@ -83,7 +83,7 @@ import { ref, computed } from 'vue'
 import { db } from "../firebase.js";
 import { getCurrentUser } from '@/auth.js';
 import { collection, doc, getDoc, updateDoc } from "firebase/firestore";
-import defaultPic from '@/assets/listing_pics/default_list_pic.jpg'
+import defaultPic from '@/assets/listing_pics/default_list_pic.png'
 import axios from 'axios';
 import Cropper from "cropperjs";
 import "cropperjs/dist/cropper.min.css";

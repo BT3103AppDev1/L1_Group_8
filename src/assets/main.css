@@ -227,6 +227,6 @@ body {
 .detail-box {
   background-color: #DDEBFB;
   border-radius: var(--radius);
-  border: 1px solid var(--black1);
+  border: 1px solid var(--primary);
   padding: 15px;
 }
