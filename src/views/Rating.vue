@@ -1,6 +1,6 @@
 <template>
     <div>
-        <ConfirmationModal :showModal="showRatingModal" @update:show-modal= "showRatingModal = $event">
+        <ConfirmationModal :showModal="showRatingModal" @update:show-modal="onModalClose">
         
         <h1>Rate the Service Provider</h1>
         <!-- star rating timeee -->
@@ -38,6 +38,12 @@ export default {
     },
 
     methods: {
+        onModalClose() {
+            // Rating is compulsory — closing without rating returns to My Listings.
+            // The listing stays Ongoing so the lister can trigger rating again.
+            this.$router.push('/my-listings');
+        },
+
         async confirmRating() {
             const { listingId, providerId } = this.$route.query;
             try {
