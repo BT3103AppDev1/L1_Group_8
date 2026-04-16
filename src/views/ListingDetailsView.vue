@@ -40,7 +40,7 @@
             <div class="right-column">
                 <div class="lister-info">
                     <h3>Lister Information</h3>
-                    <div class="lister-profile">
+                    <div class="lister-profile" @click="goToProfile(listing?.lister_uid)">
                         <img :src="listing?.profile_picture" alt="Profile Picture" class="profile-picture"/>
                         <p>{{ listing?.lister_name }}</p>
                     </div>
@@ -194,6 +194,11 @@ const canHelp = computed(() => {
 //button handlers
 const editListing = () => {
     router.push(`/edit-listing/${listing.value.id}`)
+}
+
+const goToProfile = (uid) => {
+    if (!uid) return
+    router.push(`/users/${uid}`)
 }
 
 const showDeleteModal = ref(false)

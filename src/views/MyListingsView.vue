@@ -1,7 +1,5 @@
 <template>
   <div class="view">
-
-    <!-- ── Tab Header ── -->
     <div class="tab-header">
       <div class="tab-header-inner">
         <button
