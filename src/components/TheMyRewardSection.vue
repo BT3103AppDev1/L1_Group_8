@@ -2,8 +2,8 @@
     <div class="my-reward-section">
         <PageHeader title="My Rewards" />
         <div class="reward-grid">
-            <div v-if="loading">Loading...</div>
-            <div v-else-if="rewards.length === 0">No rewards available...</div>
+            <div v-if="loading" class="helper-text">Loading...</div>
+            <div v-else-if="rewards.length === 0" class="helper-text">No rewards available...</div>
             <RewardCard v-else 
                 v-for="reward in rewards" :key="reward.redemption_id" :reward="reward" 
             />
@@ -109,5 +109,9 @@ export default {
         grid-template-columns: repeat(4, 1fr);
         gap: 20px;
         row-gap: 22px;
+    }
+
+    .helper-text {
+        margin-top: 16px;
     }
 </style>
