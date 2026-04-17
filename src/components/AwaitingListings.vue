@@ -262,9 +262,26 @@ export default {
 }
 
 .btn:disabled {
-    background-color: var(--gray5);
-    border: 1px solid var(--gray5);
-    color: var(--white);
-    cursor: not-allowed;
+  background-color: var(--gray5);
+  border: 1px solid var(--gray5);
+  color: var(--white);
+  cursor: not-allowed;
 }
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .listing-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 850px) {
+  .listing-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 550px) {
+  .listing-grid {
+    grid-template-columns: 1fr;
+  }
+} 
 </style>

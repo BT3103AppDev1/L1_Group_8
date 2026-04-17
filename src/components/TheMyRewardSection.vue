@@ -114,4 +114,21 @@ export default {
     .helper-text {
         margin-top: 16px;
     }
+
+    /* Responsive adjustments */
+    @media (max-width: 1200px) {
+        .reward-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+    @media (max-width: 850px) {
+        .reward-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    @media (max-width: 550px) {
+        .reward-grid {
+            grid-template-columns: 1fr;
+        }
+    } 
 </style>

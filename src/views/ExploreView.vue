@@ -232,7 +232,7 @@ const filteredListings = computed(() => {
     grid-template-columns: repeat(3, 1fr);
   }
 }
-@media (max-width: 768px) {
+@media (max-width: 850px) {
   .listing-grid {
     grid-template-columns: repeat(2, 1fr);
   }
