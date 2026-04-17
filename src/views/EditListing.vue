@@ -9,7 +9,7 @@
                 <!-- insert photo section -->
                 <div class="photo">
                     <!-- <img :src="listing_pic"/>  -->
-                    <img ref="cropperImg" :src="listing_pic ?? defaultPic" class="cropper-img"/>
+                    <img ref="cropperImg" :src="listing_pic || defaultPic" class="cropper-img"/>
 
                     <div class="cropper-actions" v-if="isCropping">
                         <button @click="onCancel" class="btn btn-outline cropper-btn">Cancel</button>
@@ -461,11 +461,13 @@ textarea {
   justify-content: space-between;
   margin-top: 10px; 
   width: 100%;
+  flex-wrap: wrap;
 }
 
 .dropdown-group {
   display: flex;
   gap: 20px;
+  flex-wrap: wrap;
 }
 
 .dropdown-choices {
