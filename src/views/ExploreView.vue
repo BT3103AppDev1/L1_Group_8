@@ -45,6 +45,7 @@ import { VueSpinner } from 'vue3-spinners'
 // Firebase imports
 import { db } from '@/firebase'
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore'
+import { formatListingDate } from '@/utils/formatSgtTime'
 
 // Reactive variables
 const search = ref('')
@@ -86,13 +87,7 @@ onMounted(async () => {
         description: String(data.description ?? "").trim(),
         category: String(data.listing_category ?? "").trim(),
         lister_name: username,
-        postedOn: createdAt
-          ? createdAt.toLocaleDateString("en-SG", {
-              year: "numeric",
-              month: "short",
-              day: "numeric"
-            })
-          : "Unknown date",
+        postedOn: formatListingDate(createdAt),
         createdAt: createdAt,
         location: String(data.location_text ?? "").trim() || "No location provided",
         status: String(data.status ?? "").trim()

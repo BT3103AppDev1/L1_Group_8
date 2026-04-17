@@ -52,7 +52,7 @@
                     <div v-if="isPrivateProfile" class="analytics-section">
                         <div class="analytics-total">
                             <span class="analytics-number">{{ totalProfileClicks }}</span>
-                            <span class="analytics-label">Total Listing Views</span>
+                            <span class="analytics-label">Total Listing Views (Across All Time)</span>
                         </div>
                         <p class="analytics-subtitle">
                             {{ activeView === 'today' ? 'Clicks by hour today across all your listings' : 'Daily clicks on your listings over the last 7 days' }}

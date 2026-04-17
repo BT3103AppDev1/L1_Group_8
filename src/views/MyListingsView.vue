@@ -184,6 +184,7 @@ import { db } from '@/firebase.js'
 import { collection, query, where, getDocs, getDoc, doc, arrayUnion, writeBatch, onSnapshot } from 'firebase/firestore'
 import { getCurrentUser } from '@/auth.js'
 import { addCreateNotifToBatch } from '@/utils/notifications'
+import { formatListingDate } from '@/utils/formatSgtTime'
 
 export default {
   name: 'MyListingsView',
@@ -257,7 +258,7 @@ export default {
             title: d.title,
             category: d.listing_category,
             location: d.location_text,
-            createdAt: d.created_at?.toDate().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) ?? '',
+            createdAt: formatListingDate(d.created_at),
             createdAtRaw: d.created_at?.toDate() ?? new Date(0),
             applicants: enrichedApplicants,
             provider: providerProfile,

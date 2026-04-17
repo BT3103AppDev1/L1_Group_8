@@ -171,6 +171,7 @@ import { VueSpinner } from 'vue3-spinners'
 import { db } from '@/firebase.js'
 import { collection, query, where, getDocs, doc, updateDoc, arrayRemove } from 'firebase/firestore'
 import { getCurrentUser } from '@/auth.js'
+import { formatListingDate } from '@/utils/formatSgtTime'
 
 export default {
   name: 'MyGigsView',
@@ -234,7 +235,7 @@ export default {
           category: d.listing_category,
           title: d.title,
           location: d.location_text,
-          postedOn: d.created_at?.toDate().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) ?? '',
+          postedOn: formatListingDate(d.created_at),
           createdAtRaw: d.created_at?.toDate() ?? new Date(0),
         }
       }

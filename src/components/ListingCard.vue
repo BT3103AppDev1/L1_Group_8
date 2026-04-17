@@ -36,8 +36,6 @@
 </template>
 
 <script setup>
-import { doc, updateDoc, arrayUnion, Timestamp } from "firebase/firestore"
-import { db } from "@/firebase"
 import { useRouter } from "vue-router"
 
 const router = useRouter()

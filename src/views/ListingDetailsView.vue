@@ -67,7 +67,7 @@
                 <div v-if="isLister" class="analytics-card">
                     <div class="analytics-total">
                         <span class="analytics-number">{{ totalClicks }}</span>
-                        <span class="analytics-label">Total Views</span>
+                        <span class="analytics-label">Total Views (Across All Time)</span>
                     </div>
                     <p class="analytics-subtitle">No. of times people clicked to view your listing details</p>
                     <div class="chart-toggle">
@@ -127,6 +127,7 @@ import ConfirmationModal from '@/components/ConfirmationModal.vue';
 import defaultImage from '@/assets/listing_pics/default_list_pic.png'
 import defaultProfilePic from '@/assets/default-profile-pic.png'
 import { VueSpinner } from 'vue3-spinners'
+import { formatListingDate } from '@/utils/formatSgtTime.js'
 
 // Firebase Imports
 import { db } from '@/firebase'
@@ -327,13 +328,7 @@ onMounted(async () => {
         provider_id: listingData.provider_id,
 
         // Format created_at into readable date
-        postedOn: listingData.created_at
-            ?.toDate()
-            .toLocaleDateString("en-SG", {
-                year: "numeric",
-                month: "short",
-                day: "numeric"
-            }),
+        postedOn: formatListingDate(listingData.created_at),
         createdAt: listingData.created_at?.toDate(),
 
         // User fields

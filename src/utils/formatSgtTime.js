@@ -120,3 +120,27 @@ export function getMonthLabelsFromOffset() {
     const currentMonthLabel = months[currentMonth - 1];
     return [monthBeforePrevLabel, prevMonthLabel, currentMonthLabel];
 }
+
+export function formatListingDate(createdAt) {
+    if (!createdAt) {
+        return 'N/A';
+    }
+    
+    let date;
+    if (createdAt.toDate) {
+        date = createdAt.toDate();
+    } else if (createdAt instanceof Date) {
+        date = createdAt;
+    } else {
+        date = new Date(createdAt);
+    }
+
+    const parts = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Asia/Singapore",
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+    }).formatToParts(date);
+    const getPart = (type) => parts.find(p => p.type === type)?.value ?? '-';
+    return `${getPart('day')} ${getPart('month')} ${getPart('year')}`;
+}
