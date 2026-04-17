@@ -42,13 +42,11 @@
             <!-- service title & description -->
             <div class="title-and-desc"> 
                 <input v-model="title" placeholder="Service Title" required 
-                  type="text" class="input-field" :class="{'input-field--invalid': submitted && !title}"/>
-                <p v-if="submitted && !title" class="input-info input-info--invalid">Mandatory Title!</p>
+                  type="text" class="input-field"/>
                 
                 <!-- description -->
                 <textarea v-model="description" placeholder="Write your description here (min 10 words, max 800)!" required 
-                  class="input-field" :class="{'input-field--invalid': submitted && !description}"/>
-                <p v-if="submitted && !description" class="input-info input-info--invalid">Mandatory Description!</p>
+                  class="input-field"/>
             </div>
 
             <!-- dropwdown selection -->
@@ -131,11 +129,7 @@ export default {
       listing_category: "",
       location_text: "",
       //submission state
-      submitted: false,
-      submitting: false,     
-      //cropper helpers using in destroyCropper function to reset states    
-      cropperReady: false,      
-      isSaving: false,           
+      submitting: false,                  
     };
   },
 
@@ -190,8 +184,6 @@ export default {
         this.cropper.destroy();
         this.cropper = null;
       }
-      this.cropperReady = false;
-      this.isSaving = false;
     },
 
     onCancel() {
@@ -205,7 +197,6 @@ export default {
       }
       this.destroyCropper();
       this.$refs.fileInput.value = "";
-      this.cropper = null;
       this.isCropping = false;
     },
 
@@ -215,7 +206,6 @@ export default {
       this.prevFile = null;
       this.file_to_upload = null;
       if (this.cropper) this.cropper.destroy();
-      this.cropper = null;
       this.$refs.fileInput.value = "";
       this.isCropping = false;
     },
@@ -303,8 +293,6 @@ export default {
         ? await this.uploadToCloudinary(this.file_to_upload, user.uid)
         : null;
 
-        console.log("This is the url:", picture_url);
-
         await addDoc(collection(db, "listings"), {
           lister_id: user.uid,
           lister_name: username,
@@ -316,7 +304,10 @@ export default {
           payment_mode: this.payment_mode,
           listing_category: this.listing_category,
           status: "Awaiting",
-          count: 0,
+          applicants: [],
+          provider_id: null,
+          clicks_by_day: {},
+          clicks_by_hour: {},
         });
         alert("Successful Upload!");
 
