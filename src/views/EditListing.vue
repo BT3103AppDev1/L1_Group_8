@@ -1,31 +1,51 @@
 <template>
     <div class="container">
+        <h1 class="title">Edit Listing</h1>
         <div class="listing-card">
-            <h1 style="text-align: center">Edit Listing</h1>
-
             <!-- insert photo section -->
             <div class="photo">
                 <!-- <img :src="listing_pic"/>  -->
-                <img ref="cropperImg" :src="listing_pic" class="cropper-img"/>
-                <p class="text-instruct">Ensure that you photo is of .jpg, .jpeg, .png, .heic, or .heif format. Else, default photo will be used!</p>
-                <input type="file" @change="uploadlistingpic" accept="image/*"></input>
-            </div>
-            <!-- image/jpg, image/jpeg, image/png, image/heic, image/heif -> actly im thinking if its better to not let them select unsupported photos from the get go is better -->
+                <img ref="cropperImg" :src="listing_pic ?? defaultPic" class="cropper-img"/>
 
-            <div class="cropper-actions" v-if="file_to_upload">
-                <button @click="onSave" class="btn-primary">Save</button>
-                <button @click="onRemove" class="btn-primary">Remove</button>
+                <div class="cropper-actions" v-if="isCropping">
+                    <button @click="onCancel" class="btn btn-outline cropper-btn">Cancel</button>
+                    <button @click="onSave" class="btn btn-primary cropper-btn">Save</button>
+                </div>
+
+                <div class="cropper-actions" v-else-if="listing_pic">
+                    <button @click="onRemove" class="btn btn-danger after-crop-btn">Remove Photo</button>
+                    <button type="button" class="btn btn-primary after-crop-btn"   @click="triggerFileInput">   
+                      Change Photo
+                    </button>
+                </div>
+
+                <div class="cropper-actions" v-else>
+                  <button type="button" class="btn btn-primary"   @click="triggerFileInput">   
+                    Upload Photo
+                  </button>
+                </div>
+                <input
+                    ref="fileInput"
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.heic,.heif"
+                    style="display: none"
+                    @change="uploadlistingpic"
+                />
+
+                <p class="input-info file-requirements">
+                    Uploading a photo is optional.<br>
+                    Supported file types: jpg, jpeg, png, heic, heif. Maximum file size: 5MB. 
+                </p>
             </div>
 
             <!-- service title & description -->
-            <div class="text-instruct"> 
-                <input v-model="title" placeholder="[Service Title]" required></input>
-                <p v-if="submitted && !title" class="error-message">Mandatory Title!</p>
-                <hr style="border:0; border-top: 2px solid black; background-color: black; margin: 0 0 8px 0;">        
+            <div class="title-and-desc"> 
+                <input v-model="title" placeholder="Service Title" required 
+                  type="text" class="input-field"/>
                 
                 <!-- description -->
-                <textarea v-model="description" placeholder="Write your description here (min 10 words, max 800)!" required></textarea>
-                
+                <textarea v-model="description" placeholder="Write your description here (min 10 words, max 800)!" required 
+                  class="input-field"/>
             </div>
 
             <!-- dropwdown selection -->
@@ -69,7 +89,7 @@
 
               <!-- button -->
               <div class="button-wrapper">
-              <button @click="updatelisting" class="btn-listing">UPDATE</button>
+              <button @click="updatelisting" class="btn btn-secondary">Update</button>
               </div>
             </div>
 
@@ -79,10 +99,9 @@
 
 
 <script>
-import { ref, computed } from 'vue'
 import { db } from "../firebase.js";
 import { getCurrentUser } from '@/auth.js';
-import { collection, doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import defaultPic from '@/assets/listing_pics/default_list_pic.png'
 import axios from 'axios';
 import Cropper from "cropperjs";
@@ -96,19 +115,19 @@ export default {
     name: 'EditListing',
     data(){
         return {
+            defaultPic,
             listing_id: null,
-            listing_pic: defaultPic,
+            listing_pic: null,
+            prevFile: null,
             file_to_upload: null,
+            isCropping: false,
             cropper: null,
             title: "",
             description: "",
             payment_mode: "",
             listing_category: "",
             location_text: "",
-            submitted: false,
             submitting: false,
-            cropperReady: false,
-            isSaving: false,
         }
     },
 
@@ -122,7 +141,6 @@ export default {
     // get rdy to get the old data
     async mounted() {
         this.listing_id = this.$route.params.listing_id; //get listing_id from url
-        console.log(this.listing_id);
 
         if (!this.listing_id) { //just in case no listing with this id
             alert("Listing unavailable");
@@ -146,7 +164,7 @@ export default {
                     this.payment_mode = data.payment_mode;
                     this.listing_category = data.listing_category;
                     this.location_text = data.location_text;
-                    this.listing_pic = data.picture_url || defaultPic;
+                    this.listing_pic = data.picture_url;
                 }
 
             }
@@ -157,20 +175,25 @@ export default {
         },
 
         async updatelisting() { //to save the changes made 
-            this.submitted = true;
+            if (this.submitting) return; //prevent multiple clicks
+            this.submitting = true;
 
             if (!this.title || !this.description) {
                 alert("Please fill in the title and description!")
+                this.submitting = false;
                 return;
             } 
 
             if (this.description && (this.wordCount < 10 || this.wordCount >800)) {
-                  alert(`Please stay within the word count of 10 to 800 words! You are currently at: ${this.wordCount} words`)
-                  return;
+                alert(`Please stay within the word count of 10 to 800 words! You are currently at: ${this.wordCount} words`)
+                this.submitting = false;
+                return;
               }
 
             if (!this.payment_mode || !this.listing_category || !this.location_text) {
-                alert("Please fill in all the dropdown boxes!")
+                alert("Please fill in all the dropdown boxes!");
+                this.submitting = false;
+                return;
             }
             
             try {
@@ -189,20 +212,21 @@ export default {
                     listing_category: this.listing_category,
                     location_text: this.location_text,
                     picture_url: picture_url, //new photo 
-                    created_at: new Date() //just update the timing
-
-
                 });
                 alert("Successful Update!")
                 this.$router.push('/my-listings') //send person back to their listings pg 
             } catch(error) {
                 console.error("Error", error)
                 alert("Unable to update")
+            } finally {
+                this.submitting = false;
             }
-
-            
         },
 
+        async triggerFileInput() {
+            this.$refs.fileInput.value = "";
+            this.$refs.fileInput.click();
+        },
 
         async uploadlistingpic(event) {
             const file = event.target.files[0]; //just take first one in case user select too many
@@ -214,19 +238,21 @@ export default {
                 return;
             }
 
-            this.file_to_upload = file;
+            this.prevFile = this.file_to_upload ?? this.listing_pic;
+            this.file_to_upload = file; 
             this.listing_pic = URL.createObjectURL(file); 
+            this.isCropping = true;
 
             this.$nextTick( () => {
                 if (this.cropper) this.cropper.destroy();
-                this.cropper = new Cropper(this.$refs.cropperImg, {
-                aspectRatio: 4 / 3,
-                viewMode: 1,
-                dragMode: "move",
-                autoCropArea: 1,
-                cropBoxMovable: false,
-                cropBoxResizable: false,
-                toggleDragModeOnDblclick: false,
+                    this.cropper = new Cropper(this.$refs.cropperImg, {
+                    aspectRatio: 4 / 3,
+                    viewMode: 1,
+                    dragMode: "move",
+                    autoCropArea: 1,
+                    cropBoxMovable: false,
+                    cropBoxResizable: false,
+                    toggleDragModeOnDblclick: false,
                 });
             }
             );
@@ -234,49 +260,65 @@ export default {
 
         //Destroying the Cropper instance 
         destroyCropper() {
-        if (this.cropper) {
-            this.cropper.destroy();
-            this.cropper = null;
-        }
-        this.cropperReady = false;
-        this.isSaving = false;
+            if (this.cropper) {
+                this.cropper.destroy();
+                this.cropper = null;
+            }
+        },
+
+        onCancel() {
+            if (this.prevFile) {
+                if (typeof this.prevFile === 'string') {
+                    this.listing_pic = this.prevFile; 
+                    this.file_to_upload = null;
+                } else {
+                    this.listing_pic = URL.createObjectURL(this.prevFile);
+                    this.file_to_upload = this.prevFile;
+                }
+                this.prevFile = null;
+            } else {
+                this.file_to_upload = null;
+                this.listing_pic = null;
+            }
+            this.destroyCropper();
+            this.$refs.fileInput.value = "";
+            this.isCropping = false;
         },
 
         //Remove the selected image 
         onRemove() {
-        this.listing_pic = defaultPic;
-        this.file_to_upload = null;
-        if (this.cropper) this.cropper.destroy();
-        this.cropper = null;
-
-        const input = document.querySelector('input[type="file"]');
-        if (input) input.value = '';
+            this.listing_pic = null;
+            this.prevFile = null;
+            this.file_to_upload = null;
+            if (this.cropper) this.cropper.destroy();
+            this.$refs.fileInput.value = "";
+            this.isCropping = false;
         },
 
         //Save Cropped Image and prepare for upload
         async onSave() {
-        if (!this.cropper) return;
+            if (!this.cropper) return;
 
-        const canvas = this.cropper.getCroppedCanvas({
-            width: 800,
-            height: 600,
-        });
+            const canvas = this.cropper.getCroppedCanvas({
+                width: 800,
+                height: 600,
+            });
 
-        const blob = await new Promise((resolve) =>
-            canvas.toBlob(resolve, "image/jpeg", 0.9)
-        );
+            const blob = await new Promise((resolve) =>
+                canvas.toBlob(resolve, "image/jpeg", 0.9)
+            );
 
-        this.listing_pic = URL.createObjectURL(blob);
-        this.file_to_upload = blob;
-        this.destroyCropper();
-        this.cropper = null;
+            this.listing_pic = URL.createObjectURL(blob);
+            this.file_to_upload = blob;
+            this.destroyCropper();
+            this.isCropping = false;
         },
 
         async uploadToCloudinary(blob, uid) {
             const formData = new FormData();
             formData.append("file", blob);
             formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-            formData.append("public_id", `listing-pics${uid}`); //uodate with new time
+            formData.append("public_id", `listing-pics-${uid}-${Date.now()}`); //update with new time
 
             const response = await axios.post(
                 `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
@@ -297,79 +339,99 @@ export default {
 
 
 <style scoped>
-@import '@/assets/main.css';
+.title {
+  font-size: 36px;
+  color: var(--primary);
+  text-align: center;
+}
 
 .container {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 50px;
+    gap: 16px;
 
 }
 
 .listing-card {
-    width: 800px;
-    border-radius: 10px;
-    padding: 20px;
-    padding-bottom: 210px;
+    width: 75%;
+    padding: 36px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     justify-content: center;
     align-items: center;
-    background-color: #89CFF0;
     overflow: visible;
     position: relative;
     margin-bottom: 50px;
+    background-color: #DDEBFB;
+    border-radius: var(--radius);
+    border: 1px solid var(--primary);
 }
 
 /* photo */
 .photo {
-    width: 100%;
-    max-width: 500px;
-    margin: 0 auto 10px auto;
-    overflow: hidden;
-    border-radius: 10px;
-
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
 }
 
 .cropper-img {
-    width: 100%;
+    width: 50%;
     height: auto;
     display: block;
     object-fit: contain;
 }
 
 .cropper-actions {
-    margin: 10px 0;
     display: flex;
-    gap: 10px;
+    gap: 16px;
     justify-content: center;
+    margin-top: 8px;
 }
 
+.btn-outline {
+  background-color: white;
+}
 
+.btn-outline:hover { 
+  background: rgb(240, 243, 247); 
+}
+
+.cropper-btn {
+    width: 10rem;
+}
+
+.after-crop-btn {
+    width: 10rem;
+}
+
+.file-requirements {
+    min-height: 0;
+    text-align: center;
+}
+
+.title-and-desc {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 20px;
+}
 
 /* for text instruction */
 .text-instruct{
-    font-size: 12px;
+    font-size: 14px;
+    font-weight: bold;
     width: 100%;
-    margin-bottom: 5px;
-    font-family: Arial, Helvetica, sans-serif;
-}
-
-
-input {
-    width: 100%;
-    font-family: Arial, Helvetica, sans-serif;
-    background-color: rgb(205, 239, 251);
-
 }
 
 textarea {
     width: 100%;
-    font-size: 12px;
-    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
     resize: none; /*dont adjust the size of box */
     height: 200px;
-    background-color: rgb(205, 239, 251);
+    font-family: inherit;
 
 }
 
@@ -377,8 +439,10 @@ textarea {
 .dropdown {
   display: flex;
   gap: 30px; 
-  align-items: flex-start;
+  align-items: center;
+  justify-content: space-between;
   margin-top: 10px; 
+  width: 100%;
 }
 
 .dropdown-group {
@@ -392,32 +456,28 @@ textarea {
 
 .dropdown-coloured {
   width: 100%;
-  padding: 5px 5px;
   cursor: pointer;
-  border: 1px solid;
-  background-color: #ff944d;
-  border-color: #000;
+  background-color: #F8C38A;
+  border: 1px solid var(--gray4);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-weight: medium;
+  min-width: max-content;
 }
 
-.dropdown-coloured option {
-  background-color: bisque;
+.dropdown-coloured:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: var(--card-shadow);
 }
-
 
 /* button */
-.btn-listing{
-  width: 100%;
-  padding: 10px 0px;
-  background-color: #ff944d;
-  color: white;
-  font-size: 15px;
-  cursor: pointer;
-}
-
 .button-wrapper {
-  flex: 1;
-  min-width: 120px;
+  display: flex;
   justify-content: flex-end;
 }
 
+.btn {
+  padding: 9px 52px;
+}
 </style>

@@ -227,7 +227,6 @@ export default {
       this.file_to_upload = blob;
       this.destroyCropper();
       this.cropper = null;
-      this.isCropping = false;
     },
 
     // upload to Cloudinary
@@ -457,6 +456,7 @@ textarea {
   border-radius: 4px;
   padding: 8px 12px;
   font-weight: medium;
+  min-width: max-content;
 }
 
 .dropdown-coloured:focus {
