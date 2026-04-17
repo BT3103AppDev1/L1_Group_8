@@ -113,7 +113,7 @@ export async function seedRewards() {
         })
     }
 
-    const user = '5TLOFy0rScTP4DoIVS9IBzmjuc52';
+    const user = 'ugpwobiKFPZelxMWwvMDwDUlXVm2';
     const redemptions = [
         { reward_id: 'reward1', status: 'NOT REDEEMED' },
         { reward_id: 'reward2', status: 'NOT REDEEMED' },

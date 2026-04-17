@@ -31,6 +31,7 @@ import { doc, onSnapshot } from 'firebase/firestore';
 import '@/assets/main.css';
 import { VueSpinner } from 'vue3-spinners';
 
+
 export default {
   name: 'App',
 

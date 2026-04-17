@@ -3,7 +3,7 @@
         <div class="reward-content">
             <h2 class="reward-title">{{ reward.reward_name }}</h2>
             <p class="expiry-date">Expiry Date: {{ formattedExpiryDate }}</p>
-            <p class="redemption-status">Status: {{ reward.status }}</p>
+            <p class="redemption-status">Status: <strong>{{ reward.status }}</strong></p>
         </div>
         <button 
             class="reward-detail-button" 
@@ -82,13 +82,18 @@ export default {
         font-size: 1.35rem;
         font-weight: 700;
         color: var(--black2);
-        margin-bottom: 0.2rem;
+        margin-bottom: 0.75rem;
+        line-height: 1.3;
+    }
+
+    strong {
+        font-weight: 600;
     }
 
     .expiry-date, .redemption-status {
         font-size: 1rem;
         color: var(--black3);
-        line-height: 1.35;
+        line-height: 1.5;
     }
 
     .reward-detail-button {
