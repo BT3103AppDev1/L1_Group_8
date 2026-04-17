@@ -31,7 +31,6 @@ import { doc, onSnapshot } from 'firebase/firestore';
 import '@/assets/main.css';
 import { VueSpinner } from 'vue3-spinners';
 
-
 export default {
   name: 'App',
 
@@ -71,6 +70,8 @@ export default {
         const userDocRef = doc(db, "users", "mockUserId"); */
 
         this._firestoreUnsubscribe = onSnapshot(userDocRef, (doc) => {
+          if (this.$route.name === 'ActionHandler') return; // Don't redirect on auth action pages
+
           if (doc.exists()) {
             const data = doc.data();
             this.profilePicUrl = data.profile_pic_url || null;

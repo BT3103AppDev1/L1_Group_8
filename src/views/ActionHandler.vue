@@ -47,7 +47,9 @@ export default {
             await updateDoc(doc(db, 'users', auth.currentUser.uid), { email_verified: true });
             await signOut(auth);
           } catch { /* ignore */ }
+          await signOut(auth);
         }
+        this.$router.replace('/auth');
       } catch {
         this.status = 'error';
       }
