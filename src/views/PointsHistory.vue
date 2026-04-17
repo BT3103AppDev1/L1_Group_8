@@ -261,6 +261,7 @@ export default {
     text-align: left;
     font-size: 0.875rem;
     color: var(--gray2);
+    margin-bottom: 1rem;
 }
 
 /* refresh button */
@@ -303,7 +304,7 @@ export default {
     border-collapse: collapse;
     background-color: var(--white);
     font-size: 1rem;
-    font-weight: medium;
+    font-weight: 500;
     table-layout: fixed;
 }
 
@@ -376,7 +377,7 @@ export default {
     text-overflow: ellipsis;
     cursor: pointer;
     color: var(--gray2);
-    font-weight: medium;
+    font-weight: 500;
     display: block;
     width: 100%;
 }

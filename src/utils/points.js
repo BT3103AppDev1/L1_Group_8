@@ -58,7 +58,7 @@ export async function addRatingsAndPoints(receiverUid, rating, listing_id) {
         });
 
         // Step 4: create points log entry
-        transaction.set(doc(collection(db, 'pointsLog')), {
+        transaction.set(doc(collection(db, 'pointsLogs')), {
             uid: receiverUid,
             listing_id,
             listing_title,

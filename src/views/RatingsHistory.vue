@@ -348,7 +348,7 @@ export default {
     gap: 0.5rem;
     padding: 0.875rem 1.125rem;
     font-size: 0.875rem;
-    font-weight: medium;
+    font-weight: 500;
     color: var(--gray3);
     background: none;
     border: none;
@@ -431,7 +431,7 @@ export default {
     border-collapse: collapse;
     background-color: var(--white);
     font-size: 1rem;
-    font-weight: medium;
+    font-weight: 500;
     table-layout: fixed;
 }
 
@@ -504,7 +504,7 @@ export default {
     text-overflow: ellipsis;
     cursor: pointer;
     color: var(--gray2);
-    font-weight: medium;
+    font-weight: 500;
     display: block;
     width: 100%;
 }

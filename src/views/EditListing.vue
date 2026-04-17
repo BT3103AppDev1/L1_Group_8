@@ -479,7 +479,7 @@ textarea {
   border: 1px solid var(--gray4);
   border-radius: 4px;
   padding: 8px 12px;
-  font-weight: medium;
+  font-weight: 500;
   min-width: max-content;
 }
 
