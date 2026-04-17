@@ -50,7 +50,29 @@
                             <p>{{ listing?.lister_name }}</p>
                         </div>
                      </router-link>
-                    <p v-if="listing?.phone_number"><strong>Phone:</strong> {{ listing?.dial_code }} {{ listing?.phone_number }}</p>
+                     <div v-if="listing?.phone_number" class="contact-info">
+                        <div v-if="listing?.phone_number" class="mobile-number">
+                            <strong>Mobile:</strong> {{ listing?.dial_code }} {{ listing?.phone_number }}
+                        </div>
+                        <div v-if="listing?.accept_calls" class="contact-preference">
+                            <div class="preference-icon">
+                                <Check color="var(--white)" size="14" :stroke-width="3.5"/>
+                            </div>
+                            Accept Calls
+                        </div>
+                        <div v-if="listing?.accept_messages" class="contact-preference">
+                            <div class="preference-icon">
+                                <Check color="var(--white)" size="14" :stroke-width="3.5"/>
+                            </div>
+                            Accept Messages
+                        </div>
+                        <div v-if="listing?.accept_whatsapp" class="contact-preference">
+                            <div class="preference-icon">
+                                <Check color="var(--white)" size="14" :stroke-width="3.5"/>
+                            </div>
+                            Accept WhatsApp
+                        </div>
+                    </div>
                     <p v-if="listing?.telegram_handle"><strong>Telegram:</strong> @{{ listing?.telegram_handle }}</p>
                 </div>
                 <hr>
@@ -128,6 +150,7 @@ import defaultImage from '@/assets/listing_pics/default_list_pic.png'
 import defaultProfilePic from '@/assets/default-profile-pic.png'
 import { VueSpinner } from 'vue3-spinners'
 import { formatListingDate } from '@/utils/formatSgtTime.js'
+import { Check } from 'lucide-vue-next';
 
 // Firebase Imports
 import { db } from '@/firebase'
@@ -337,6 +360,9 @@ onMounted(async () => {
         profile_picture: userData.profile_pic_url || defaultProfilePic,
         dial_code: userData.dial_code || "+65",
         phone_number: userData.mobile_number,
+        accept_calls: userData.accept_calls || false,
+        accept_messages: userData.accept_messages || false,
+        accept_whatsapp: userData.accept_whatsapp || false,
         telegram_handle: userData.telegram_handle 
     }
 })
@@ -435,7 +461,7 @@ onMounted(async () => {
 .lister-info {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 10px;
 }
 
 .lister-info h3 {
@@ -462,6 +488,29 @@ onMounted(async () => {
     cursor: pointer;
     text-decoration: none;
 }
+
+.contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.contact-preference {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.preference-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background-color: var(--success);
+    border-radius: 50%;
+}
+
 
 /* Action buttons */
 .lister-actions {
