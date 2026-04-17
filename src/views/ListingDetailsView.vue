@@ -187,7 +187,7 @@ const todayChartData = computed(() => {
             return `${hr - 12}pm`
         }),
         datasets: [{
-            data: hours.map(h => clicksByHour.value[`${todayKey}_${h}`] ?? 0),
+            data: hours.map(h => clicksByHour.value[`${todayKey}_${h}`] ?? 0), 
             borderColor: '#7C3AED',
             backgroundColor: 'rgba(124,58,237,0.1)',
             tension: 0.3,
@@ -304,6 +304,12 @@ onMounted(async () => {
             [`clicks_by_day.${getSgtDateKey()}`]: increment(1),
             [`clicks_by_hour.${getSgtHourKey()}`]: increment(1),
         }).catch(() => {})
+
+        // Optimistically update the local click counts to reflect the new click immediately in the UI
+        const todayKey = getSgtDateKey()
+        const hourKey = getSgtHourKey()
+        clicksByDay.value[todayKey] = (clicksByDay.value[todayKey] ?? 0) + 1
+        clicksByHour.value[`${todayKey}_${hourKey}`] = (clicksByHour.value[`${todayKey}_${hourKey}`] ?? 0) + 1
     }
 
     listing.value = {
