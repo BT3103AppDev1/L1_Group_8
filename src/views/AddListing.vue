@@ -437,11 +437,13 @@ textarea {
   justify-content: space-between;
   margin-top: 10px; 
   width: 100%;
+  flex-wrap: wrap;
 }
 
 .dropdown-group {
   display: flex;
   gap: 20px;
+  flex-wrap: wrap;
 }
 
 .dropdown-choices {
