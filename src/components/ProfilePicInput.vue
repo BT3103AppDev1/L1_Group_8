@@ -72,7 +72,7 @@ export default {
         },
         profilePicSize: {
             type: String,
-            default: "9vw",
+            default: "8rem",
         }
     },
 
