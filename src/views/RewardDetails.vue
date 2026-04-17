@@ -63,11 +63,13 @@ import ConfirmationModal from '@/components/ConfirmationModal.vue';
 import { db } from '@/firebase';
 import { doc, getDoc, Timestamp, updateDoc } from 'firebase/firestore';
 import { useToast } from 'vue-toastification';
+import { VueSpinner } from 'vue3-spinners';
 
 export default {
     components: {
         PageHeader,
         ConfirmationModal,
+        VueSpinner
     },
 
     data() {
@@ -161,6 +163,7 @@ export default {
 
 <style scoped>
     .loading {
+        margin-top: 20px;
         display: flex;
         align-content: center;
         justify-content: center;
