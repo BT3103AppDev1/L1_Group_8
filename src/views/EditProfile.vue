@@ -7,7 +7,7 @@
             <div class="profile-pic-section">
                 <ProfilePicInput ref="profilePicInput" @status-object="onProfilePicStatusChange" 
                     :is-submitting="isSubmitting" :initial-url="initialProfilePicUrl"
-                    :show-title="false" :profile-pic-size="'13vw'"/>
+                    :show-title="false" :profile-pic-size="'10rem'"/>
             </div>
 
             <div class="form-section">
@@ -294,5 +294,24 @@ export default {
 
 .submit-btn {
     font-size: 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+    .edit-profile-content {
+        flex-direction: column;
+        gap: 2rem;
+        padding: 0 2rem;
+    }
+
+    .form-section {
+        width: 100%;
+    }
+
+    .profile-pic-section {  
+        display: flex;
+        align-items: center;
+        width: 100%;
+    }
 }
 </style>

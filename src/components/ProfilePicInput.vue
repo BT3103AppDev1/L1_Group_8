@@ -203,7 +203,7 @@ export default {
 
 .btn {
     padding: 0.75rem 0;
-    width: 15vw;
+    width: 13rem; 
 }
 
 .text-link:disabled {
