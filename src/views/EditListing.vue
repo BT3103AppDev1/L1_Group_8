@@ -176,7 +176,7 @@ export default {
                     this.listing_category = data.listing_category;
                     this.location_text = data.location_text;
                     this.listing_pic = data.picture_url;
-                    //this.isLoading = false;
+                    this.isLoading = false;
                 }
 
             }
