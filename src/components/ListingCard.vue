@@ -51,12 +51,6 @@ const props = defineProps({
 
 /* Increment count + navigate */
 const viewListing = async () => {
-  const ref = doc(db, "listings", props.listing.id)
-
-  await updateDoc(ref, {
-    clicks: arrayUnion(Timestamp.now()) // Store click timestamps for analytics 
-  })
-
   router.push(`/listing/${props.listing.id}`)
 }
 
