@@ -1,10 +1,10 @@
 <template> 
     <div>
-        //back button 
-        <button class="back-button" @click="$router.push({ name: 'PrivateProfile' })">← Back</button>
         <PageHeader title="Reward Details"/>
 
-        <div v-if="loading">Loading...</div>
+        <div v-if="loading" class="loading">
+            <VueSpinner size="40" color="var(--secondary)" aria-label="Loading reward details ..." />
+        </div>
         <div v-else-if="reward" class="reward-detail-page">
             <div class="reward-detail-box detail-box">
                 <div class="reward-name-box">
@@ -41,17 +41,16 @@
                 </button>
             </div>
 
-            // Confirmation Modal for redeeming reward
             <ConfirmationModal
                 :showModal="showConfirmModal"
                 :title="`Redeem ${reward?.reward_name || ''}?`"
                 @update:showModal="showConfirmModal = $event"
             >
-                <p>This action cannot be undone.</p>
+                This action cannot be undone.
 
                 <template #buttons>
-                    <button class="btn btn-secondary" @click="confirmRedeem">Confirm</button>
-                    <button class="btn btn-outlined" @click="showConfirmModal = false">Cancel</button>
+                    <button class="btn cancel-btn modal-btn" @click="showConfirmModal = false">Cancel</button>
+                    <button class="btn btn-secondary modal-btn" @click="confirmRedeem">Confirm</button>
                 </template>
             </ConfirmationModal>
         </div>
@@ -161,13 +160,18 @@ export default {
 </script>
 
 <style scoped>
+    .loading {
+        display: flex;
+        align-content: center;
+        justify-content: center;
+    }
+
     .reward-detail-page {
+        margin-top: 12px;
         display: flex;
         flex-direction: row;
         align-items: flex-end;
-        gap: 10px;
-        padding: 10px;
-        margin: 0 auto;
+        gap: 20px;
     }
 
     .reward-detail-box {
@@ -204,24 +208,19 @@ export default {
         flex-shrink: 0;
     }
 
-    button:disabled {
+    .cancel-btn {
+        background: var(--gray4);
+        color: var(--white);
+    }
+
+    .cancel-btn:hover {
         background-color: var(--gray5);
-        cursor: not-allowed;
     }
 
-    .back-button {
-        background: none;
-        border: none;
-        color: var(--primary);
-        font-size: 14px;
-        cursor: pointer;
-        position: relative; 
-        top: 15px;
-        margin-bottom: 20px;
-    }
-
-    .back-button:hover {
-        text-decoration: underline;
-        opacity: 0.8;
+    .modal-btn {
+        width: 15vw;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 </style>

@@ -1,7 +1,7 @@
 <template>
     <div class="edit-listing-page">
         <div v-if="isLoading" class="loading">
-            <VueSpinner size="40" color="var(--secondary)" aria-label="Loading profile..." />
+            <VueSpinner size="40" color="var(--secondary)" aria-label="Loading..." />
         </div>
         <div v-else class="container">
             <h1 class="title">Edit Listing</h1>
