@@ -493,8 +493,8 @@ export default {
 .profile-pic {
     border-radius: 50%;
     object-fit: cover;
-    width: 9vw;
-    height: 9vw;
+    width: 10rem;
+    height: 10rem;
     border: 2px solid var(--gray5);
 }
 
@@ -721,7 +721,7 @@ export default {
 
 .btn {
     padding: 0.75rem 0;
-    width: 15vw;
+    width: 13rem;
 }
 
 .btn:disabled {
@@ -776,5 +776,31 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .profile-page-content {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .vertical-divider {
+        display: none;
+    }
+
+    .profile-left-container, .profile-right-container {
+        margin: 0;
+    }
+
+    .ratings-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .analytics-section {
+        max-width: 80%;
+    }
 }
 </style>
