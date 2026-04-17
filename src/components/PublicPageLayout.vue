@@ -3,14 +3,16 @@
         <div class="bg-decoration-container">
             <img src="@/assets/background-decoration.png" class="bg-decoration"/>
         </div>
-        <div class="logo-container">
+        <div class="logo-container big-screen-only">
             <div class="logo-content">
                 <img src="@/assets/logo.png" alt="NUSOS Logo" class="logo" />
             </div>
         </div>
-
         <div class="right-container">
             <div class="right-card">
+                <div class="small-screen-only">
+                    <img src="@/assets/logo.png" alt="NUSOS Logo" class="logo-small" />
+                </div>
                 <slot /> 
             </div>
         </div>
@@ -24,6 +26,11 @@ export default {
 </script>
 
 <style scoped> 
+.small-screen-only {
+    display: none;
+    width: 100%;
+}
+
 .public-page {
     display: flex;
     padding: 2rem;
@@ -101,5 +108,41 @@ export default {
     display: flex;
     flex-direction: column;
     justify-content: center;
+}
+
+@media (max-width: 1028px) {
+    .small-screen-only {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .logo-small {
+        width: 8rem;
+        object-fit: contain;
+        display: block;
+    }
+    
+    .big-screen-only {
+        display: none;
+    }  
+
+    .public-page {
+        padding: 2rem;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .right-container {
+        padding: 0;
+        justify-content: center;
+        width: 80%;
+    }
+
+    .right-card {
+        width: 100%;
+        padding: 2rem;
+    }
 }
 </style>
