@@ -349,9 +349,9 @@ export default {
     border-radius: var(--radius);
     background: var(--white);
     font-family: inherit;
-    font-size: 1rem;
-    color: var(--gray2);
-    caret-color: var(--gray2);
+    font-size: 0.875rem;
+    color: var(--gray1);
+    caret-color: var(--gray1);
     line-height: 1.5;
     letter-spacing: 0.02em;
     transition: border-color 0.15s, box-shadow 0.15s;
@@ -446,7 +446,7 @@ export default {
 .mobile-section, .telegram-section {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 0.375rem;
     width: 100%; 
     margin-bottom: 1rem;
 }

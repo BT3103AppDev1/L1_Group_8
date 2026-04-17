@@ -146,6 +146,11 @@ body {
 }
 
 /* ── Input Fields ── */
+input::placeholder, textarea::placeholder {
+  color: var(--gray4);
+  font-weight: 400;
+}
+
 .input-container {
   display: flex;
   flex-direction: column;
@@ -174,7 +179,8 @@ body {
   border: 1px solid var(--gray4);
   border-radius: var(--radius);
   font-size: 0.875rem;
-  color: var(--gray2);
+  font-weight: 500;
+  color: var(--gray1);
   background: var(--white);
   transition: border-color 0.15s, box-shadow 0.15s;
   line-height: 1.5;

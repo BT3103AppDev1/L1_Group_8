@@ -450,7 +450,8 @@ textarea {
     resize: none; /*dont adjust the size of box */
     height: 200px;
     font-family: inherit;
-
+    font-weight: 400;
+    color: var(--gray1);
 }
 
 /* the dropdown UIs */
