@@ -1,98 +1,102 @@
 <template>
-    <div class="container">
-        <h1 class="title">Edit Listing</h1>
-        <div class="listing-card">
-            <!-- insert photo section -->
-            <div class="photo">
-                <!-- <img :src="listing_pic"/>  -->
-                <img ref="cropperImg" :src="listing_pic ?? defaultPic" class="cropper-img"/>
+    <div class="edit-listing-page">
+        <div v-if="isLoading" class="loading">
+            <VueSpinner size="40" color="var(--secondary)" aria-label="Loading profile..." />
+        </div>
+        <div v-else class="container">
+            <h1 class="title">Edit Listing</h1>
+            <div class="listing-card">
+                <!-- insert photo section -->
+                <div class="photo">
+                    <!-- <img :src="listing_pic"/>  -->
+                    <img ref="cropperImg" :src="listing_pic ?? defaultPic" class="cropper-img"/>
 
-                <div class="cropper-actions" v-if="isCropping">
-                    <button @click="onCancel" class="btn btn-outline cropper-btn">Cancel</button>
-                    <button @click="onSave" class="btn btn-primary cropper-btn">Save</button>
-                </div>
+                    <div class="cropper-actions" v-if="isCropping">
+                        <button @click="onCancel" class="btn btn-outline cropper-btn">Cancel</button>
+                        <button @click="onSave" class="btn btn-primary cropper-btn">Save</button>
+                    </div>
 
-                <div class="cropper-actions" v-else-if="listing_pic">
-                    <button @click="onRemove" class="btn btn-danger after-crop-btn">Remove Photo</button>
-                    <button type="button" class="btn btn-primary after-crop-btn"   @click="triggerFileInput">   
-                      Change Photo
+                    <div class="cropper-actions" v-else-if="listing_pic">
+                        <button @click="onRemove" class="btn btn-danger after-crop-btn">Remove Photo</button>
+                        <button type="button" class="btn btn-primary after-crop-btn"   @click="triggerFileInput">   
+                        Change Photo
+                        </button>
+                    </div>
+
+                    <div class="cropper-actions" v-else>
+                    <button type="button" class="btn btn-primary"   @click="triggerFileInput">   
+                        Upload Photo
                     </button>
+                    </div>
+                    <input
+                        ref="fileInput"
+                        type="file"
+                        accept=".jpg,.jpeg,.png,.heic,.heif"
+                        style="display: none"
+                        @change="uploadlistingpic"
+                    />
+
+                    <p class="input-info file-requirements">
+                        Uploading a photo is optional.<br>
+                        Supported file types: jpg, jpeg, png, heic, heif. Maximum file size: 5MB. 
+                    </p>
                 </div>
 
-                <div class="cropper-actions" v-else>
-                  <button type="button" class="btn btn-primary"   @click="triggerFileInput">   
-                    Upload Photo
-                  </button>
+                <!-- service title & description -->
+                <div class="title-and-desc"> 
+                    <input v-model="title" placeholder="Service Title" required 
+                    type="text" class="input-field"/>
+                    
+                    <!-- description -->
+                    <textarea v-model="description" placeholder="Write your description here (min 10 words, max 800)!" required 
+                    class="input-field"/>
                 </div>
-                <input
-                    ref="fileInput"
-                    type="file"
-                    accept=".jpg,.jpeg,.png,.heic,.heif"
-                    style="display: none"
-                    @change="uploadlistingpic"
-                />
 
-                <p class="input-info file-requirements">
-                    Uploading a photo is optional.<br>
-                    Supported file types: jpg, jpeg, png, heic, heif. Maximum file size: 5MB. 
-                </p>
+                <!-- dropwdown selection -->
+                <div class="text-instruct">Please select one option in the all the drop-down boxes. Mandatory field! </div>
+                <div class="dropdown">
+                <div class="dropdown-group">
+                    <div class="dropdown-choices">
+                    <select v-model="payment_mode" class="dropdown-coloured">
+                        <option disabled value="">Payment Mode</option>
+                        <option>Cash</option>
+                        <option>Treat to Food</option>
+                        <option>Drinks on me</option>
+                        <option>Free</option>
+                        <option>Contact me</option>
+                    </select>
+                    </div>
+                    
+                    <div class="dropdown-choices">
+                    <select v-model="listing_category" class="dropdown-coloured">
+                        <option disabled value="">Category</option>
+                        <option>Education</option>
+                        <option>Buddy</option>
+                        <option>Survival</option>
+                    </select>
+                    </div>
+
+                    <div class="dropdown-choices">
+                    <select v-model="location_text" class="dropdown-coloured">
+                        <option disabled value="">Location</option>
+                        <option>UTown</option>
+                        <option>Central Library</option>
+                        <option>FASS</option>
+                        <option>SoC</option>
+                        <option>Business School</option>
+                        <option>Engineering buidling</option>
+                        <option>Kent Ridge MRT</option>
+                        <option>YST</option>
+                    </select>
+                    </div>
+                </div>
+
+                <!-- button -->
+                <div class="button-wrapper">
+                <button @click="updatelisting" class="btn btn-secondary">Update</button>
+                </div>
+                </div>
             </div>
-
-            <!-- service title & description -->
-            <div class="title-and-desc"> 
-                <input v-model="title" placeholder="Service Title" required 
-                  type="text" class="input-field"/>
-                
-                <!-- description -->
-                <textarea v-model="description" placeholder="Write your description here (min 10 words, max 800)!" required 
-                  class="input-field"/>
-            </div>
-
-            <!-- dropwdown selection -->
-            <div class="text-instruct">Please select one option in the all the drop-down boxes. Mandatory field! </div>
-            <div class="dropdown">
-              <div class="dropdown-group">
-                <div class="dropdown-choices">
-                  <select v-model="payment_mode" class="dropdown-coloured">
-                    <option disabled value="">Payment Mode</option>
-                    <option>Cash</option>
-                    <option>Treat to Food</option>
-                    <option>Drinks on me</option>
-                    <option>Free</option>
-                    <option>Contact me</option>
-                </select>
-                </div>
-                
-                <div class="dropdown-choices">
-                <select v-model="listing_category" class="dropdown-coloured">
-                    <option disabled value="">Category</option>
-                    <option>Education</option>
-                    <option>Buddy</option>
-                    <option>Survival</option>
-                </select>
-                </div>
-
-                <div class="dropdown-choices">
-                <select v-model="location_text" class="dropdown-coloured">
-                    <option disabled value="">Location</option>
-                    <option>UTown</option>
-                    <option>Central Library</option>
-                    <option>FASS</option>
-                    <option>SoC</option>
-                    <option>Business School</option>
-                    <option>Engineering buidling</option>
-                    <option>Kent Ridge MRT</option>
-                    <option>YST</option>
-                </select>
-                </div>
-              </div>
-
-              <!-- button -->
-              <div class="button-wrapper">
-              <button @click="updatelisting" class="btn btn-secondary">Update</button>
-              </div>
-            </div>
-
         </div>
     </div>
 </template>
@@ -106,6 +110,7 @@ import defaultPic from '@/assets/listing_pics/default_list_pic.png'
 import axios from 'axios';
 import Cropper from "cropperjs";
 import "cropperjs/dist/cropper.min.css";
+import { VueSpinner } from 'vue3-spinners';
 
 
 const CLOUDINARY_CLOUD_NAME = "dwr4f7ae0";
@@ -113,9 +118,15 @@ const CLOUDINARY_UPLOAD_PRESET = "nusos-listing-pics";
 
 export default {
     name: 'EditListing',
+
+    components: {
+        VueSpinner,
+    },
+
     data(){
         return {
             defaultPic,
+            isLoading: true,
             listing_id: null,
             listing_pic: null,
             prevFile: null,
@@ -165,6 +176,7 @@ export default {
                     this.listing_category = data.listing_category;
                     this.location_text = data.location_text;
                     this.listing_pic = data.picture_url;
+                    //this.isLoading = false;
                 }
 
             }
@@ -339,6 +351,12 @@ export default {
 
 
 <style scoped>
+.loading {
+    display: flex;
+    align-content: center;
+    justify-content: center;
+}
+
 .title {
   font-size: 36px;
   color: var(--primary);
